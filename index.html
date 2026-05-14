@@ -289,24 +289,41 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .budget-cat-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--c3),var(--c2));transition:width .4s ease;}
 .budget-cat-val{font-size:10px;color:var(--text3);min-width:60px;text-align:right;}
 
-/* ─── BUDGET EDITABLE ───────────────────────────────── */
-.budget-salary-input{background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:20px;font-weight:500;width:140px;text-align:right;}
-.budget-vendredi{border-left:2px solid var(--border2);padding:12px 16px;margin-bottom:10px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--bg3);}
-.budget-ven-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.budget-ven-title{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.08em;}
-.budget-ven-reste{font-size:12px;font-weight:500;color:var(--teal);}
+/* ─── BUDGET CALENDAR ────────────────────────────────── */
+.budget-salary-input{background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;width:100px;text-align:right;}
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
+.budget-cal-empty{min-height:60px;}
+.budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px;min-height:70px;cursor:pointer;transition:border-color var(--transition);}
+.budget-cal-day:hover{border-color:var(--border2);}
+.budget-cal-day.today{border-color:var(--c3);}
+.budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
+.budget-cal-day.today .budget-day-num{color:var(--c2);font-weight:500;}
+.budget-dep-tag{font-size:8px;padding:1px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.budget-dep-tag.fixe{background:rgba(24,95,165,.2);color:#5AB4F0;}
+.budget-dep-tag.carte{background:rgba(186,117,23,.2);color:var(--amber);}
+.budget-dep-tag.autre{background:rgba(255,255,255,.06);color:var(--text3);}
+.budget-day-total{font-size:9px;color:#F06060;font-weight:500;margin-top:2px;}
+.budget-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:300;}
+.budget-modal-overlay.hidden{display:none!important;}
+.budget-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-height:80vh;overflow-y:auto;}
+.budget-existing-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
+.budget-existing-row:last-child{border-bottom:none;}
+.budget-existing-cat{color:var(--text2);flex:1;}
+.budget-existing-amt{color:#F06060;font-weight:500;margin-right:8px;}
+.budget-del-entry{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;}
+.budget-del-entry:hover{color:#F06060;}
+.budget-entry-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.budget-entry-select{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none;}
+.budget-entry-amt{width:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:#F06060;font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;text-align:right;outline:none;}
 .budget-edit-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);}
 .budget-edit-row:last-child{border-bottom:none;}
-.budget-label-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;}
+.budget-label-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;}
 .budget-label-input::placeholder{color:var(--text3);}
 .budget-amt-input{width:90px;background:none;border:none;outline:none;color:#F06060;font-family:'DM Mono',monospace;font-size:11px;text-align:right;}
 .budget-amt-input.pos{color:var(--teal);}
-.budget-label-input:focus,.budget-amt-input:focus{background:var(--bg2);border-radius:4px;padding:2px 4px;}
 .budget-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
 .budget-edit-row:hover .budget-del-btn{opacity:1;}
-.budget-del-btn:hover{color:#F06060;}
-.progress-wrap-b{height:3px;background:var(--border);border-radius:2px;margin-top:8px;}
-.progress-bar-b{height:3px;border-radius:2px;width:100%;transition:width .3s ease;}
 
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -522,16 +539,12 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 
     <!-- BUDGET -->
     <section id="tab-budget" class="tab hidden">
-      <div class="page-header"><h1 class="page-title">Budget</h1><p class="page-date" id="budget-month"></p></div>
-
-      <!-- Salaire -->
-      <div class="section-card">
-        <div class="section-top">
-          <h2 class="section-title">Salaire du mois</h2>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudget()">
-            <span style="color:var(--text2);font-size:11px;">$</span>
-          </div>
+      <div class="page-header">
+        <h1 class="page-title">Budget</h1>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:var(--text3);">Salaire</span>
+          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudgetSummary()">
+          <span style="color:var(--text3);font-size:11px;">$</span>
         </div>
       </div>
 
@@ -540,16 +553,19 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div class="stat-card"><span class="stat-value" id="b-salaire">0$</span><span class="stat-label">Salaire</span></div>
         <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Total depenses</span></div>
         <div class="stat-card"><span class="stat-value" id="b-reste">0$</span><span class="stat-label">Reste</span></div>
-        <div class="stat-card"><span class="stat-value" id="b-restant" style="color:var(--amber)">0$</span><span class="stat-label">Depenses restantes</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-restant" style="color:var(--amber)">0$</span><span class="stat-label">Jours avec depenses</span></div>
       </div>
 
-      <!-- Vendredis -->
+      <!-- Calendrier -->
       <div class="section-card">
         <div class="section-top">
-          <h2 class="section-title">Vendredis du mois</h2>
-          <span class="badge-dynamic" id="budget-mois-label"></span>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn-ghost" id="budget-prev">← Precedent</button>
+            <h2 class="section-title" id="budget-month-title">Mai 2026</h2>
+            <button class="btn-ghost" id="budget-next">Suivant →</button>
+          </div>
         </div>
-        <div id="budget-vendredis"></div>
+        <div class="budget-cal-grid" id="budget-cal-grid"></div>
       </div>
 
       <!-- Dettes et Actifs -->
@@ -574,6 +590,20 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
     </section>
+
+    <!-- BUDGET DAY MODAL -->
+    <div class="budget-modal-overlay hidden" id="budget-day-modal">
+      <div class="budget-modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 class="section-title" id="budget-modal-title">Journee</h3>
+          <button class="logout-btn" id="budget-modal-close">✕</button>
+        </div>
+        <div id="budget-existing-entries"></div>
+        <div id="budget-new-entries"></div>
+        <button class="btn-ghost" style="width:100%;margin-top:6px;" onclick="addBudgetEntryRow()">+ Ajouter une depense</button>
+        <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveBudgetDay()">Sauvegarder</button>
+      </div>
+    </div>
 
   </main>
 </div>
@@ -1390,9 +1420,203 @@ function makeBudgetRow(containerId, label, amt, isPos) {
   el.appendChild(row);
 }
 
-window.addBudgetRow = function(containerId, isPos) {
-  makeBudgetRow(containerId, '', 0, isPos);
-  calcBudget();
+
+
+
+
+
+
+
+
+
+
+
+
+// ─── BUDGET CALENDAR ─────────────────────────────────
+const BUDGET_CATS = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro','Ass. maison','Ass. Eric','Ass. Ryan','Pharmacie','Service de garde','Epicerie','American Express','Capital One','Internet','Cellulaire','Spotify','Amazon','Autre'];
+const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+let budgetYear = new Date().getFullYear();
+let budgetMonth = new Date().getMonth();
+let budgetData = {};
+let budgetSelectedDay = null;
+
+function budgetKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function fmtB(n){ return Math.round(n).toLocaleString('fr-CA')+'$'; }
+
+async function loadBudget() {
+  const items = await getAll('budget_cal');
+  budgetData = {};
+  items.forEach(item => {
+    if (!budgetData[item.day]) budgetData[item.day] = [];
+    budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt});
+  });
+  const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
+  const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
+  dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
+  actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+  renderBudget();
+}
+
+function renderBudget() {
+  const titleEl = document.getElementById('budget-month-title');
+  if (titleEl) titleEl.textContent = MONTHS_FR[budgetMonth] + ' ' + budgetYear;
+  const grid = document.getElementById('budget-cal-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  DAYS_FR.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'budget-cal-head';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(budgetYear, budgetMonth, 1).getDay();
+  const daysInMonth = new Date(budgetYear, budgetMonth+1, 0).getDate();
+  const today = new Date();
+  let monthTotal = 0;
+  let activeDays = 0;
+
+  for (let i=0; i<firstDay; i++) {
+    const e = document.createElement('div');
+    e.className = 'budget-cal-empty';
+    grid.appendChild(e);
+  }
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const k = budgetKey(budgetYear, budgetMonth, d);
+    const entries = budgetData[k] || [];
+    const dayTotal = entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
+    monthTotal += dayTotal;
+    if (dayTotal > 0) activeDays++;
+    const isToday = today.getFullYear()===budgetYear && today.getMonth()===budgetMonth && today.getDate()===d;
+    const cell = document.createElement('div');
+    cell.className = 'budget-cal-day' + (isToday ? ' today' : '');
+    cell.innerHTML = `<div class="budget-day-num">${d}</div>`;
+    entries.slice(0,2).forEach(e => {
+      const tag = document.createElement('div');
+      const cls = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro'].includes(e.cat)?'fixe':['American Express','Capital One'].includes(e.cat)?'carte':'autre';
+      tag.className = `budget-dep-tag ${cls}`;
+      tag.textContent = e.cat;
+      cell.appendChild(tag);
+    });
+    if (entries.length > 2) {
+      const more = document.createElement('div');
+      more.className = 'budget-dep-tag autre';
+      more.textContent = `+${entries.length-2}`;
+      cell.appendChild(more);
+    }
+    if (dayTotal > 0) {
+      const tot = document.createElement('div');
+      tot.className = 'budget-day-total';
+      tot.textContent = '-'+Math.round(dayTotal)+'$';
+      cell.appendChild(tot);
+    }
+    cell.onclick = () => openBudgetDay(d, k);
+    grid.appendChild(cell);
+  }
+
+  calcBudgetSummary(monthTotal, activeDays);
+  calcBudgetBilan();
+}
+
+window.calcBudgetSummary = function(monthTotal, activeDays) {
+  if (monthTotal === undefined) {
+    monthTotal = 0;
+    const grid = document.getElementById('budget-cal-grid');
+    if (!grid) return;
+    const daysInMonth = new Date(budgetYear, budgetMonth+1, 0).getDate();
+    for (let d=1; d<=daysInMonth; d++) {
+      const k = budgetKey(budgetYear, budgetMonth, d);
+      const entries = budgetData[k] || [];
+      monthTotal += entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
+    }
+    activeDays = Object.keys(budgetData).filter(k => k.startsWith(`${budgetYear}-${String(budgetMonth+1).padStart(2,'0')}`)).length;
+  }
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  const reste = salary - monthTotal;
+  const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setEl('b-salaire', fmtB(salary));
+  setEl('b-depenses', fmtB(monthTotal));
+  setEl('b-restant', activeDays + ' jours');
+  const resteEl = document.getElementById('b-reste');
+  if (resteEl) {
+    resteEl.textContent = fmtB(reste);
+    resteEl.style.color = reste >= 0 ? 'var(--teal)' : '#F06060';
+  }
+}
+
+function openBudgetDay(d, k) {
+  budgetSelectedDay = k;
+  const date = new Date(budgetYear, budgetMonth, d);
+  const titleEl = document.getElementById('budget-modal-title');
+  if (titleEl) titleEl.textContent = DAYS_FR[date.getDay()] + ' ' + d + ' ' + MONTHS_FR[budgetMonth];
+  const entries = budgetData[k] || [];
+  const existEl = document.getElementById('budget-existing-entries');
+  if (existEl) {
+    existEl.innerHTML = '';
+    entries.forEach((e,i) => {
+      const row = document.createElement('div');
+      row.className = 'budget-existing-row';
+      row.innerHTML = `<span class="budget-existing-cat">${e.cat}</span><span class="budget-existing-amt">-${parseFloat(e.amt).toFixed(2)}$</span><button class="budget-del-entry" onclick="deleteBudgetEntry('${k}',${i})">✕</button>`;
+      existEl.appendChild(row);
+    });
+  }
+  const newEl = document.getElementById('budget-new-entries');
+  if (newEl) newEl.innerHTML = '';
+  if (!entries.length) addBudgetEntryRow();
+  document.getElementById('budget-day-modal')?.classList.remove('hidden');
+}
+
+window.deleteBudgetEntry = async function(k, i) {
+  const entry = budgetData[k]?.[i];
+  if (entry?.id) await deleteItem('budget_cal', entry.id);
+  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
+  renderBudget();
+  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
+}
+
+window.addBudgetEntryRow = function() {
+  const container = document.getElementById('budget-new-entries');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'budget-entry-row';
+  row.innerHTML = `
+    <select class="budget-entry-select">${BUDGET_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+    <input type="number" class="budget-entry-amt" placeholder="0.00" min="0" step="0.01">
+    <button class="budget-del-entry" onclick="this.parentElement.remove()">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+window.saveBudgetDay = async function() {
+  if (!budgetSelectedDay) return;
+  const rows = document.getElementById('budget-new-entries')?.querySelectorAll('.budget-entry-row') || [];
+  for (const row of rows) {
+    const cat = row.querySelector('.budget-entry-select')?.value;
+    const amt = parseFloat(row.querySelector('.budget-entry-amt')?.value) || 0;
+    if (amt > 0) {
+      const ref = await addItem('budget_cal', { day: budgetSelectedDay, cat, amt });
+      if (!budgetData[budgetSelectedDay]) budgetData[budgetSelectedDay] = [];
+      budgetData[budgetSelectedDay].push({ id: ref.id, cat, amt });
+    }
+  }
+  document.getElementById('budget-day-modal')?.classList.add('hidden');
+  budgetSelectedDay = null;
+  renderBudget();
+}
+
+function calcBudgetBilan() {
+  const dettes = getContainerTotal('budget-dettes');
+  const actifs = getContainerTotal('budget-actifs');
+  const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setEl('b-total-dettes', fmtB(dettes));
+  const vn = document.getElementById('b-valeur-nette');
+  if (vn) {
+    vn.textContent = fmtB(actifs-dettes);
+    vn.style.color = (actifs-dettes) >= 0 ? 'var(--teal)' : '#F06060';
+  }
 }
 
 function getContainerTotal(containerId) {
@@ -1402,115 +1626,26 @@ function getContainerTotal(containerId) {
   return total;
 }
 
-function buildBudgetVendredis() {
-  const el = document.getElementById('budget-vendredis');
-  if (!el) return;
-  el.innerHTML = '';
-  const fridays = getFridays();
-  const colors = ['#1D9E75','#185FA5','#BA7517','#888780','#7C22C8'];
-  const now = new Date();
-  const monthNames = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
-  const lbl = document.getElementById('budget-mois-label');
-  if (lbl) lbl.textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
-
-  fridays.forEach((day, i) => {
-    const date = new Date(now.getFullYear(), now.getMonth(), day);
-    const dateStr = date.toLocaleDateString('fr-CA', {weekday:'long', day:'numeric', month:'long'});
-    const color = colors[i % colors.length];
-    const isPast = date < now;
-    const div = document.createElement('div');
-    div.className = 'budget-vendredi';
-    div.style.borderLeftColor = color;
-    if (isPast) div.style.opacity = '0.6';
-    div.innerHTML = `
-      <div class="budget-ven-header">
-        <span class="budget-ven-title">${dateStr}</span>
-        <span class="budget-ven-reste" id="bven-reste-${i}">Reste: —</span>
-      </div>
-      <div id="bven-rows-${i}"></div>
-      <button class="btn-ghost" style="width:100%;margin-top:6px;font-size:10px;" onclick="addVenBudgetRow(${i})">+ Ajouter une depense</button>
-      <div class="progress-wrap-b"><div class="progress-bar-b" id="bven-bar-${i}" style="background:${color}"></div></div>
-    `;
-    el.appendChild(div);
-  });
+window.addBudgetRow = function(containerId, isPos) {
+  makeBudgetRow(containerId, '', 0, isPos);
 }
 
-window.addVenBudgetRow = function(vi) {
-  const container = document.getElementById('bven-rows-'+vi);
-  if (!container) return;
-  const row = document.createElement('div');
-  row.className = 'budget-edit-row';
-  row.innerHTML = `
-    <input type="text" class="budget-label-input" placeholder="Description" oninput="calcBudget()">
-    <input type="number" class="budget-amt-input" value="0" oninput="calcBudget()">
-    <button class="budget-del-btn" onclick="this.parentElement.remove();calcBudget()">x</button>
-  `;
-  container.appendChild(row);
-  calcBudget();
-}
 
-window.calcBudget = function() {
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const fridays = getFridays();
-  let running = salary;
-  let totalDep = 0;
 
-  fridays.forEach((day, i) => {
-    const rows = document.getElementById('bven-rows-'+i)?.querySelectorAll('.budget-amt-input') || [];
-    let venTotal = 0;
-    rows.forEach(r => venTotal += parseFloat(r.value)||0);
-    totalDep += venTotal;
-    running -= venTotal;
-    const resteEl = document.getElementById('bven-reste-'+i);
-    const barEl = document.getElementById('bven-bar-'+i);
-    if (resteEl) {
-      resteEl.textContent = 'Reste: ' + fmtBudget(running);
-      resteEl.style.color = running >= 0 ? 'var(--teal)' : '#F06060';
-    }
-    if (barEl) {
-      const pct = salary > 0 ? Math.max(0, Math.min(100, (running/salary)*100)) : 0;
-      barEl.style.width = pct + '%';
-    }
-  });
-
-  const setEl = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
-  setEl('b-salaire', fmtBudget(salary));
-  const resteEl = document.getElementById('b-reste');
-  if (resteEl) {
-    resteEl.textContent = fmtBudget(salary - totalDep);
-    resteEl.style.color = (salary - totalDep) >= 0 ? 'var(--teal)' : '#F06060';
-  }
-  setEl('b-depenses', fmtBudget(totalDep));
-  setEl('b-restant', fmtBudget(Math.max(0, totalDep)));
-
-  const dettes = getContainerTotal('budget-dettes');
-  const actifs = getContainerTotal('budget-actifs');
-  setEl('b-total-dettes', fmtBudget(dettes));
-  const vn = document.getElementById('b-valeur-nette');
-  if (vn) {
-    vn.textContent = fmtBudget(actifs - dettes);
-    vn.style.color = (actifs - dettes) >= 0 ? 'var(--teal)' : '#F06060';
-  }
-}
-
-async function loadBudget() {
-  // Init default rows
-  const dettes = [
-    ['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],
-    ['Marge perso',0],['American Express',0],['Capital One',0]
-  ];
-  const actifs = [
-    ['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]
-  ];
-  dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
-  actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
-  buildBudgetVendredis();
-  calcBudget();
-}
-
-function renderBudget() {
-  calcBudget();
-}
+// Nav buttons
+document.getElementById('budget-prev')?.addEventListener('click', () => {
+  budgetMonth--; if(budgetMonth<0){budgetMonth=11;budgetYear--;} renderBudget();
+});
+document.getElementById('budget-next')?.addEventListener('click', () => {
+  budgetMonth++; if(budgetMonth>11){budgetMonth=0;budgetYear++;} renderBudget();
+});
+document.getElementById('budget-modal-close')?.addEventListener('click', () => {
+  document.getElementById('budget-day-modal')?.classList.add('hidden');
+  budgetSelectedDay = null;
+});
+document.getElementById('budget-day-modal')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); budgetSelectedDay=null; }
+});
 
 // ─── NAVIGATION ──────────────────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {
