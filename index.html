@@ -289,6 +289,25 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .budget-cat-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--c3),var(--c2));transition:width .4s ease;}
 .budget-cat-val{font-size:10px;color:var(--text3);min-width:60px;text-align:right;}
 
+/* ─── BUDGET EDITABLE ───────────────────────────────── */
+.budget-salary-input{background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:20px;font-weight:500;width:140px;text-align:right;}
+.budget-vendredi{border-left:2px solid var(--border2);padding:12px 16px;margin-bottom:10px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;background:var(--bg3);}
+.budget-ven-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.budget-ven-title{font-size:11px;font-weight:500;color:var(--text2);letter-spacing:.08em;}
+.budget-ven-reste{font-size:12px;font-weight:500;color:var(--teal);}
+.budget-edit-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);}
+.budget-edit-row:last-child{border-bottom:none;}
+.budget-label-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.04em;}
+.budget-label-input::placeholder{color:var(--text3);}
+.budget-amt-input{width:90px;background:none;border:none;outline:none;color:#F06060;font-family:'DM Mono',monospace;font-size:11px;text-align:right;}
+.budget-amt-input.pos{color:var(--teal);}
+.budget-label-input:focus,.budget-amt-input:focus{background:var(--bg2);border-radius:4px;padding:2px 4px;}
+.budget-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
+.budget-edit-row:hover .budget-del-btn{opacity:1;}
+.budget-del-btn:hover{color:#F06060;}
+.progress-wrap-b{height:3px;background:var(--border);border-radius:2px;margin-top:8px;}
+.progress-bar-b{height:3px;border-radius:2px;width:100%;transition:width .3s ease;}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -504,24 +523,56 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
     <!-- BUDGET -->
     <section id="tab-budget" class="tab hidden">
       <div class="page-header"><h1 class="page-title">Budget</h1><p class="page-date" id="budget-month"></p></div>
-      <div class="stats-row">
-        <div class="stat-card"><span class="stat-value" id="budget-revenus">0$</span><span class="stat-label">Revenus</span></div>
-        <div class="stat-card"><span class="stat-value" id="budget-depenses">0$</span><span class="stat-label">Depenses</span></div>
-        <div class="stat-card"><span class="stat-value" id="budget-solde">0$</span><span class="stat-label">Solde</span></div>
-        <div class="stat-card"><span class="stat-value" id="budget-epargne">0$</span><span class="stat-label">Epargne</span></div>
-      </div>
+
+      <!-- Salaire -->
       <div class="section-card">
         <div class="section-top">
-          <h2 class="section-title">Transactions</h2>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-ghost" id="add-revenu-btn">+ Revenu</button>
-            <button class="btn-primary" id="add-depense-btn">+ Depense</button>
+          <h2 class="section-title">Salaire du mois</h2>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudget()">
+            <span style="color:var(--text2);font-size:11px;">$</span>
           </div>
         </div>
-        <div class="budget-filters" id="budget-filters"></div>
-        <div id="budget-list" class="budget-list"></div>
       </div>
-      <div class="section-card"><h2 class="section-title">Par categorie</h2><div id="budget-cat-chart" class="budget-cat-chart"></div></div>
+
+      <!-- Résumé -->
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-value" id="b-salaire">0$</span><span class="stat-label">Salaire</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Total depenses</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-reste">0$</span><span class="stat-label">Reste</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-restant" style="color:var(--amber)">0$</span><span class="stat-label">Depenses restantes</span></div>
+      </div>
+
+      <!-- Vendredis -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Vendredis du mois</h2>
+          <span class="badge-dynamic" id="budget-mois-label"></span>
+        </div>
+        <div id="budget-vendredis"></div>
+      </div>
+
+      <!-- Dettes et Actifs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:12px;">Dettes</h2>
+          <div id="budget-dettes"></div>
+          <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addBudgetRow('budget-dettes',false)">+ Ajouter</button>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;">
+            <span style="color:var(--text2)">Total dettes</span>
+            <span id="b-total-dettes" style="color:#F06060">0$</span>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:12px;">Actifs</h2>
+          <div id="budget-actifs"></div>
+          <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addBudgetRow('budget-actifs',true)">+ Ajouter</button>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;">
+            <span style="color:var(--text2)">Valeur nette</span>
+            <span id="b-valeur-nette" style="color:var(--teal)">0$</span>
+          </div>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -1309,142 +1360,157 @@ function scheduleNotif(text, heure) {
 }
 
 // ─── BUDGET ───────────────────────────────────────────
-let budgetItems = [];
-const BUDGET_CATS = ['Epicerie', 'Transport', 'Maison', 'Sante', 'Loisirs', 'Restaurants', 'Autres'];
-let activeBudgetFilter = 'Tous';
-
-async function loadBudget() {
-  budgetItems = await getAll('budget');
+function getFridays() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const days = new Date(year, month+1, 0).getDate();
+  const fridays = [];
+  for (let d=1; d<=days; d++) {
+    const date = new Date(year, month, d);
+    if (date.getDay() === 5) fridays.push(d);
+  }
+  return fridays;
 }
 
-function renderBudget() {
-  // Month label
-  const d   = new Date();
-  const el  = document.getElementById('budget-month');
-  if (el) el.textContent = d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-
-  const month = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  const items = budgetItems.filter(i => i.date?.startsWith(month));
-
-  const revenus  = items.filter(i => i.type === 'revenu').reduce((s,i) => s + (i.amount||0), 0);
-  const depenses = items.filter(i => i.type === 'depense').reduce((s,i) => s + (i.amount||0), 0);
-  const solde    = revenus - depenses;
-  const epargne  = Math.max(0, solde);
-
-  const fmt = n => `${n.toFixed(0)}$`;
-  const setV = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-  setV('budget-revenus',  fmt(revenus));
-  setV('budget-depenses', fmt(depenses));
-  setV('budget-solde',    fmt(solde));
-  setV('budget-epargne',  fmt(epargne));
-
-  // Filters
-  const filtersEl = document.getElementById('budget-filters');
-  if (filtersEl) {
-    filtersEl.innerHTML = '';
-    ['Tous', 'Revenus', 'Depenses', ...BUDGET_CATS].forEach(cat => {
-      const btn = document.createElement('button');
-      btn.className = `budget-filter-btn${activeBudgetFilter === cat ? ' active' : ''}`;
-      btn.textContent = cat;
-      btn.onclick = () => { activeBudgetFilter = cat; renderBudget(); };
-      filtersEl.appendChild(btn);
-    });
-  }
-
-  // List
-  const listEl = document.getElementById('budget-list');
-  if (listEl) {
-    listEl.innerHTML = '';
-    let filtered = items;
-    if (activeBudgetFilter === 'Revenus')  filtered = items.filter(i => i.type === 'revenu');
-    else if (activeBudgetFilter === 'Depenses') filtered = items.filter(i => i.type === 'depense');
-    else if (activeBudgetFilter !== 'Tous') filtered = items.filter(i => i.cat === activeBudgetFilter);
-
-    if (!filtered.length) {
-      listEl.innerHTML = '<p style="font-size:11px;color:var(--text3);text-align:center;padding:24px;letter-spacing:.1em;">Aucune transaction</p>';
-    }
-    filtered.sort((a,b) => b.createdAt - a.createdAt).forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'budget-item';
-      const emojis = {Epicerie:'🛒',Transport:'🚗',Maison:'🏠',Sante:'💊',Loisirs:'🎮',Restaurants:'🍽',Autres:'📦',revenu:'💰'};
-      const emoji  = item.type === 'revenu' ? emojis.revenu : (emojis[item.cat] || '📦');
-      const bg     = item.type === 'revenu' ? 'rgba(52,196,114,.1)' : 'rgba(240,96,96,.1)';
-      div.innerHTML = `
-        <div class="budget-item-icon" style="background:${bg}">${emoji}</div>
-        <div class="budget-item-info">
-          <div class="budget-item-desc">${item.desc || item.cat}</div>
-          <div class="budget-item-meta">${item.cat || ''} · ${item.date || ''}</div>
-        </div>
-        <span class="budget-item-amount ${item.type}">${item.type === 'revenu' ? '+' : '-'}${(item.amount||0).toFixed(2)}$</span>
-        <button class="budget-item-delete" data-id="${item.id}">X</button>
-      `;
-      div.querySelector('.budget-item-delete').onclick = async () => {
-        await deleteItem('budget', item.id);
-        budgetItems = budgetItems.filter(x => x.id !== item.id);
-        renderBudget();
-      };
-      listEl.appendChild(div);
-    });
-  }
-
-  // Category chart
-  const chartEl = document.getElementById('budget-cat-chart');
-  if (chartEl) {
-    chartEl.innerHTML = '';
-    const depItems = items.filter(i => i.type === 'depense');
-    const maxDep   = Math.max(1, ...BUDGET_CATS.map(c => depItems.filter(i=>i.cat===c).reduce((s,i)=>s+i.amount,0)));
-    BUDGET_CATS.forEach(cat => {
-      const total = depItems.filter(i => i.cat === cat).reduce((s,i) => s+(i.amount||0), 0);
-      if (!total) return;
-      const row = document.createElement('div');
-      row.className = 'budget-cat-row';
-      row.innerHTML = `
-        <span class="budget-cat-label">${cat}</span>
-        <div class="budget-cat-bar-wrap"><div class="budget-cat-bar" style="width:${(total/maxDep*100).toFixed(1)}%"></div></div>
-        <span class="budget-cat-val">${total.toFixed(0)}$</span>
-      `;
-      chartEl.appendChild(row);
-    });
-  }
+function fmtBudget(n) {
+  return Math.round(n).toLocaleString('fr-CA') + '$';
 }
 
-function openBudgetModal(type) {
-  const isRevenu = type === 'revenu';
-  openModal(isRevenu ? 'Nouveau revenu' : 'Nouvelle depense', `
-    <div class="form-field">
-      <label class="form-label">Description</label>
-      <input class="form-input" id="m-budget-desc" placeholder="${isRevenu ? 'Ex: Salaire' : 'Ex: Epicerie IGA'}">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Montant ($)</label>
-      <input class="form-input" type="number" id="m-budget-amount" placeholder="0.00" step="0.01" min="0">
-    </div>
-    ${!isRevenu ? `<div class="form-field">
-      <label class="form-label">Categorie</label>
-      <select class="form-select" id="m-budget-cat">
-        ${BUDGET_CATS.map(c => `<option value="${c}">${c}</option>`).join('')}
-      </select>
-    </div>` : ''}
-    <div class="form-field">
-      <label class="form-label">Date</label>
-      <input class="form-input" type="date" id="m-budget-date" value="${new Date().toISOString().split('T')[0]}">
-    </div>
-  `, async () => {
-    const desc   = document.getElementById('m-budget-desc')?.value.trim();
-    const amount = parseFloat(document.getElementById('m-budget-amount')?.value) || 0;
-    const cat    = document.getElementById('m-budget-cat')?.value || 'Revenus';
-    const date   = document.getElementById('m-budget-date')?.value;
-    if (!desc || !amount) return;
-    const data = { desc, amount, type, cat, date };
-    const ref  = await addItem('budget', data);
-    budgetItems.push({ id: ref.id, ...data });
-    renderBudget();
-    closeModal();
+function makeBudgetRow(containerId, label, amt, isPos) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const row = document.createElement('div');
+  row.className = 'budget-edit-row';
+  row.innerHTML = `
+    <input type="text" class="budget-label-input" value="${label}" placeholder="Description" oninput="calcBudget()">
+    <input type="number" class="budget-amt-input${isPos?' pos':''}" value="${amt}" oninput="calcBudget()">
+    <button class="budget-del-btn" onclick="this.parentElement.remove();calcBudget()">x</button>
+  `;
+  el.appendChild(row);
+}
+
+window.addBudgetRow = function(containerId, isPos) {
+  makeBudgetRow(containerId, '', 0, isPos);
+  calcBudget();
+}
+
+function getContainerTotal(containerId) {
+  const rows = document.getElementById(containerId)?.querySelectorAll('.budget-amt-input') || [];
+  let total = 0;
+  rows.forEach(i => total += parseFloat(i.value)||0);
+  return total;
+}
+
+function buildBudgetVendredis() {
+  const el = document.getElementById('budget-vendredis');
+  if (!el) return;
+  el.innerHTML = '';
+  const fridays = getFridays();
+  const colors = ['#1D9E75','#185FA5','#BA7517','#888780','#7C22C8'];
+  const now = new Date();
+  const monthNames = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  const lbl = document.getElementById('budget-mois-label');
+  if (lbl) lbl.textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+  fridays.forEach((day, i) => {
+    const date = new Date(now.getFullYear(), now.getMonth(), day);
+    const dateStr = date.toLocaleDateString('fr-CA', {weekday:'long', day:'numeric', month:'long'});
+    const color = colors[i % colors.length];
+    const isPast = date < now;
+    const div = document.createElement('div');
+    div.className = 'budget-vendredi';
+    div.style.borderLeftColor = color;
+    if (isPast) div.style.opacity = '0.6';
+    div.innerHTML = `
+      <div class="budget-ven-header">
+        <span class="budget-ven-title">${dateStr}</span>
+        <span class="budget-ven-reste" id="bven-reste-${i}">Reste: —</span>
+      </div>
+      <div id="bven-rows-${i}"></div>
+      <button class="btn-ghost" style="width:100%;margin-top:6px;font-size:10px;" onclick="addVenBudgetRow(${i})">+ Ajouter une depense</button>
+      <div class="progress-wrap-b"><div class="progress-bar-b" id="bven-bar-${i}" style="background:${color}"></div></div>
+    `;
+    el.appendChild(div);
   });
 }
 
-document.getElementById('add-revenu-btn')?.addEventListener('click', () => openBudgetModal('revenu'));
-document.getElementById('add-depense-btn')?.addEventListener('click', () => openBudgetModal('depense'));
+window.addVenBudgetRow = function(vi) {
+  const container = document.getElementById('bven-rows-'+vi);
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'budget-edit-row';
+  row.innerHTML = `
+    <input type="text" class="budget-label-input" placeholder="Description" oninput="calcBudget()">
+    <input type="number" class="budget-amt-input" value="0" oninput="calcBudget()">
+    <button class="budget-del-btn" onclick="this.parentElement.remove();calcBudget()">x</button>
+  `;
+  container.appendChild(row);
+  calcBudget();
+}
+
+window.calcBudget = function() {
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  const fridays = getFridays();
+  let running = salary;
+  let totalDep = 0;
+
+  fridays.forEach((day, i) => {
+    const rows = document.getElementById('bven-rows-'+i)?.querySelectorAll('.budget-amt-input') || [];
+    let venTotal = 0;
+    rows.forEach(r => venTotal += parseFloat(r.value)||0);
+    totalDep += venTotal;
+    running -= venTotal;
+    const resteEl = document.getElementById('bven-reste-'+i);
+    const barEl = document.getElementById('bven-bar-'+i);
+    if (resteEl) {
+      resteEl.textContent = 'Reste: ' + fmtBudget(running);
+      resteEl.style.color = running >= 0 ? 'var(--teal)' : '#F06060';
+    }
+    if (barEl) {
+      const pct = salary > 0 ? Math.max(0, Math.min(100, (running/salary)*100)) : 0;
+      barEl.style.width = pct + '%';
+    }
+  });
+
+  const setEl = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  setEl('b-salaire', fmtBudget(salary));
+  const resteEl = document.getElementById('b-reste');
+  if (resteEl) {
+    resteEl.textContent = fmtBudget(salary - totalDep);
+    resteEl.style.color = (salary - totalDep) >= 0 ? 'var(--teal)' : '#F06060';
+  }
+  setEl('b-depenses', fmtBudget(totalDep));
+  setEl('b-restant', fmtBudget(Math.max(0, totalDep)));
+
+  const dettes = getContainerTotal('budget-dettes');
+  const actifs = getContainerTotal('budget-actifs');
+  setEl('b-total-dettes', fmtBudget(dettes));
+  const vn = document.getElementById('b-valeur-nette');
+  if (vn) {
+    vn.textContent = fmtBudget(actifs - dettes);
+    vn.style.color = (actifs - dettes) >= 0 ? 'var(--teal)' : '#F06060';
+  }
+}
+
+async function loadBudget() {
+  // Init default rows
+  const dettes = [
+    ['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],
+    ['Marge perso',0],['American Express',0],['Capital One',0]
+  ];
+  const actifs = [
+    ['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]
+  ];
+  dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
+  actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+  buildBudgetVendredis();
+  calcBudget();
+}
+
+function renderBudget() {
+  calcBudget();
+}
 
 // ─── NAVIGATION ──────────────────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {
