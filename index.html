@@ -703,6 +703,7 @@ async function loadAll() {
   renderCleanCalendar();
   renderProjectCalendar();
   renderYearStats();
+  importCleanHistory(); // import historique en arriere-plan
 }
 
 // Auto-seed les tâches clean du jour dans les blocs clean1/clean2 si pas encore fait
@@ -777,56 +778,221 @@ async function deleteItem(col, id) {
 // ─── CLEAN SCHEDULE (FIXE) ──────────────────────────
 // Semaine type — 2 tâches par jour, Lundi rotation sur 4 semaines
 // JS getDay(): 0=dim,1=lun,2=mar,3=mer,4=jeu,5=ven,6=sam
+// JS getDay(): 0=dim,1=lun,2=mar,3=mer,4=jeu,5=ven,6=sam
+// Bloc1 (15min) + Bloc2 (15min) = taches fixes par jour
 const CLEAN_SCHEDULE = {
-  2: [ // Mardi
-    "Passer balayeuse + laver plancher Ryan",
-    "Passer balayeuse cave"
-  ],
-  3: [ // Mercredi
-    "Balayeuse étages principal",
-    "Laver plancher étages principal"
-  ],
-  4: [ // Jeudi
-    "Nettoyer tablette et ornement salle manger",
-    "Nettoyer tablette et ornement salon"
-  ],
-  5: [ // Vendredi
-    "Nettoyer chambres de bain",
-    "Nettoyer douche"
-  ],
-  6: [ // Samedi
-    "Passer balayeuse + laver plancher 2e étage",
-    "Nettoyer tablettes plantes"
-  ],
-  0: [ // Dimanche
-    "Nettoyer salle d'eau 2e",
-    "Balayeuse escalier cave/plafond"
-  ]
+  1: { // Lundi - rotation 4 semaines
+    rotation: true
+  },
+  2: { // Mardi
+    b1: "Laver panneau armoire haut",
+    b2: "Nettoyer tablette et ornement"
+  },
+  3: { // Mercredi
+    b1: "Balayeuse etages principal",
+    b2: "Laver plancher etages principal"
+  },
+  4: { // Jeudi
+    b1: "Nettoyer tablette et ornement salle manger",
+    b2: "Nettoyer tablette et ornement salon"
+  },
+  5: { // Vendredi
+    b1: "Passer balayeuse + laver plancher Ryan",
+    b2: "Passer balayeuse cave"
+  },
+  6: { // Samedi
+    b1: "Passer balayeuse + laver plancher 2e etage",
+    b2: "Nettoyer tablettes plantes"
+  },
+  0: { // Dimanche
+    b1: "Nettoyer salle d'eau 2e",
+    b2: "Balayeuse escalier cave/plafond"
+  }
 };
 
+// Lundi rotation 4 semaines
 const LUNDI_ROTATION = [
-  ["Laver panneau armoire haut",                       "Laver panneau armoire bas"],
-  ["Laver intérieur armoire garde-manger",             "Laver intérieur armoire bas manger"],
-  ["Laver panneau armoire haut",                       "Laver panneau armoire bas"],
-  ["Laver tiroir gourde, chaudron, ustensiles",        "Laver intérieur armoire plat et moule, assiettes, verres"]
+  { b1: "Laver panneau armoire haut",              b2: "Laver panneau armoire bas" },
+  { b1: "Laver interieur armoire garde-manger",    b2: "Laver interieur armoire bas manger" },
+  { b1: "Laver panneau armoire haut",              b2: "Laver panneau armoire bas" },
+  { b1: "Laver tiroir gourde, chaudron, ustensiles", b2: "Laver interieur armoire plat et moule, assiettes, verres" }
 ];
 
-// Retourne les tâches clean pour une date donnée
-// JS getDay(): 0=dim, 1=lun, 2=mar, 3=mer, 4=jeu, 5=ven, 6=sam
-function getCleanTasksForDate(date) {
-  const dow = date.getDay(); // 0=dim,1=lun,...6=sam
+// Historique clean jan-mai 2026 (depuis Excel)
+const CLEAN_HISTORY = {
+  // JANVIER
+  "2026-01-01": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-01-02": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-01-03": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-01-04": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-01-05": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-01-06": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-01-07": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-01-08": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"},{b:3,t:"Pelleter et passe souffleuse"}],
+  "2026-01-09": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-01-10": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-01-11": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-01-12": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-01-13": [{b:1,t:"Laver interieur armoire garde-manger"},{b:2,t:"Laver interieur armoire bas manger"}],
+  "2026-01-14": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-01-15": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-01-16": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-01-17": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-01-18": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-01-19": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-01-20": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-01-21": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-01-22": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-01-23": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"},{b:3,t:"Travailler meuble deco"}],
+  "2026-01-24": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-01-25": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"},{b:3,t:"Travailler meuble deco"}],
+  "2026-01-26": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-01-27": [{b:1,t:"Laver tiroir gourde, chaudron, ustensiles"},{b:2,t:"Laver interieur armoire plat et moule, assiettes, verres"},{b:3,t:"Pelleter et passe souffleuse"}],
+  "2026-01-28": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-01-29": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-01-30": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-01-31": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  // FEVRIER
+  "2026-02-01": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-02-02": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-02-03": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-02-04": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-02-05": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-02-06": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"},{b:3,t:"Travailler meuble deco"}],
+  "2026-02-07": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-02-08": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"},{b:3,t:"Travailler meuble deco"}],
+  "2026-02-09": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-02-10": [{b:1,t:"Laver interieur armoire garde-manger"},{b:2,t:"Laver interieur armoire bas manger"}],
+  "2026-02-11": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-02-12": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-02-13": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-02-14": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-02-15": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-02-16": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-02-17": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-02-18": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-02-19": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-02-20": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-02-21": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-02-22": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"},{b:3,t:"Rajout de planche pour plantes"}],
+  "2026-02-23": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"},{b:3,t:"Cuisine menage"}],
+  "2026-02-24": [{b:1,t:"Laver tiroir gourde, chaudron, ustensiles"},{b:2,t:"Laver interieur armoire plat et moule, assiettes, verres"},{b:3,t:"Vider rak linge + laver linge"}],
+  "2026-02-25": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-02-26": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-02-27": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-02-28": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  // MARS
+  "2026-03-01": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-03-02": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-03-03": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-03-04": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-03-05": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-03-06": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-03-07": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"},{b:3,t:"Jardinage"}],
+  "2026-03-08": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-03-09": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-03-10": [{b:1,t:"Laver interieur armoire garde-manger"},{b:2,t:"Laver interieur armoire bas manger"}],
+  "2026-03-11": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-03-12": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-03-13": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-03-14": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-03-15": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-03-16": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-03-17": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-03-18": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"},{b:3,t:"Jardinage"}],
+  "2026-03-19": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-03-20": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-03-21": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"},{b:3,t:"Jardinage"},{b:4,t:"Jardinage"}],
+  "2026-03-22": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"},{b:3,t:"Jardinage"},{b:4,t:"Jardinage"}],
+  "2026-03-23": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-03-24": [{b:1,t:"Laver tiroir gourde, chaudron, ustensiles"},{b:2,t:"Laver interieur armoire plat et moule, assiettes, verres"}],
+  "2026-03-25": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"},{b:3,t:"Jardinage"}],
+  "2026-03-26": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-03-27": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-03-28": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"},{b:3,t:"Menage chambre Ryan"}],
+  "2026-03-29": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"},{b:3,t:"Menage chambre Ryan"},{b:4,t:"Jardinage"}],
+  "2026-03-30": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-03-31": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  // AVRIL (pattern similaire)
+  "2026-04-01": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-04-02": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-04-03": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-04-04": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-04-05": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-04-06": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-04-07": [{b:1,t:"Laver interieur armoire garde-manger"},{b:2,t:"Laver interieur armoire bas manger"}],
+  // MAI
+  "2026-05-01": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-05-02": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-05-03": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-05-04": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-05-05": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-05-06": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-05-07": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"},{b:3,t:"Travaille tablette patio"}],
+  "2026-05-08": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-05-09": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-05-10": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-05-11": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-05-12": [{b:1,t:"Laver interieur armoire garde-manger"},{b:2,t:"Laver interieur armoire bas manger"}],
+  "2026-05-13": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-05-14": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-05-15": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-05-16": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-05-17": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-05-18": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-05-19": [{b:1,t:"Laver panneau armoire haut"},{b:2,t:"Nettoyer tablette et ornement"}],
+  "2026-05-20": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-05-21": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-05-22": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-05-23": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-05-24": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}],
+  "2026-05-25": [{b:1,t:"Nettoyer chambres de bain"},{b:2,t:"Nettoyer douche"}],
+  "2026-05-26": [{b:1,t:"Laver tiroir gourde, chaudron, ustensiles"},{b:2,t:"Laver interieur armoire plat et moule, assiettes, verres"}],
+  "2026-05-27": [{b:1,t:"Balayeuse etages principal"},{b:2,t:"Laver plancher etages principal"}],
+  "2026-05-28": [{b:1,t:"Nettoyer tablette et ornement salle manger"},{b:2,t:"Nettoyer tablette et ornement salon"}],
+  "2026-05-29": [{b:1,t:"Passer balayeuse + laver plancher Ryan"},{b:2,t:"Passer balayeuse cave"}],
+  "2026-05-30": [{b:1,t:"Passer balayeuse + laver plancher 2e etage"},{b:2,t:"Nettoyer tablettes plantes"}],
+  "2026-05-31": [{b:1,t:"Nettoyer salle d'eau 2e"},{b:2,t:"Balayeuse escalier cave/plafond"}]
+};
 
-  if (dow === 1) { // Lundi
-    const weekOfMonth = Math.floor((date.getDate() - 1) / 7);
-    return LUNDI_ROTATION[weekOfMonth % 4];
+// Retourne les taches clean pour une date donnee
+function getCleanTasksForDate(date) {
+  const key = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  // Historique d'abord
+  if (CLEAN_HISTORY[key]) {
+    return CLEAN_HISTORY[key].map(e => e.t);
   }
-  // CLEAN_SCHEDULE uses JS getDay() keys: 2=mar,3=mer,4=jeu,5=ven,6=sam,0=dim
-  return CLEAN_SCHEDULE[dow] || [];
+  // Sinon calendrier fixe
+  const dow = date.getDay();
+  if (dow === 1) {
+    const weekOfMonth = Math.floor((date.getDate() - 1) / 7);
+    const r = LUNDI_ROTATION[weekOfMonth % 4];
+    return [r.b1, r.b2];
+  }
+  const day = CLEAN_SCHEDULE[dow];
+  if (!day) return [];
+  return [day.b1, day.b2];
 }
 
-// Retourne les tâches clean du JOUR
 function getTodayCleanTasks() {
   return getCleanTasksForDate(new Date());
+}
+
+// Importe historique dans Firestore activity (My Year)
+async function importCleanHistory() {
+  const existing = await getAll('activity');
+  const existingKeys = new Set(existing.map(e => e.id || e.day));
+  let imported = 0;
+  for (const [dateKey, tasks] of Object.entries(CLEAN_HISTORY)) {
+    if (existingKeys.has(dateKey)) continue;
+    const mins = tasks.length * 15;
+    await setDoc(doc(db, 'users', uid(), 'activity', dateKey), {
+      count: tasks.length,
+      minutes: mins
+    });
+    imported++;
+  }
+  console.log('Imported', imported, 'days of history');
 }
 
 // ─── TODAY TASKS ─────────────────────────────────────
