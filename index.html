@@ -325,6 +325,15 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .budget-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
 .budget-edit-row:hover .budget-del-btn{opacity:1;}
 
+/* ─── MY YEAR TABLES ────────────────────────────────── */
+.year-table{width:100%;border-collapse:collapse;font-size:11px;}
+.year-table th{text-align:left;font-size:10px;color:var(--text3);font-weight:400;padding:6px 8px;border-bottom:1px solid var(--border);letter-spacing:.1em;text-transform:uppercase;}
+.year-table td{padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2);}
+.year-table tr:last-child td{border-bottom:none;color:var(--text);font-weight:500;}
+.year-table tr:hover td{background:var(--bg3);}
+.year-bar-wrap{width:80px;background:var(--border);border-radius:3px;height:5px;display:inline-block;vertical-align:middle;}
+.year-bar{height:5px;border-radius:3px;}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -500,12 +509,24 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
     <!-- MY YEAR -->
     <section id="tab-myyear" class="tab hidden">
       <div class="page-header"><h1 class="page-title">My Year</h1><p class="page-date" id="year-label"></p></div>
+
+      <!-- Stats principales -->
       <div class="stats-row">
         <div class="stat-card"><span class="stat-value" id="stat-hours">0h</span><span class="stat-label">Heures totales</span></div>
         <div class="stat-card"><span class="stat-value" id="stat-tasks">0</span><span class="stat-label">Taches completees</span></div>
         <div class="stat-card"><span class="stat-value" id="stat-days">0</span><span class="stat-label">Jours actifs</span></div>
         <div class="stat-card"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Serie actuelle</span></div>
       </div>
+
+      <!-- Stats secondaires -->
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-value" id="stat-avg-day">0 min</span><span class="stat-label">Moyenne / jour</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-best-month">—</span><span class="stat-label">Meilleur mois</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-avg-tasks">0</span><span class="stat-label">Taches / jour moy.</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-max-streak">0</span><span class="stat-label">Serie maximale</span></div>
+      </div>
+
+      <!-- Heatmap -->
       <div class="section-card">
         <h2 class="section-title">Activite de l'annee</h2>
         <div id="year-heatmap" class="heatmap"></div>
@@ -515,7 +536,64 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           <span class="ts">Plus</span>
         </div>
       </div>
-      <div class="section-card"><h2 class="section-title">Taches par mois</h2><div id="monthly-chart" class="bar-chart"></div></div>
+
+      <!-- Graphique par mois -->
+      <div class="section-card">
+        <h2 class="section-title">Temps par mois (minutes)</h2>
+        <div style="position:relative;width:100%;height:180px;">
+          <canvas id="monthly-chart-canvas" role="img" aria-label="Graphique du temps de menage par mois">Temps par mois en minutes.</canvas>
+        </div>
+      </div>
+
+      <!-- Stats taches - occurrences -->
+      <div class="section-card">
+        <h2 class="section-title">Occurrences par tache</h2>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Nombre de fois effectuee depuis le debut de l'annee</p>
+        <div style="position:relative;width:100%;height:340px;">
+          <canvas id="chart-occurrences" role="img" aria-label="Graphique horizontal du nombre d occurrences par tache">Occurrences par tache de menage.</canvas>
+        </div>
+      </div>
+
+      <!-- Stats taches - minutes -->
+      <div class="section-card">
+        <h2 class="section-title">Minutes totales par tache</h2>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Temps cumule en minutes depuis le debut de l'annee</p>
+        <div style="position:relative;width:100%;height:340px;">
+          <canvas id="chart-minutes" role="img" aria-label="Graphique horizontal du temps total par tache">Minutes totales par tache de menage.</canvas>
+        </div>
+      </div>
+
+      <!-- Repartition par categorie + table -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="section-card">
+          <h2 class="section-title">Repartition par categorie</h2>
+          <div style="position:relative;width:100%;height:200px;margin-bottom:12px;">
+            <canvas id="chart-donut" role="img" aria-label="Repartition du temps par categorie de menage">Planchers 35%, Surfaces 28%, Bain 15%, Special 14%, Linge 8%.</canvas>
+          </div>
+          <div id="donut-legend" style="display:flex;flex-direction:column;gap:6px;font-size:11px;"></div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Resume par mois</h2>
+          <div style="overflow-x:auto;">
+            <table class="year-table" id="year-summary-table">
+              <thead><tr><th>Mois</th><th>Jours</th><th>Taches</th><th>Heures</th><th>Moy/j</th></tr></thead>
+              <tbody id="year-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table detaillee des taches -->
+      <div class="section-card">
+        <h2 class="section-title">Tableau detaille des taches</h2>
+        <div style="overflow-x:auto;">
+          <table class="year-table" id="task-detail-table">
+            <thead><tr><th>Tache</th><th>Occurrences</th><th>Total min</th><th>Moy/sem</th><th>Frequence</th></tr></thead>
+            <tbody id="task-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
     <!-- RAPPELS -->
@@ -1375,24 +1453,224 @@ async function recordActivity() {
 }
 
 function renderYearStats() {
-  // Stats
   let totalTasks = 0, totalMins = 0, activeDays = 0;
-  Object.values(yearData).forEach(d => {
+  const monthCounts = {};
+  Object.entries(yearData).forEach(([key, d]) => {
     totalTasks += d.count || 0;
     totalMins  += d.minutes || 0;
     if (d.count > 0) activeDays++;
+    const m = key.substring(0,7);
+    if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
+    monthCounts[m].tasks += d.count || 0;
+    monthCounts[m].mins  += d.minutes || 0;
+    if (d.count > 0) monthCounts[m].days++;
   });
   const totalHours = Math.floor(totalMins / 60);
   const remMins    = totalMins % 60;
+  const avgDay     = activeDays > 0 ? Math.round(totalMins / activeDays) : 0;
+  const avgTasks   = activeDays > 0 ? (totalTasks / activeDays).toFixed(1) : 0;
+
+  // Best month
+  let bestMonth = '—', bestMonthTasks = 0;
+  const MONTHS_SHORT = ['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec'];
+  Object.entries(monthCounts).forEach(([m, d]) => {
+    if (d.tasks > bestMonthTasks) { bestMonthTasks = d.tasks; bestMonth = MONTHS_SHORT[parseInt(m.split('-')[1])-1]; }
+  });
+
+  // Max streak
+  let maxStreak = 0, streak = 0;
+  const sortedKeys = Object.keys(yearData).sort();
+  for (let i=0; i<sortedKeys.length; i++) {
+    if (yearData[sortedKeys[i]]?.count > 0) {
+      streak++;
+      if (streak > maxStreak) maxStreak = streak;
+    } else { streak = 0; }
+  }
 
   const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  setEl('stat-hours',  `${totalHours}h${remMins ? remMins+'m' : ''}`);
-  setEl('stat-tasks',  totalTasks);
-  setEl('stat-days',   activeDays);
-  setEl('stat-streak', calcStreak());
+  setEl('stat-hours',     `${totalHours}h${remMins ? remMins+'m' : ''}`);
+  setEl('stat-tasks',     totalTasks);
+  setEl('stat-days',      activeDays);
+  setEl('stat-streak',    calcStreak());
+  setEl('stat-avg-day',   avgDay + ' min');
+  setEl('stat-best-month',bestMonth);
+  setEl('stat-avg-tasks', avgTasks);
+  setEl('stat-max-streak',maxStreak + ' j');
 
   renderHeatmap();
-  renderMonthlyChart();
+  renderMonthlyChartNew(monthCounts);
+  renderTaskCharts();
+  renderYearTable(monthCounts);
+}
+
+let _chartMonth = null, _chartOcc = null, _chartMin = null, _chartDonut = null;
+
+function renderMonthlyChartNew(monthCounts) {
+  const MONTHS_SHORT = ['Jan','Fev','Mar','Avr','Mai','Jun','Jul','Aou','Sep','Oct','Nov','Dec'];
+  const year = new Date().getFullYear();
+  const labels = [], data = [];
+  for (let m=0; m<12; m++) {
+    const key = `${year}-${String(m+1).padStart(2,'0')}`;
+    labels.push(MONTHS_SHORT[m]);
+    data.push(monthCounts[key]?.mins || 0);
+  }
+  const ctx = document.getElementById('monthly-chart-canvas');
+  if (!ctx) return;
+  if (_chartMonth) _chartMonth.destroy();
+  _chartMonth = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Minutes', data, backgroundColor: '#534AB7', borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#888' } },
+        y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { color: '#888', callback: v => v+'m' } }
+      }
+    }
+  });
+}
+
+function renderTaskCharts() {
+  // Build stats from CLEAN_HISTORY
+  const taskStats = {};
+  Object.values(CLEAN_HISTORY).forEach(entries => {
+    entries.forEach(e => {
+      const t = e.t;
+      if (!taskStats[t]) taskStats[t] = { count: 0, mins: 0 };
+      taskStats[t].count++;
+      taskStats[t].mins += 15;
+    });
+  });
+  // Also from yearData tasks
+  const sorted = Object.entries(taskStats).sort((a,b) => b[1].count - a[1].count).slice(0,12);
+  const labels = sorted.map(([t]) => t.length > 35 ? t.substring(0,33)+'...' : t);
+  const counts = sorted.map(([,s]) => s.count);
+  const mins   = sorted.map(([,s]) => s.mins);
+
+  const occCtx = document.getElementById('chart-occurrences');
+  const minCtx = document.getElementById('chart-minutes');
+  if (!occCtx || !minCtx) return;
+
+  if (_chartOcc) _chartOcc.destroy();
+  _chartOcc = new Chart(occCtx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Occurrences', data: counts, backgroundColor: '#534AB7', borderRadius: 3, borderSkipped: false }] },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { color: '#888' }, beginAtZero: true },
+        y: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
+      }
+    }
+  });
+
+  if (_chartMin) _chartMin.destroy();
+  _chartMin = new Chart(minCtx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Minutes', data: mins, backgroundColor: '#1D9E75', borderRadius: 3, borderSkipped: false }] },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { color: '#888', callback: v => v+'m' }, beginAtZero: true },
+        y: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Donut par categorie
+  const cats = {
+    'Planchers / balayeuse': 0,
+    'Surfaces / tablettes': 0,
+    'Bain / salle eau': 0,
+    'Special / projets': 0,
+    'Linge / lavage': 0
+  };
+  Object.entries(taskStats).forEach(([t, s]) => {
+    if (t.includes('Balayeuse') || t.includes('balayeuse') || t.includes('plancher') || t.includes('Laver plancher')) cats['Planchers / balayeuse'] += s.mins;
+    else if (t.includes('tablette') || t.includes('Tablette') || t.includes('ornement') || t.includes('armoire') || t.includes('tiroir')) cats['Surfaces / tablettes'] += s.mins;
+    else if (t.includes('bain') || t.includes('douche') || t.includes('eau 2e') || t.includes('Bain')) cats['Bain / salle eau'] += s.mins;
+    else if (t.includes('linge') || t.includes('Linge') || t.includes('lavage')) cats['Linge / lavage'] += s.mins;
+    else cats['Special / projets'] += s.mins;
+  });
+  const catLabels = Object.keys(cats);
+  const catData   = Object.values(cats);
+  const catColors = ['#534AB7','#1D9E75','#378ADD','#BA7517','#888780'];
+  const total     = catData.reduce((s,v) => s+v, 0);
+
+  const donutCtx = document.getElementById('chart-donut');
+  if (donutCtx) {
+    if (_chartDonut) _chartDonut.destroy();
+    _chartDonut = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: { labels: catLabels, datasets: [{ data: catData, backgroundColor: catColors, borderWidth: 0, hoverOffset: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+    });
+  }
+
+  // Legende donut
+  const legendEl = document.getElementById('donut-legend');
+  if (legendEl) {
+    legendEl.innerHTML = '';
+    catLabels.forEach((l, i) => {
+      const pct = total > 0 ? Math.round(catData[i]/total*100) : 0;
+      if (!pct) return;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:11px;';
+      row.innerHTML = `<span style="width:10px;height:10px;border-radius:2px;background:${catColors[i]};flex-shrink:0;"></span><span style="color:var(--text2);flex:1;">${l}</span><span style="color:var(--text3)">${pct}%</span>`;
+      legendEl.appendChild(row);
+    });
+  }
+
+  // Table des taches
+  renderTaskTable(sorted);
+}
+
+function renderTaskTable(sorted) {
+  const tbody = document.getElementById('task-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const maxCount = sorted[0]?.[1].count || 1;
+  sorted.forEach(([task, stats]) => {
+    const pct = Math.round(stats.count / maxCount * 100);
+    const freq = stats.count >= 20 ? 'Hebdo' : stats.count >= 10 ? 'Bi-hebdo' : 'Variable';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--text)">${task}</td>
+      <td>${stats.count}</td>
+      <td>${stats.mins} min</td>
+      <td>${freq}</td>
+      <td><div class="year-bar-wrap"><div class="year-bar" style="width:${pct}%;background:#534AB7;"></div></div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderYearTable(monthCounts) {
+  const tbody = document.getElementById('year-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  const year = new Date().getFullYear();
+  let totalT = 0, totalM = 0, totalD = 0;
+  for (let m=0; m<12; m++) {
+    const key = `${year}-${String(m+1).padStart(2,'0')}`;
+    const d = monthCounts[key];
+    if (!d || d.tasks === 0) continue;
+    totalT += d.tasks; totalM += d.mins; totalD += d.days;
+    const h = Math.floor(d.mins/60), min = d.mins%60;
+    const avg = d.days > 0 ? Math.round(d.mins/d.days) : 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${MONTHS_FR[m]}</td><td>${d.days}</td><td>${d.tasks}</td><td>${h}h${min?min+'m':''}</td><td>${avg} min</td>`;
+    tbody.appendChild(tr);
+  }
+  const totalH = Math.floor(totalM/60), totalMin = totalM%60;
+  const avgTotal = totalD > 0 ? Math.round(totalM/totalD) : 0;
+  const trTotal = document.createElement('tr');
+  trTotal.innerHTML = `<td>Total annee</td><td>${totalD}</td><td>${totalT}</td><td>${totalH}h${totalMin?totalMin+'m':''}</td><td>${avgTotal} min</td>`;
+  tbody.appendChild(trTotal);
 }
 
 function calcStreak() {
@@ -1427,38 +1705,7 @@ function renderHeatmap() {
   }
 }
 
-function renderMonthlyChart() {
-  const el = document.getElementById('monthly-chart');
-  if (!el) return;
-  el.innerHTML = '';
-  const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-  const year   = new Date().getFullYear();
-  const counts = Array(12).fill(0);
 
-  Object.entries(yearData).forEach(([key, d]) => {
-    if (key.startsWith(year)) {
-      const m = parseInt(key.split('-')[1]) - 1;
-      counts[m] += d.count || 0;
-    }
-  });
-
-  const maxC = Math.max(1, ...counts);
-  counts.forEach((c, i) => {
-    const col = document.createElement('div');
-    col.className = 'bar-col';
-    const fill = document.createElement('div');
-    fill.className = 'bar-fill';
-    fill.style.height = `${Math.max(2, (c/maxC)*100)}px`;
-    const lbl = document.createElement('div');
-    lbl.className = 'bar-label';
-    lbl.textContent = months[i];
-    const val = document.createElement('div');
-    val.className = 'bar-val';
-    val.textContent = c || '';
-    col.append(val, fill, lbl);
-    el.appendChild(col);
-  });
-}
 
 
 // ─── RAPPELS ──────────────────────────────────────────
@@ -1878,5 +2125,6 @@ document.getElementById('modal-overlay')?.addEventListener('click', e => {
 });
 
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>
 </html>
