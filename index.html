@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HouseHQ</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="logo-wrap">
+      <div class="orn"><div class="ol"></div><div class="og"></div><div class="ol"></div></div>
+      <div class="logo-title"><span class="wn">House</span><div class="vs"></div><span class="hq">HQ</span></div>
+      <span class="sub">Headquarters</span>
+    </div>
+    <p class="login-note">Clean &amp; project organizer</p>
+    <button id="google-login-btn" class="google-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+      Continuer avec Google
+    </button>
+    <p class="login-tagline">Menage · Routines · Projets</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="topnav-logo">
+      <div class="orn-sm"><div class="ol-sm"></div><div class="og-sm"></div><div class="ol-sm"></div></div>
+      <div class="logo-title-sm"><span class="wn-sm">House</span><div class="vs-sm"></div><span class="hq-sm">HQ</span></div>
+    </div>
+    <div class="topnav-links">
+      <button class="nav-btn active" data-tab="home">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Accueil</span>
+      </button>
+      <button class="nav-btn" data-tab="clean">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <span>Clean</span>
+      </button>
+      <button class="nav-btn" data-tab="project">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Project</span>
+      </button>
+      <button class="nav-btn" data-tab="myyear">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>My Year</span>
+      </button>
+      <button class="nav-btn" data-tab="rappels">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span>Rappels</span>
+      </button>
+      <button class="nav-btn" data-tab="budget">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Budget</span>
+      </button>
+    </div>
+    <div class="topnav-user">
+      <img id="user-avatar" src="" alt="" class="avatar">
+      <span id="user-name" class="user-name-sm"></span>
+      <button id="logout-btn" class="logout-btn" title="Deconnexion">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- HOME / MY DAY -->
+    <section id="tab-home" class="tab active">
+      <div class="page-header">
+        <div><h1 class="page-title">My Day</h1><p class="page-date" id="today-date"></p></div>
+        <div class="day-stats">
+          <span class="stat-pill" id="done-count">0 faites</span>
+          <span class="stat-pill" id="total-count">0 taches</span>
+        </div>
+      </div>
+      <div class="blocks-grid">
+        <div class="time-block clean-block" data-block="clean1">
+          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-clean1-tasks"></div>
+          <button class="add-task-to-block" data-block="clean1">+ Tache</button>
+        </div>
+        <div class="time-block clean-block" data-block="clean2">
+          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-clean2-tasks"></div>
+          <button class="add-task-to-block" data-block="clean2">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj1">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+          <div class="block-tasks" id="block-proj1-tasks"></div>
+          <button class="add-task-to-block" data-block="proj1">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj2">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+          <div class="block-tasks" id="block-proj2-tasks"></div>
+          <button class="add-task-to-block" data-block="proj2">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj3">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-proj3-tasks"></div>
+          <button class="add-task-to-block" data-block="proj3">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj4">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-proj4-tasks"></div>
+          <button class="add-task-to-block" data-block="proj4">+ Tache</button>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-top"><h2 class="section-title">Taches du jour</h2><button class="btn-ghost" id="add-today-task">+ Ajouter</button></div>
+        <div id="today-tasks-list" class="task-list"></div>
+      </div>
+    </section>
+
+    <!-- CLEAN -->
+    <section id="tab-clean" class="tab hidden">
+      <div class="page-header"><h1 class="page-title">Clean</h1></div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="clean-calendar">Calendrier</button>
+        <button class="sub-tab" data-subtab="clean-tasks">Liste de taches</button>
+      </div>
+      <div id="clean-calendar" class="sub-content active">
+        <div class="section-card">
+          <div class="section-top"><h2 class="section-title">Calendrier menage</h2><span class="badge-fixed">Fixe - 2x 15 min/jour</span></div>
+          <div class="calendar-grid" id="clean-calendar-grid"></div>
+        </div>
+      </div>
+      <div id="clean-tasks" class="sub-content hidden">
+        <div class="section-card">
+          <div class="section-top"><h2 class="section-title">Liste de taches menage</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
+          <div id="clean-task-list" class="task-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECT -->
+    <section id="tab-project" class="tab hidden">
+      <div class="page-header"><h1 class="page-title">Project</h1></div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="proj-calendar">Calendrier</button>
+        <button class="sub-tab" data-subtab="proj-list">Liste de projets</button>
+      </div>
+      <div id="proj-calendar" class="sub-content active">
+        <div class="section-card">
+          <div class="section-top"><h2 class="section-title">Calendrier projets</h2><span class="badge-dynamic">Dynamique - depuis la liste</span></div>
+          <div class="calendar-grid" id="proj-calendar-grid"></div>
+        </div>
+      </div>
+      <div id="proj-list" class="sub-content hidden">
+        <div class="section-card">
+          <div class="section-top"><h2 class="section-title">Mes projets</h2><button class="btn-primary" id="add-project-btn">+ Nouveau projet</button></div>
+          <div id="project-list" class="project-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY YEAR -->
+    <section id="tab-myyear" class="tab hidden">
+      <div class="page-header"><h1 class="page-title">My Year</h1><p class="page-date" id="year-label"></p></div>
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-value" id="stat-hours">0h</span><span class="stat-label">Heures totales</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-tasks">0</span><span class="stat-label">Taches completees</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-days">0</span><span class="stat-label">Jours actifs</span></div>
+        <div class="stat-card"><span class="stat-value" id="stat-streak">0</span><span class="stat-label">Serie actuelle</span></div>
+      </div>
+      <div class="section-card">
+        <h2 class="section-title">Activite de l'annee</h2>
+        <div id="year-heatmap" class="heatmap"></div>
+        <div class="heatmap-legend">
+          <span class="ts">Moins</span>
+          <div class="heatmap-legend-cells"><div class="hcell lv0"></div><div class="hcell lv1"></div><div class="hcell lv2"></div><div class="hcell lv3"></div><div class="hcell lv4"></div></div>
+          <span class="ts">Plus</span>
+        </div>
+      </div>
+      <div class="section-card"><h2 class="section-title">Taches par mois</h2><div id="monthly-chart" class="bar-chart"></div></div>
+    </section>
+
+    <!-- RAPPELS -->
+    <section id="tab-rappels" class="tab hidden">
+      <div class="page-header"><h1 class="page-title">Rappels</h1></div>
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Notifications navigateur</h2>
+          <button class="btn-primary" id="notif-permission-btn">Activer</button>
+        </div>
+        <p class="section-desc" id="notif-status">Les notifications te rappellent tes taches du jour.</p>
+      </div>
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Mes rappels</h2>
+          <button class="btn-primary" id="add-rappel-btn">+ Nouveau rappel</button>
+        </div>
+        <div id="rappel-list" class="rappel-list"></div>
+      </div>
+    </section>
+
+    <!-- BUDGET -->
+    <section id="tab-budget" class="tab hidden">
+      <div class="page-header"><h1 class="page-title">Budget</h1><p class="page-date" id="budget-month"></p></div>
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-value" id="budget-revenus">0$</span><span class="stat-label">Revenus</span></div>
+        <div class="stat-card"><span class="stat-value" id="budget-depenses">0$</span><span class="stat-label">Depenses</span></div>
+        <div class="stat-card"><span class="stat-value" id="budget-solde">0$</span><span class="stat-label">Solde</span></div>
+        <div class="stat-card"><span class="stat-value" id="budget-epargne">0$</span><span class="stat-label">Epargne</span></div>
+      </div>
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Transactions</h2>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ghost" id="add-revenu-btn">+ Revenu</button>
+            <button class="btn-primary" id="add-depense-btn">+ Depense</button>
+          </div>
+        </div>
+        <div class="budget-filters" id="budget-filters"></div>
+        <div id="budget-list" class="budget-list"></div>
+      </div>
+      <div class="section-card"><h2 class="section-title">Par categorie</h2><div id="budget-cat-chart" class="budget-cat-chart"></div></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Nouvelle tache</h3>
+      <button class="modal-close" id="modal-close">X</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="modal-cancel">Annuler</button>
+      <button class="btn-primary" id="modal-confirm">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
