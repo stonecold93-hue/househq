@@ -645,11 +645,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <!-- Métriques principales -->
       <div class="stats-row">
         <div class="stat-card">
-          <input type="number" id="budget-salary" class="budget-salary-input" placeholder="0" value="0" oninput="calcBudgetSummary()">
-          <span class="stat-label">Salaire</span>
-        </div>
-        <div class="stat-card">
-          <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" value="0" oninput="calcArgentRestant()">
+          <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" value="0" oninput="_budgetSettings.solde=parseFloat(this.value)||0;calcBudgetSummary();calcArgentRestant()">
           <span class="stat-label">Solde actuel (reel)</span>
         </div>
         <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Depenses payees</span></div>
@@ -2530,6 +2526,38 @@ async function saveCartes() {
   });
 }
 
+// Lignes fixes qui reviennent chaque mois
+const AMEX_FIXED = [
+  { date:'', pay:0, dep:120.67, raison:'Bell' },
+  { date:'', pay:0, dep:24.13,  raison:'Spotify' },
+  { date:'', pay:0, dep:399.96, raison:'Amazon' },
+  { date:'', pay:0, dep:17.25,  raison:'Blink' },
+];
+const CAPONE_FIXED = [
+  { date:'', pay:0, dep:38.58, raison:'Cellulaire' },
+  { date:'', pay:0, dep:9.20,  raison:'TSN+' },
+];
+const AMAZON_FIXED = [
+  { date:'', dep:7.78,  raison:'Pharmacie' },
+  { date:'', dep:7.78,  raison:'Menager' },
+  { date:'', dep:7.28,  raison:'Aliments' },
+  { date:'', dep:11.47, raison:'Aliments' },
+  { date:'', dep:9.16,  raison:'Pharmacie' },
+  { date:'', dep:24.00, raison:'Chat' },
+  { date:'', dep:8.78,  raison:'Pharmacie' },
+  { date:'', dep:20.39, raison:'Aliments' },
+  { date:'', dep:20.47, raison:'Chat' },
+  { date:'', dep:11.27, raison:'Aliments' },
+  { date:'', dep:27.57, raison:'Cadeaux' },
+  { date:'', dep:25.28, raison:'Activites' },
+  { date:'', dep:26.43, raison:'Activites' },
+  { date:'', dep:67.44, raison:'Quincaillerie' },
+  { date:'', dep:28.73, raison:'Maison' },
+  { date:'', dep:24.00, raison:'Chat' },
+  { date:'', dep:14.69, raison:'Cadeaux' },
+  { date:'', dep:57.44, raison:'Quincaillerie' },
+];
+
 async function loadCartes() {
   try {
     const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'cartes'));
@@ -2542,8 +2570,18 @@ async function loadCartes() {
       const caponeLimEl = document.getElementById('capone-limite');
       if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
       if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
+    } else {
+      // Premier chargement — pre-remplir avec les fixes
+      cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
+      cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
+      cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
     }
-  } catch(e) { console.log('No cartes saved'); }
+  } catch(e) {
+    // Erreur — utiliser les fixes par defaut
+    cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
+    cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
+    cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
+  }
 }
 
 window.renderCartesSummary = function() {
@@ -2652,9 +2690,6 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     else remainingTotal += dayTotal;
   }
 
-  // Lire directement depuis le DOM - source de verite unique
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-
   const setEl = (id,v,color) => {
     const e = document.getElementById(id);
     if (!e) return;
@@ -2662,7 +2697,6 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     if (color) e.style.color = color;
   };
   _remainingTotal = remainingTotal;
-  setEl('b-salaire',  fmtB(salary));
   setEl('b-depenses', fmtB(paidTotal));
   setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
 
