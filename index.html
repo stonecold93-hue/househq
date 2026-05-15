@@ -694,6 +694,10 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <div class="todo-container">
         <!-- Liste -->
         <div class="todo-list-panel">
+          <div class="todo-add-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <input class="todo-add-input" id="todo-new-input" placeholder="Ajouter un rappel..." onkeydown="if(event.key==='Enter')createTodoRappel()">
+          </div>
           <div id="todo-rappel-list"></div>
         </div>
         <!-- Detail -->
@@ -2291,14 +2295,6 @@ function renderRappels() {
   const list = document.getElementById('todo-rappel-list');
   if (!list) return;
   list.innerHTML = '';
-
-  // Bouton ajouter
-  const addRow = document.createElement('div');
-  addRow.className = 'todo-add-row';
-  addRow.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    <input class="todo-add-input" id="todo-new-input" placeholder="Ajouter un rappel..." onkeydown="if(event.key==='Enter')createTodoRappel()">`;
-  list.appendChild(addRow);
 
   if (!rappels.length) {
     const empty = document.createElement('div');
