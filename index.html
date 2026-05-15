@@ -1739,18 +1739,38 @@ async function recordActivity() {
 }
 
 function renderYearStats() {
-  let totalTasks = 0, totalMins = 0, activeDays = 0;
+  // Source unique: EXACT_MINS pour l'historique jan-mai
+  // + yearData Firestore pour les jours futurs non couverts
   const monthCounts = {};
+  let totalMins = 0, totalTasks = 0, activeDays = 0;
+
+  // 1. Partir de EXACT_MINS (source principale jan-mai)
+  Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
+    const m = dateKey.substring(0,7);
+    if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
+    const tasks = CLEAN_HISTORY[dateKey]?.length || 0;
+    monthCounts[m].mins  += mins;
+    monthCounts[m].tasks += tasks;
+    monthCounts[m].days++;
+    totalMins  += mins;
+    totalTasks += tasks;
+    activeDays++;
+  });
+
+  // 2. Ajouter les jours Firestore non couverts par EXACT_MINS
   Object.entries(yearData).forEach(([key, d]) => {
-    totalTasks += d.count || 0;
-    totalMins  += d.minutes || 0;
-    if (d.count > 0) activeDays++;
+    if (EXACT_MINS[key]) return; // deja compté
+    if (!d.count) return;
     const m = key.substring(0,7);
     if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
     monthCounts[m].tasks += d.count || 0;
     monthCounts[m].mins  += d.minutes || 0;
-    if (d.count > 0) monthCounts[m].days++;
+    monthCounts[m].days++;
+    totalMins  += d.minutes || 0;
+    totalTasks += d.count || 0;
+    activeDays++;
   });
+
   const totalHours = Math.floor(totalMins / 60);
   const remMins    = totalMins % 60;
   const avgDay     = activeDays > 0 ? Math.round(totalMins / activeDays) : 0;
