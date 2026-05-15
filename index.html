@@ -355,6 +355,27 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .carte-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;padding:2px 4px;}
 .carte-del-btn:hover{color:#F06060;}
 
+/* ─── RAPPELS GROUPS ────────────────────────────────── */
+.rappel-due-group{margin-bottom:16px;}
+.rappel-due-group:last-child{margin-bottom:0;}
+.rappel-group-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.rappel-group-list{display:flex;flex-direction:column;gap:4px;}
+.rappel-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition);}
+.rappel-item:hover{border-color:var(--border2);}
+.rappel-cb{width:16px;height:16px;border:1px solid var(--border2);border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+.rappel-cb:hover{border-color:var(--c2);}
+.rappel-cb.done{background:var(--c2);border-color:var(--c2);}
+.rappel-cb.done::after{content:'✓';font-size:9px;color:white;}
+.rappel-info{flex:1;}
+.rappel-text{font-size:11px;color:var(--text);letter-spacing:.05em;}
+.rappel-text.done{text-decoration:line-through;opacity:.5;}
+.rappel-meta{font-size:9px;color:var(--text3);letter-spacing:.08em;margin-top:2px;}
+.rappel-time-badge{font-size:9px;padding:2px 8px;border-radius:20px;letter-spacing:.08em;}
+.badge-today-r{background:rgba(240,96,96,.15);color:#F06060;}
+.badge-tomorrow-r{background:rgba(244,166,35,.15);color:var(--amber);}
+.badge-week-r{background:rgba(90,180,240,.15);color:var(--blue,#5AB4F0);}
+.badge-repeat-r{background:rgba(168,85,247,.15);color:var(--c2);}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -482,6 +503,15 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <div class="section-card">
         <div class="section-top"><h2 class="section-title">Taches du jour</h2><button class="btn-ghost" id="add-today-task">+ Ajouter</button></div>
         <div id="today-tasks-list" class="task-list"></div>
+      </div>
+
+      <!-- Rappels du jour sur l'accueil -->
+      <div class="section-card" id="home-rappels-card">
+        <div class="section-top">
+          <h2 class="section-title">Rappels</h2>
+          <button class="btn-ghost" onclick="switchTab('rappels')">Voir tout →</button>
+        </div>
+        <div id="home-rappels-list" class="rappel-list"></div>
       </div>
     </section>
 
@@ -619,7 +649,12 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 
     <!-- RAPPELS -->
     <section id="tab-rappels" class="tab hidden">
-      <div class="page-header"><h1 class="page-title">Rappels</h1></div>
+      <div class="page-header">
+        <h1 class="page-title">Rappels</h1>
+        <button class="btn-primary" id="add-rappel-btn">+ Nouveau rappel</button>
+      </div>
+
+      <!-- Notifications -->
       <div class="section-card">
         <div class="section-top">
           <h2 class="section-title">Notifications navigateur</h2>
@@ -627,12 +662,30 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
         <p class="section-desc" id="notif-status">Les notifications te rappellent tes taches du jour.</p>
       </div>
+
+      <!-- Rappels par echeance -->
       <div class="section-card">
-        <div class="section-top">
-          <h2 class="section-title">Mes rappels</h2>
-          <button class="btn-primary" id="add-rappel-btn">+ Nouveau rappel</button>
+        <h2 class="section-title" style="margin-bottom:12px;">Echeance</h2>
+        <div class="rappel-due-group" id="rappel-today">
+          <div class="rappel-group-label">Aujourd'hui</div>
+          <div class="rappel-group-list" id="rappel-today-list"></div>
         </div>
-        <div id="rappel-list" class="rappel-list"></div>
+        <div class="rappel-due-group" id="rappel-tomorrow">
+          <div class="rappel-group-label">Demain</div>
+          <div class="rappel-group-list" id="rappel-tomorrow-list"></div>
+        </div>
+        <div class="rappel-due-group" id="rappel-week">
+          <div class="rappel-group-label">Cette semaine</div>
+          <div class="rappel-group-list" id="rappel-week-list"></div>
+        </div>
+        <div class="rappel-due-group" id="rappel-later">
+          <div class="rappel-group-label">Plus tard</div>
+          <div class="rappel-group-list" id="rappel-later-list"></div>
+        </div>
+        <div class="rappel-due-group" id="rappel-repeat-group">
+          <div class="rappel-group-label">Repetition</div>
+          <div class="rappel-group-list" id="rappel-repeat-list"></div>
+        </div>
       </div>
     </section>
 
@@ -918,6 +971,7 @@ async function loadAll() {
   await seedTodayCleanTasks();
   await loadTodayTasks();
   renderHome();
+  renderHomeRappels();
   renderCleanCalendar();
   renderProjectCalendar();
   renderYearStats();
@@ -2122,36 +2176,118 @@ async function loadRappels() {
   rappels = await getAll('rappels');
 }
 
+function makeRappelItem(r, showBadge) {
+  const item = document.createElement('div');
+  item.className = 'rappel-item';
+  const badgeClass = showBadge === 'today' ? 'badge-today-r' :
+                     showBadge === 'tomorrow' ? 'badge-tomorrow-r' :
+                     showBadge === 'week' ? 'badge-week-r' : 'badge-repeat-r';
+  const badgeText  = showBadge === 'today' ? "Aujourd'hui" :
+                     showBadge === 'tomorrow' ? 'Demain' :
+                     showBadge === 'week' ? 'Cette semaine' : r.jours || '';
+  item.innerHTML = `
+    <div class="rappel-cb" id="rcb-${r.id}"></div>
+    <div class="rappel-info">
+      <div class="rappel-text" id="rtxt-${r.id}">${r.text}</div>
+      <div class="rappel-meta">${r.heure}${r.note ? ' · '+r.note : ''}</div>
+    </div>
+    <span class="rappel-time-badge ${badgeClass}">${badgeText}</span>
+    <button class="rappel-delete" style="opacity:0;transition:opacity .2s;">✕</button>`;
+  item.onmouseenter = () => item.querySelector('.rappel-delete').style.opacity='1';
+  item.onmouseleave = () => item.querySelector('.rappel-delete').style.opacity='0';
+  item.querySelector('.rappel-delete').onclick = async () => {
+    await deleteItem('rappels', r.id);
+    rappels = rappels.filter(x => x.id !== r.id);
+    renderRappels();
+    renderHomeRappels();
+  };
+  const cb = item.querySelector('.rappel-cb');
+  cb.onclick = () => {
+    cb.classList.toggle('done');
+    item.querySelector('.rappel-text').classList.toggle('done');
+  };
+  return item;
+}
+
 function renderRappels() {
-  const el = document.getElementById('rappel-list');
-  if (!el) return;
-  el.innerHTML = '';
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  const nextWeek = new Date(today); nextWeek.setDate(today.getDate()+7);
+
+  const lists = {
+    today:    document.getElementById('rappel-today-list'),
+    tomorrow: document.getElementById('rappel-tomorrow-list'),
+    week:     document.getElementById('rappel-week-list'),
+    later:    document.getElementById('rappel-later-list'),
+    repeat:   document.getElementById('rappel-repeat-list'),
+  };
+  Object.values(lists).forEach(l => { if(l) l.innerHTML=''; });
+
+  const groups = { today:[], tomorrow:[], week:[], later:[], repeat:[] };
+
+  rappels.forEach(r => {
+    // Rappels avec date precise
+    if (r.freqType === 'custom' && r.freqVal) {
+      const d = new Date(r.freqVal); d.setHours(0,0,0,0);
+      if (d.getTime() === today.getTime())          groups.today.push(r);
+      else if (d.getTime() === tomorrow.getTime())  groups.tomorrow.push(r);
+      else if (d <= nextWeek)                       groups.week.push(r);
+      else                                          groups.later.push(r);
+    } else {
+      // Rappels avec repetition
+      groups.repeat.push(r);
+    }
+  });
+
+  const empty = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel</p>';
   if (!rappels.length) {
-    el.innerHTML = '<p style="font-size:11px;color:var(--text3);text-align:center;padding:24px;letter-spacing:.1em;">Aucun rappel</p>';
+    if (lists.today) lists.today.innerHTML = empty;
     return;
   }
-  rappels.forEach(r => {
-    const item = document.createElement('div');
-    item.className = 'rappel-item';
-    const freqIcon = {
-      'daily':'🔁', 'weekdays':'📅', 'weekend':'🏖',
-      'xdays':'⏱', 'xmonths':'📆', 'custom':'📌', 'weekday':'🗓'
-    }[r.freqType] || '🔔';
-    item.innerHTML = `
-      <span class="rappel-time">${r.heure}</span>
-      <div style="flex:1">
-        <div class="rappel-text">${freqIcon} ${r.text}</div>
-        <div class="rappel-days">${r.jours || 'Tous les jours'}${r.note ? ' · '+r.note : ''}</div>
-      </div>
-      <button class="rappel-delete" data-id="${r.id}">✕</button>
-    `;
-    item.querySelector('.rappel-delete').onclick = async () => {
-      await deleteItem('rappels', r.id);
-      rappels = rappels.filter(x => x.id !== r.id);
-      renderRappels();
-    };
-    el.appendChild(item);
+
+  Object.entries(groups).forEach(([key, items]) => {
+    const el = lists[key];
+    if (!el) return;
+    const badge = key === 'repeat' ? 'repeat' : key;
+    if (!items.length) { el.innerHTML = '<p style="font-size:10px;color:var(--text3);padding:4px 0;">—</p>'; return; }
+    items.forEach(r => el.appendChild(makeRappelItem(r, badge)));
   });
+
+  // Masquer groupes vides
+  ['rappel-today','rappel-tomorrow','rappel-week','rappel-later','rappel-repeat-group'].forEach(id => {
+    const group = document.getElementById(id);
+    if (!group) return;
+    const list = group.querySelector('.rappel-group-list');
+    const key  = id.replace('rappel-','').replace('-group','');
+    const hasItems = groups[key === 'repeat' ? 'repeat' : key]?.length > 0;
+    group.style.display = hasItems ? 'block' : 'none';
+  });
+}
+
+function renderHomeRappels() {
+  const el = document.getElementById('home-rappels-list');
+  if (!el) return;
+  el.innerHTML = '';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Afficher rappels du jour + repetitions
+  const toShow = rappels.filter(r => {
+    if (r.freqType === 'daily') return true;
+    if (r.freqType === 'weekdays') return today.getDay() >= 1 && today.getDay() <= 5;
+    if (r.freqType === 'weekend')  return today.getDay() === 0 || today.getDay() === 6;
+    if (r.freqType === 'weekday')  return today.getDay() === parseInt(r.freqVal);
+    if (r.freqType === 'custom' && r.freqVal) {
+      const d = new Date(r.freqVal); d.setHours(0,0,0,0);
+      return d.getTime() === today.getTime();
+    }
+    return true;
+  });
+
+  if (!toShow.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
+    return;
+  }
+  toShow.forEach(r => el.appendChild(makeRappelItem(r, 'today')));
 }
 
 document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
@@ -3034,7 +3170,7 @@ function switchTab(tab) {
   // Lazy render on first switch
   if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
-  if (tab === 'rappels') renderRappels();
+  if (tab === 'rappels') { renderRappels(); }
   if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); }
 }
 
