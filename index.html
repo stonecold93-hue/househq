@@ -2389,9 +2389,15 @@ function selectTodoRappel(id) {
   const el1 = document.getElementById('popup-today-day');
   const el2 = document.getElementById('popup-tomorrow-day');
   const el3 = document.getElementById('popup-nextweek-day');
-  if (el1) el1.textContent = DAYS_FR_COURT[now.getDay()];
-  if (el2) el2.textContent = DAYS_FR_COURT[tom.getDay()];
-  if (el3) el3.textContent = DAYS_FR_COURT[nwk.getDay()];
+  const toLocalStr2 = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // Recalculate using local dates
+  const nowL = new Date();
+  const tomL = new Date(nowL); tomL.setDate(nowL.getDate()+1);
+  const daysUntilMon = (8 - nowL.getDay()) % 7 || 7;
+  const nwkL = new Date(nowL); nwkL.setDate(nowL.getDate() + daysUntilMon);
+  if (el1) el1.textContent = DAYS_FR_COURT[nowL.getDay()];
+  if (el2) el2.textContent = DAYS_FR_COURT[tomL.getDay()];
+  if (el3) el3.textContent = 'Lun ' + nwkL.getDate() + ' ' + MONTHS_FR_COURT[nwkL.getMonth()];
 }
 
 async function createTodoRappel() {
@@ -2453,13 +2459,20 @@ window.setDue = async function(type, e) {
   if (!selectedRappelId) return;
   const r = rappels.find(x => x.id === selectedRappelId);
   if (!r) return;
-  const now = new Date();
   const toLocalStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const now = new Date();
   let iso = null;
-  if (type === 'today') { iso = toLocalStr(now); }
-  else if (type === 'tomorrow') { const d=new Date(now); d.setDate(now.getDate()+1); iso=toLocalStr(d); }
-  else if (type === 'nextweek') { const d=new Date(now); d.setDate(now.getDate()+(8-now.getDay()||7)); iso=toLocalStr(d); }
-  else if (type === 'custom') {
+  if (type === 'today') {
+    iso = toLocalStr(now);
+  } else if (type === 'tomorrow') {
+    const d = new Date(now); d.setDate(d.getDate()+1); iso = toLocalStr(d);
+  } else if (type === 'nextweek') {
+    // Prochain lundi
+    const d = new Date(now);
+    const daysUntilMonday = (8 - d.getDay()) % 7 || 7;
+    d.setDate(d.getDate() + daysUntilMonday);
+    iso = toLocalStr(d);
+  } else if (type === 'custom') {
     document.getElementById('popup-custom-date').style.display = 'block';
     return;
   } else if (type === 'picked') {
@@ -3284,12 +3297,23 @@ function renderHomeRappels() {
     }
     if (r.repeat === 'daily') return true;
     if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
-    if (r.repeat === 'weekly') return true;
-    if (r.repeat === 'monthly') return true;
-    if (r.repeat === 'yearly') return true;
+    if (r.repeat === 'weekly') {
+      if (!r.dueDate) return true;
+      const startDow = new Date(r.dueDate + 'T12:00:00').getDay();
+      return dow === startDow;
+    }
+    if (r.repeat === 'monthly') {
+      if (!r.dueDate) return true;
+      return now.getDate() === parseInt(r.dueDate.split('-')[2]);
+    }
+    if (r.repeat === 'yearly') {
+      if (!r.dueDate) return true;
+      const p = r.dueDate.split('-');
+      return now.getMonth()+1 === parseInt(p[1]) && now.getDate() === parseInt(p[2]);
+    }
     if (r.repeat?.startsWith('xdays:')) {
       if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T00:00:00');
+      const start = new Date(r.dueDate + 'T12:00:00');
       const n = parseInt(r.repeat.split(':')[1]) || 1;
       const diff = Math.floor((now - start) / 86400000);
       return diff >= 0 && diff % n === 0;
