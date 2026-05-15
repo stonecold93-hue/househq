@@ -2310,6 +2310,9 @@ let budgetSelectedDay = null;
 function budgetKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 function fmtB(n){ return Math.round(n).toLocaleString('fr-CA')+'$'; }
 
+// Budget settings cached globally
+let _budgetSettings = { salary: 0, solde: 0 };
+
 async function loadBudget() {
   const items = await getAll('budget_cal');
   budgetData = {};
@@ -2318,17 +2321,17 @@ async function loadBudget() {
     budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt, auto:item.auto||false});
   });
 
-  // Load saved salary
+  // Load saved salary + solde into global cache
   try {
     const salaryDoc = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
     if (salaryDoc.exists()) {
       const data = salaryDoc.data();
-      const salaryEl = document.getElementById('budget-salary');
-      if (salaryEl && data.salary) salaryEl.value = data.salary;
-      const soldeEl = document.getElementById('b-solde-input');
-      if (soldeEl && data.solde) soldeEl.value = data.solde;
+      _budgetSettings.salary = data.salary || 0;
+      _budgetSettings.solde  = data.solde  || 0;
     }
-  } catch(e) { console.log('No salary saved yet'); }
+  } catch(e) { console.log('No budget settings saved yet'); }
+
+  applyBudgetSettings();
 
   const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
   const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
@@ -2341,15 +2344,24 @@ async function loadBudget() {
   renderCartes();
 }
 
+function applyBudgetSettings() {
+  const salaryEl = document.getElementById('budget-salary');
+  if (salaryEl) salaryEl.value = _budgetSettings.salary;
+  const soldeEl = document.getElementById('b-solde-input');
+  if (soldeEl) soldeEl.value = _budgetSettings.solde;
+}
+
 // Save salary + solde to Firestore
 async function saveSalary() {
   const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary }, { merge: true });
+  _budgetSettings.salary = salary;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde: _budgetSettings.solde });
 }
 
 async function saveSolde() {
   const solde = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { solde }, { merge: true });
+  _budgetSettings.solde = solde;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary: _budgetSettings.salary, solde });
 }
 
 function renderBudget() {
@@ -2863,7 +2875,7 @@ function switchTab(tab) {
   if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
   if (tab === 'rappels') renderRappels();
-  if (tab === 'budget')  { renderBudget(); renderCartes(); }
+  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); }
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
