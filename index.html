@@ -282,12 +282,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .budget-item-amount.depense{color:#F06060;}
 .budget-item-delete{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:4px;opacity:0;transition:opacity var(--transition);}
 .budget-item:hover .budget-item-delete{opacity:1;}
-.budget-cat-chart{display:flex;flex-direction:column;gap:10px;}
-.budget-cat-row{display:flex;align-items:center;gap:12px;}
-.budget-cat-label{font-size:10px;color:var(--text2);letter-spacing:.08em;min-width:120px;}
-.budget-cat-bar-wrap{flex:1;background:var(--bg3);border-radius:4px;height:8px;overflow:hidden;}
-.budget-cat-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--c3),var(--c2));transition:width .4s ease;}
-.budget-cat-val{font-size:10px;color:var(--text3);min-width:60px;text-align:right;}
 
 /* ─── BUDGET CALENDAR ────────────────────────────────── */
 .budget-salary-input{background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;width:100px;text-align:right;}
@@ -333,6 +327,32 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .year-table tr:hover td{background:var(--bg3);}
 .year-bar-wrap{width:80px;background:var(--border);border-radius:3px;height:5px;display:inline-block;vertical-align:middle;}
 .year-bar{height:5px;border-radius:3px;}
+
+/* ─── CARTES DE CREDIT ──────────────────────────────── */
+.cartes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;overflow-x:auto;}
+.carte-col{display:flex;flex-direction:column;gap:0;min-width:200px;}
+.carte-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;margin-bottom:0;}
+.amex-header{background:rgba(83,74,183,.2);border:1px solid rgba(83,74,183,.4);}
+.capone-header{background:rgba(186,117,23,.2);border:1px solid rgba(186,117,23,.4);}
+.amazon-header{background:rgba(244,166,35,.2);border:1px solid rgba(244,166,35,.4);}
+.carte-name{font-size:11px;font-weight:500;color:var(--text);letter-spacing:.06em;}
+.carte-limit-label{font-size:9px;color:var(--text3);letter-spacing:.1em;}
+.carte-limit-input{width:60px;background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:11px;text-align:right;}
+.carte-sub-header{display:grid;grid-template-columns:60px 70px 70px 1fr 20px;gap:4px;padding:5px 8px;background:var(--bg3);border-left:1px solid var(--border);border-right:1px solid var(--border);font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.carte-row{display:grid;grid-template-columns:60px 70px 70px 1fr 20px;gap:4px;padding:5px 8px;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);align-items:center;}
+.carte-row input{background:none;border:none;outline:none;font-family:'DM Mono',monospace;font-size:10px;width:100%;}
+.carte-row input[type=number]{color:#F06060;text-align:right;}
+.carte-row input[type=text]{color:var(--text2);}
+.carte-row input.pay{color:var(--teal);}
+.carte-row input:focus{background:var(--bg3);border-radius:3px;padding:1px 3px;}
+.carte-add-btn{background:none;border:1px dashed var(--border2);border-top:none;color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px;cursor:pointer;transition:all var(--transition);}
+.carte-add-btn:hover{color:var(--text2);background:var(--bg3);}
+.carte-total-row{display:grid;grid-template-columns:1fr 70px 70px 70px;gap:4px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);font-size:10px;color:var(--text3);}
+.carte-total-pay{color:var(--teal);font-weight:500;}
+.carte-total-dep{color:#F06060;font-weight:500;}
+.carte-diff{color:var(--amber);font-weight:500;}
+.amazon-row{display:grid;grid-template-columns:60px 70px 1fr 20px;gap:4px;padding:5px 8px;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);align-items:center;}
+.amazon-sub{grid-template-columns:60px 70px 1fr 20px;}
 
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -644,6 +664,94 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           </div>
         </div>
         <div class="budget-cal-grid" id="budget-cal-grid"></div>
+      </div>
+
+      <!-- Cartes de credit -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Cartes de credit</h2>
+          <button class="btn-primary" id="add-carte-btn">+ Ajouter transaction</button>
+        </div>
+        <div class="cartes-grid" id="cartes-grid">
+          <!-- Amex -->
+          <div class="carte-col">
+            <div class="carte-header amex-header">
+              <span class="carte-name">American Express</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="carte-limit-label">Limite</span>
+                <input type="number" class="carte-limit-input" id="amex-limite" value="1000" oninput="renderCartesSummary()">
+              </div>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Paiement</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="amex-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('amex')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total</span>
+              <span id="amex-total-pay" class="carte-total-pay">0$</span>
+              <span id="amex-total-dep" class="carte-total-dep">0$</span>
+              <span id="amex-diff" class="carte-diff">0$</span>
+            </div>
+          </div>
+          <!-- Capital One -->
+          <div class="carte-col">
+            <div class="carte-header capone-header">
+              <span class="carte-name">Capital One</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="carte-limit-label">Limite</span>
+                <input type="number" class="carte-limit-input" id="capone-limite" value="125" oninput="renderCartesSummary()">
+              </div>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Paiement</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="capone-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('capone')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total</span>
+              <span id="capone-total-pay" class="carte-total-pay">0$</span>
+              <span id="capone-total-dep" class="carte-total-dep">0$</span>
+              <span id="capone-diff" class="carte-diff">0$</span>
+            </div>
+          </div>
+          <!-- Amazon -->
+          <div class="carte-col">
+            <div class="carte-header amazon-header">
+              <span class="carte-name">Amazon</span>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="amazon-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('amazon')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total Amazon</span>
+              <span></span>
+              <span id="amazon-total-dep" class="carte-total-dep">0$</span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphiques budget -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:4px;">Depenses par categorie</h2>
+          <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Basé sur les transactions du calendrier</p>
+          <div style="position:relative;width:100%;height:200px;">
+            <canvas id="budget-donut" role="img" aria-label="Repartition des depenses par categorie"></canvas>
+          </div>
+          <div id="budget-donut-legend" style="display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:11px;"></div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:4px;">Depenses par semaine</h2>
+          <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Total par semaine du mois</p>
+          <div style="position:relative;width:100%;height:200px;">
+            <canvas id="budget-weekly-chart" role="img" aria-label="Depenses par semaine du mois"></canvas>
+          </div>
+        </div>
       </div>
 
       <!-- Dettes et Actifs -->
@@ -1891,7 +1999,9 @@ async function loadBudget() {
   const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
   dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
   actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+  checkAutoEntries();
   renderBudget();
+  renderCartes();
 }
 
 function renderBudget() {
@@ -1955,6 +2065,159 @@ function renderBudget() {
 
   calcBudgetSummary(monthTotal, activeDays);
   calcBudgetBilan();
+  renderBudgetCharts();
+}
+
+// ─── AUTO ENTRIES JEUDI/VENDREDI ─────────────────────
+function checkAutoEntries() {
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const autoEntries = [
+    { dow:4, cat:'Hypotheque',   amt:256.88 },
+    { dow:4, cat:'Marge vieille', amt:73.56 },
+    { dow:5, cat:'REER',          amt:35.00 },
+  ];
+  for (let d=1; d<=daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const k = budgetKey(year, month, d);
+    autoEntries.forEach(entry => {
+      if (entry.dow !== date.getDay()) return;
+      const existing = budgetData[k] || [];
+      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
+        if (!budgetData[k]) budgetData[k] = [];
+        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
+      }
+    });
+  }
+}
+
+// ─── CARTES DE CREDIT ────────────────────────────────
+let cartesData = { amex: [], capone: [], amazon: [] };
+
+function renderCartes() {
+  renderCarteRows('amex');
+  renderCarteRows('capone');
+  renderCarteRows('amazon');
+  renderCartesSummary();
+}
+
+function renderCarteRows(carte) {
+  const container = document.getElementById(carte + '-rows');
+  if (!container) return;
+  container.innerHTML = '';
+  (cartesData[carte] || []).forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = carte === 'amazon' ? 'carte-row amazon-row' : 'carte-row';
+    if (carte === 'amazon') {
+      div.innerHTML = `
+        <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
+        <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary()">
+        <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes()">✕</button>`;
+    } else {
+      div.innerHTML = `
+        <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
+        <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}" oninput="cartesData['${carte}'][${i}].pay=parseFloat(this.value)||0;renderCartesSummary()">
+        <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary();syncCarteToCal('${carte}',${i})">
+        <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes()">✕</button>`;
+    }
+    container.appendChild(div);
+  });
+}
+
+window.addCarteRow = function(carte) {
+  cartesData[carte].push({ date:'', pay:0, dep:0, raison:'' });
+  renderCartes();
+}
+
+window.renderCartesSummary = function() {
+  ['amex','capone'].forEach(carte => {
+    const rows = cartesData[carte] || [];
+    const totalPay = rows.reduce((s,r) => s+(parseFloat(r.pay)||0), 0);
+    const totalDep = rows.reduce((s,r) => s+(parseFloat(r.dep)||0), 0);
+    const diff = totalPay - totalDep;
+    const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    s(`${carte}-total-pay`, totalPay.toFixed(2)+'$');
+    s(`${carte}-total-dep`, totalDep.toFixed(2)+'$');
+    const diffEl = document.getElementById(`${carte}-diff`);
+    if (diffEl) { diffEl.textContent=(diff>=0?'+':'')+diff.toFixed(2)+'$'; diffEl.style.color=diff>=0?'var(--teal)':'#F06060'; }
+  });
+  const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
+  const el = document.getElementById('amazon-total-dep');
+  if (el) el.textContent = amazonTotal.toFixed(2)+'$';
+  renderBudgetCharts();
+}
+
+function syncCarteToCal(carte, idx) {
+  const row = cartesData[carte][idx];
+  if (!row?.date || !row?.dep) return;
+  const parts = row.date.split('/');
+  if (parts.length < 2) return;
+  const m = parseInt(parts[0])-1, d = parseInt(parts[1]);
+  if (isNaN(m)||isNaN(d)) return;
+  const k = budgetKey(budgetYear, m, d);
+  if (!budgetData[k]) budgetData[k] = [];
+  const catName = carte==='amex'?'American Express':carte==='capone'?'Capital One':'Amazon';
+  const existing = budgetData[k].find(e=>e.fromCarte===true&&e.carteIdx===idx&&e.carte===carte);
+  if (existing) { existing.amt=row.dep; }
+  else { budgetData[k].push({cat:catName, amt:row.dep, fromCarte:true, carte, carteIdx:idx}); }
+}
+
+// ─── BUDGET CHARTS ────────────────────────────────────
+let _budgetDonut=null, _budgetWeekly=null;
+
+function renderBudgetCharts() {
+  const year=budgetYear, month=budgetMonth;
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const catTotals={}, weekTotals=[0,0,0,0,0];
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const k=budgetKey(year,month,d);
+    (budgetData[k]||[]).forEach(e=>{
+      const cat=e.cat||'Autre';
+      catTotals[cat]=(catTotals[cat]||0)+(e.amt||0);
+      const wi=Math.min(Math.floor((d-1)/7),4);
+      weekTotals[wi]+=(e.amt||0);
+    });
+  }
+  const cats=Object.keys(catTotals).filter(c=>catTotals[c]>0);
+  const vals=cats.map(c=>catTotals[c]);
+  const total=vals.reduce((s,v)=>s+v,0);
+  const colors=['#534AB7','#F06060','#1D9E75','#378ADD','#BA7517','#888780','#F4A623','#A855F7','#34C472','#C2714F'];
+
+  const donutCtx=document.getElementById('budget-donut');
+  if (donutCtx&&cats.length>0) {
+    if(_budgetDonut)_budgetDonut.destroy();
+    _budgetDonut=new Chart(donutCtx,{
+      type:'doughnut',
+      data:{labels:cats,datasets:[{data:vals,backgroundColor:colors.slice(0,cats.length),borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}
+    });
+    const legendEl=document.getElementById('budget-donut-legend');
+    if(legendEl){
+      legendEl.innerHTML='';
+      cats.forEach((cat,i)=>{
+        const pct=total>0?Math.round(vals[i]/total*100):0;
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:8px;';
+        row.innerHTML=`<span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span><span style="color:var(--text2);flex:1;font-size:10px;">${cat}</span><span style="color:var(--text3);font-size:10px;">${vals[i].toFixed(0)}$ (${pct}%)</span>`;
+        legendEl.appendChild(row);
+      });
+    }
+  }
+
+  const weekCtx=document.getElementById('budget-weekly-chart');
+  if(weekCtx){
+    if(_budgetWeekly)_budgetWeekly.destroy();
+    const wLabels=weekTotals.filter(v=>v>0).map((_,i)=>`Sem ${i+1}`);
+    const wData=weekTotals.filter(v=>v>0);
+    if(wData.length>0) _budgetWeekly=new Chart(weekCtx,{
+      type:'bar',
+      data:{labels:wLabels,datasets:[{label:'Depenses',data:wData,backgroundColor:'#F06060',borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{color:'#888',callback:v=>v+'$'}}}}
+    });
+  }
 }
 
 window.calcBudgetSummary = function(monthTotal, activeDays) {
@@ -2106,7 +2369,7 @@ function switchTab(tab) {
   if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
   if (tab === 'rappels') renderRappels();
-  if (tab === 'budget')  renderBudget();
+  if (tab === 'budget')  { renderBudget(); renderCartes(); }
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
