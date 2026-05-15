@@ -752,6 +752,13 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
                 <div class="todo-popup-item" onclick="setRep('monthly',event)"><div class="todo-popup-text">Mensuel</div></div>
                 <div class="todo-popup-item" onclick="setRep('yearly',event)"><div class="todo-popup-text">Annuel</div></div>
                 <div style="height:0.5px;background:var(--border);margin:4px 0;"></div>
+                <div class="todo-popup-item" style="gap:6px;">
+                  <div class="todo-popup-text">Tous les</div>
+                  <input type="number" id="popup-xdays-input" min="2" max="365" value="2" onclick="event.stopPropagation()" style="width:44px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:11px;padding:2px 6px;border-radius:4px;text-align:center;">
+                  <div class="todo-popup-text">jours</div>
+                  <button onclick="setRep('xdays',event)" style="background:var(--c3);border:none;color:white;font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;letter-spacing:.05em;">OK</button>
+                </div>
+                <div style="height:0.5px;background:var(--border);margin:4px 0;"></div>
                 <div class="todo-popup-item" onclick="setRep('none',event)"><div class="todo-popup-text" style="color:#F06060;">Supprimer</div></div>
               </div>
             </div>
@@ -2267,6 +2274,14 @@ const REP_LABELS = {
   monthly:'Mensuel', yearly:'Annuel', none:'Aucune'
 };
 
+function getRepLabel(r) {
+  if (r.repeat && r.repeat.startsWith('xdays:')) {
+    const n = r.repeat.split(':')[1];
+    return `Tous les ${n} jours`;
+  }
+  return REP_LABELS[r.repeat] || 'Aucune';
+}
+
 async function loadRappels() {
   rappels = await getAll('rappels');
 }
@@ -2309,7 +2324,7 @@ function renderRappels() {
       else if (diff === 1) { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
       else { sub = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()]; subClass = 'due'; }
     } else if (r.repeat && r.repeat !== 'none') {
-      sub = REP_LABELS[r.repeat] || r.repeat;
+      sub = getRepLabel(r);
       subClass = 'rep';
     }
 
@@ -2363,7 +2378,7 @@ function selectTodoRappel(id) {
   }
 
   // Repeat
-  document.getElementById('todo-rep-val').textContent = REP_LABELS[r.repeat] || 'Aucune';
+  document.getElementById('todo-rep-val').textContent = getRepLabel(r);
   document.getElementById('todo-notif-time').value = r.heure || '08:00';
   document.getElementById('todo-note').value = r.note || '';
 
@@ -2466,6 +2481,10 @@ window.setRep = async function(rep, e) {
   if (!selectedRappelId) return;
   const r = rappels.find(x => x.id === selectedRappelId);
   if (!r) return;
+  if (rep === 'xdays') {
+    const n = parseInt(document.getElementById('popup-xdays-input')?.value) || 2;
+    rep = `xdays:${n}`;
+  }
   r.repeat = rep;
   await updateItem('rappels', r.id, { repeat: rep });
   document.getElementById('popup-rep').style.display = 'none';
