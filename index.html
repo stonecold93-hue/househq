@@ -1941,22 +1941,91 @@ function renderYearTable(monthCounts) {
   const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
   const year = new Date().getFullYear();
   let totalT = 0, totalM = 0, totalD = 0;
+
   for (let m=0; m<12; m++) {
-    const key = `${year}-${String(m+1).padStart(2,'0')}`;
-    const d = monthCounts[key];
-    if (!d || d.tasks === 0) continue;
-    totalT += d.tasks; totalM += d.mins; totalD += d.days;
-    const h = Math.floor(d.mins/60), min = d.mins%60;
-    const avg = d.days > 0 ? Math.round(d.mins/d.days) : 0;
+    const monthKey = `${year}-${String(m+1).padStart(2,'0')}`;
+
+    // Use EXACT_MINS for correct minutes per month
+    let exactMins = 0, exactDays = 0, exactTasks = 0;
+    Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
+      if (dateKey.startsWith(monthKey)) {
+        exactMins += mins;
+        exactDays++;
+        const tasks = CLEAN_HISTORY[dateKey] || [];
+        exactTasks += tasks.length;
+      }
+    });
+
+    // Also include firestore data for current/future months
+    const firestoreData = monthCounts[monthKey];
+    const useMins  = exactMins  || firestoreData?.mins  || 0;
+    const useDays  = exactDays  || firestoreData?.days  || 0;
+    const useTasks = exactTasks || firestoreData?.tasks || 0;
+
+    if (!useMins && !useTasks) continue;
+
+    totalT += useTasks; totalM += useMins; totalD += useDays;
+    const h = Math.floor(useMins/60), min = useMins%60;
+    const avg = useDays > 0 ? Math.round(useMins/useDays) : 0;
+
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${MONTHS_FR[m]}</td><td>${d.days}</td><td>${d.tasks}</td><td>${h}h${min?min+'m':''}</td><td>${avg} min</td>`;
+    tr.style.cursor = 'pointer';
+    tr.innerHTML = `
+      <td style="color:var(--c2);">${MONTHS_FR[m]} <span style="font-size:9px;color:var(--text3);">▶</span></td>
+      <td>${useDays}</td>
+      <td>${useTasks}</td>
+      <td>${h}h${min?min+'m':''}</td>
+      <td>${avg} min</td>`;
+    tr.onclick = () => showMonthDetail(m, year, MONTHS_FR[m]);
+    tr.onmouseenter = () => tr.style.background = 'var(--bg3)';
+    tr.onmouseleave = () => tr.style.background = '';
     tbody.appendChild(tr);
   }
+
   const totalH = Math.floor(totalM/60), totalMin = totalM%60;
   const avgTotal = totalD > 0 ? Math.round(totalM/totalD) : 0;
   const trTotal = document.createElement('tr');
+  trTotal.style.fontWeight = '500';
   trTotal.innerHTML = `<td>Total annee</td><td>${totalD}</td><td>${totalT}</td><td>${totalH}h${totalMin?totalMin+'m':''}</td><td>${avgTotal} min</td>`;
   tbody.appendChild(trTotal);
+}
+
+// Show month detail modal
+function showMonthDetail(monthIdx, year, monthName) {
+  const monthKey = `${year}-${String(monthIdx+1).padStart(2,'0')}`;
+  const daysInMonth = new Date(year, monthIdx+1, 0).getDate();
+  const DAYS_FR2 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+  let html = `<div style="max-height:60vh;overflow-y:auto;">
+    <table class="year-table" style="width:100%;">
+      <thead><tr><th>Date</th><th>Jour</th><th>Duree</th><th>Taches</th></tr></thead>
+      <tbody>`;
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const dateKey = `${year}-${String(monthIdx+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const mins = EXACT_MINS[dateKey] || 0;
+    const tasks = CLEAN_HISTORY[dateKey] || [];
+    if (!mins && !tasks.length) continue;
+
+    const date = new Date(year, monthIdx, d);
+    const dow = DAYS_FR2[date.getDay()];
+    const h = Math.floor(mins/60), m = mins%60;
+    const duree = h > 0 ? `${h}h${m?m+'m':''}` : `${m}m`;
+    const taskList = tasks.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
+
+    html += `<tr>
+      <td style="font-size:11px;">${monthIdx+1}/${d}</td>
+      <td style="font-size:11px;">${dow}</td>
+      <td style="font-size:11px;color:var(--teal);white-space:nowrap;">${duree}</td>
+      <td>${taskList}</td>
+    </tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+
+  openModal(`${monthName} ${year} — Detail`, html, null);
+  document.getElementById('modal-confirm').style.display = 'none';
+  document.getElementById('modal-cancel').textContent = 'Fermer';
 }
 
 function calcStreak() {
