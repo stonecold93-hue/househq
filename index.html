@@ -3345,17 +3345,14 @@ function renderHomeRappels() {
   });
 }
 
-document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
-  // Switch to rappels tab first if not already there
-  const rappelsTab = document.getElementById('tab-rappels');
-  if (rappelsTab?.classList.contains('hidden')) {
-    switchTab('rappels');
-  }
-  // Wait for render then focus
-  setTimeout(() => {
-    const input = document.getElementById('todo-new-input');
-    if (input) { input.focus(); input.select(); }
-  }, 100);
+document.getElementById('add-rappel-btn')?.addEventListener('click', async () => {
+  const text = prompt('Nom du rappel:');
+  if (!text || !text.trim()) return;
+  const ref = await addItem('rappels', { text: text.trim(), heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
+  rappels.push({ id: ref.id, text: text.trim(), heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
+  switchTab('rappels');
+  renderRappels();
+  selectTodoRappel(ref.id);
 });
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
