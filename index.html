@@ -641,7 +641,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <h1 class="page-title">Budget</h1>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;color:var(--text3);">Salaire</span>
-          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudgetSummary()">
+          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudgetSummary();saveSalary()">
           <span style="color:var(--text3);font-size:11px;">$</span>
         </div>
       </div>
@@ -2217,8 +2217,19 @@ async function loadBudget() {
   budgetData = {};
   items.forEach(item => {
     if (!budgetData[item.day]) budgetData[item.day] = [];
-    budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt});
+    budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt, auto:item.auto||false});
   });
+
+  // Load saved salary
+  try {
+    const salaryDoc = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
+    if (salaryDoc.exists()) {
+      const data = salaryDoc.data();
+      const salaryEl = document.getElementById('budget-salary');
+      if (salaryEl && data.salary) salaryEl.value = data.salary;
+    }
+  } catch(e) { console.log('No salary saved yet'); }
+
   const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
   const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
   dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
@@ -2226,6 +2237,12 @@ async function loadBudget() {
   checkAutoEntries();
   renderBudget();
   renderCartes();
+}
+
+// Save salary to Firestore on change
+async function saveSalary() {
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary });
 }
 
 function renderBudget() {
