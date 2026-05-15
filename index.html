@@ -639,21 +639,17 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
     <section id="tab-budget" class="tab hidden">
       <div class="page-header">
         <h1 class="page-title">Budget</h1>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--text3);">Salaire</span>
-          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="_budgetSettings.salary=parseFloat(this.value)||0;calcBudgetSummary();saveSalary()">
-          <span style="color:var(--text3);font-size:11px;">$</span>
-        </div>
+        <button class="btn-primary" onclick="saveBudgetSettings()">💾 Sauvegarder</button>
       </div>
 
       <!-- Métriques principales -->
       <div class="stats-row">
-        <div class="stat-card"><span class="stat-value" id="b-salaire" style="color:var(--text)">0$</span><span class="stat-label">Salaire</span></div>
         <div class="stat-card">
-          <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
-            <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="_budgetSettings.solde=parseFloat(this.value)||0;calcArgentRestant();saveSolde()" value="0">
-            <span style="font-size:14px;color:var(--teal);">$</span>
-          </div>
+          <input type="number" id="budget-salary" class="budget-salary-input" placeholder="0" value="0" oninput="calcBudgetSummary()">
+          <span class="stat-label">Salaire</span>
+        </div>
+        <div class="stat-card">
+          <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" value="0" oninput="calcArgentRestant()">
           <span class="stat-label">Solde actuel (reel)</span>
         </div>
         <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Depenses payees</span></div>
@@ -661,7 +657,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div class="stat-card" style="border:1px solid var(--teal-dim);">
           <span class="stat-value" id="b-argent-restant" style="color:var(--teal)">0$</span>
           <span class="stat-label">Argent restant</span>
-          <span style="font-size:9px;color:var(--text3);letter-spacing:.05em;">Solde - Depenses restantes</span>
         </div>
       </div>
 
@@ -2359,20 +2354,20 @@ function applyBudgetSettings() {
 }
 
 // Save salary + solde to Firestore
-async function saveSalary() {
-  _budgetSettings.salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), {
-    salary: _budgetSettings.salary,
-    solde:  _budgetSettings.solde
-  });
-}
+async function saveSalary() { await saveBudgetSettings(); }
+async function saveSolde()  { await saveBudgetSettings(); }
 
-async function saveSolde() {
-  _budgetSettings.solde = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), {
-    salary: _budgetSettings.salary,
-    solde:  _budgetSettings.solde
-  });
+window.saveBudgetSettings = async function() {
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  _budgetSettings.salary = salary;
+  _budgetSettings.solde  = solde;
+  try {
+    await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde });
+    // Flash confirmation
+    const btn = document.querySelector('[onclick="saveBudgetSettings()"]');
+    if (btn) { btn.textContent = '✅ Sauvegarde!'; setTimeout(()=>btn.textContent='💾 Sauvegarder',2000); }
+  } catch(e) { console.error('Save error:', e); alert('Erreur sauvegarde: ' + e.message); }
 }
 
 function renderBudget() {
@@ -2657,8 +2652,8 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     else remainingTotal += dayTotal;
   }
 
-  // Use cached settings (always up to date even before DOM renders)
-  const salary = _budgetSettings.salary || parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  // Lire directement depuis le DOM - source de verite unique
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
 
   const setEl = (id,v,color) => {
     const e = document.getElementById(id);
@@ -2678,7 +2673,7 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
 let _remainingTotal = 0; // global pour calcArgentRestant
 
 function calcArgentRestant() {
-  const solde  = _budgetSettings.solde || parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
   const argent = solde - _remainingTotal;
   const el = document.getElementById('b-argent-restant');
   if (el) {
