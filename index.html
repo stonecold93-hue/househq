@@ -2646,8 +2646,8 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     else remainingTotal += dayTotal;
   }
 
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const solde  = salary - paidTotal;
+  // Use cached settings (always up to date even before DOM renders)
+  const salary = _budgetSettings.salary || parseFloat(document.getElementById('budget-salary')?.value) || 0;
 
   const setEl = (id,v,color) => {
     const e = document.getElementById(id);
@@ -2667,7 +2667,7 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
 let _remainingTotal = 0; // global pour calcArgentRestant
 
 function calcArgentRestant() {
-  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  const solde  = _budgetSettings.solde || parseFloat(document.getElementById('b-solde-input')?.value) || 0;
   const argent = solde - _remainingTotal;
   const el = document.getElementById('b-argent-restant');
   if (el) {
