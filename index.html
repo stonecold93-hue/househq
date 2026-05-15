@@ -2344,14 +2344,12 @@ async function loadBudget() {
 // Save salary + solde to Firestore
 async function saveSalary() {
   const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde });
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary }, { merge: true });
 }
 
 async function saveSolde() {
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde });
+  const solde = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { solde }, { merge: true });
 }
 
 function renderBudget() {
@@ -2646,19 +2644,19 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     if (color) e.style.color = color;
   };
   setEl('b-salaire',  fmtB(salary));
-  setEl('b-depenses', '-'+fmtB(paidTotal));
+  _remainingTotal = remainingTotal;
+  setEl('b-depenses', fmtB(paidTotal));
   setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
 
   calcArgentRestant();
   renderNextPayments();
 }
 
+let _remainingTotal = 0; // global pour calcArgentRestant
+
 function calcArgentRestant() {
-  const solde   = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  const resteEl = document.getElementById('b-reste');
-  const resteStr = resteEl?.textContent?.replace('$','').replace(',','.')||'0';
-  const reste   = parseFloat(resteStr) || 0;
-  const argent  = solde - reste;
+  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  const argent = solde - _remainingTotal;
   const el = document.getElementById('b-argent-restant');
   if (el) {
     el.textContent = fmtB(argent);
