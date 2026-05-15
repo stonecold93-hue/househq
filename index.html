@@ -2588,14 +2588,21 @@ async function loadCartes() {
 }
 
 window.renderCartesSummary = function() {
-  // Sync Amazon total into Amex 'Amazon' row automatically
+  // Sync Amazon total into Amex 'Amazon' row silently (no re-render)
   const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
   const amexAmazonRow = (cartesData.amex||[]).find(r => r.raison === 'Amazon');
-  if (amexAmazonRow) {
+  if (amexAmazonRow && amexAmazonRow.dep !== amazonTotal) {
     amexAmazonRow.dep = amazonTotal;
-    renderCarteRows('amex'); // re-render to show updated value
+    // Update the input field directly without full re-render
+    const amexRows = document.querySelectorAll('#amex-rows .carte-row');
+    const amexIdx = cartesData.amex.indexOf(amexAmazonRow);
+    if (amexIdx >= 0 && amexRows[amexIdx]) {
+      const depInput = amexRows[amexIdx].querySelectorAll('input[type=number]')[1];
+      if (depInput) depInput.value = amazonTotal.toFixed(2);
+    }
   }
-  saveCartes();
+
+  // Totaux Amex + Capital One
   ['amex','capone'].forEach(carte => {
     const rows = cartesData[carte] || [];
     const totalPay = rows.reduce((s,r) => s+(parseFloat(r.pay)||0), 0);
@@ -2607,8 +2614,12 @@ window.renderCartesSummary = function() {
     const diffEl = document.getElementById(`${carte}-diff`);
     if (diffEl) { diffEl.textContent=(diff>=0?'+':'')+diff.toFixed(2)+'$'; diffEl.style.color=diff>=0?'var(--teal)':'#F06060'; }
   });
+
+  // Total Amazon
   const el = document.getElementById('amazon-total-dep');
-  if (el) el.textContent = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0).toFixed(2)+'$';
+  if (el) el.textContent = amazonTotal.toFixed(2)+'$';
+
+  saveCartes();
   renderBudgetCharts();
 }
 
