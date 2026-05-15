@@ -651,13 +651,18 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div class="stat-card"><span class="stat-value" id="b-salaire">0$</span><span class="stat-label">Salaire</span></div>
         <div class="stat-card">
           <div style="display:flex;align-items:center;gap:6px;">
-            <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="saveSolde()" value="0">
+            <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="saveSolde();calcArgentRestant()" value="0">
             <span style="font-size:14px;color:var(--teal);">$</span>
           </div>
           <span class="stat-label">Solde actuel (reel)</span>
         </div>
         <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Depenses payees</span></div>
         <div class="stat-card"><span class="stat-value" id="b-reste" style="color:var(--amber)">0$</span><span class="stat-label">Depenses restantes</span></div>
+        <div class="stat-card" style="border:1px solid var(--teal-dim);">
+          <span class="stat-value" id="b-argent-restant" style="color:var(--teal)">0$</span>
+          <span class="stat-label">Argent restant</span>
+          <span style="font-size:9px;color:var(--text3);letter-spacing:.05em;">Solde - Depenses restantes</span>
+        </div>
       </div>
 
       <!-- Prochains paiements -->
@@ -2329,7 +2334,9 @@ async function loadBudget() {
   const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
   dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
   actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+  await loadCartes();
   checkAutoEntries();
+  await saveAutoEntriesToFirestore();
   renderBudget();
   renderCartes();
 }
@@ -2497,7 +2504,34 @@ window.addCarteRow = function(carte) {
   renderCartes();
 }
 
+async function saveCartes() {
+  await setDoc(doc(db, 'users', uid(), 'settings', 'cartes'), {
+    amex:   JSON.stringify(cartesData.amex),
+    capone: JSON.stringify(cartesData.capone),
+    amazon: JSON.stringify(cartesData.amazon),
+    amexLimite:   document.getElementById('amex-limite')?.value || '1000',
+    caponeLimite: document.getElementById('capone-limite')?.value || '125',
+  });
+}
+
+async function loadCartes() {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'cartes'));
+    if (snap.exists()) {
+      const d = snap.data();
+      cartesData.amex   = JSON.parse(d.amex   || '[]');
+      cartesData.capone = JSON.parse(d.capone || '[]');
+      cartesData.amazon = JSON.parse(d.amazon || '[]');
+      const amexLimEl   = document.getElementById('amex-limite');
+      const caponeLimEl = document.getElementById('capone-limite');
+      if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
+      if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
+    }
+  } catch(e) { console.log('No cartes saved'); }
+}
+
 window.renderCartesSummary = function() {
+  saveCartes();
   ['amex','capone'].forEach(carte => {
     const rows = cartesData[carte] || [];
     const totalPay = rows.reduce((s,r) => s+(parseFloat(r.pay)||0), 0);
@@ -2615,7 +2649,21 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
   setEl('b-depenses', '-'+fmtB(paidTotal));
   setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
 
+  calcArgentRestant();
   renderNextPayments();
+}
+
+function calcArgentRestant() {
+  const solde   = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  const resteEl = document.getElementById('b-reste');
+  const resteStr = resteEl?.textContent?.replace('$','').replace(',','.')||'0';
+  const reste   = parseFloat(resteStr) || 0;
+  const argent  = solde - reste;
+  const el = document.getElementById('b-argent-restant');
+  if (el) {
+    el.textContent = fmtB(argent);
+    el.style.color = argent >= 0 ? 'var(--teal)' : '#F06060';
+  }
 }
 
 function renderNextPayments() {
@@ -2632,7 +2680,7 @@ function renderNextPayments() {
   for (let d=1; d<=daysInMonth; d++) {
     const date = new Date(year, month, d);
     date.setHours(0,0,0,0);
-    if (date < today) continue; // seulement futur et aujourd'hui
+    if (date < today) continue;
     const k = budgetKey(year, month, d);
     const entries = budgetData[k] || [];
     entries.forEach(e => {
@@ -2720,14 +2768,38 @@ window.saveBudgetDay = async function() {
     const cat = row.querySelector('.budget-entry-select')?.value;
     const amt = parseFloat(row.querySelector('.budget-entry-amt')?.value) || 0;
     if (amt > 0) {
-      const ref = await addItem('budget_cal', { day: budgetSelectedDay, cat, amt });
+      const ref = await addItem('budget_cal', { day: budgetSelectedDay, cat, amt, auto: false });
       if (!budgetData[budgetSelectedDay]) budgetData[budgetSelectedDay] = [];
-      budgetData[budgetSelectedDay].push({ id: ref.id, cat, amt });
+      budgetData[budgetSelectedDay].push({ id: ref.id, cat, amt, auto: false });
     }
   }
   document.getElementById('budget-day-modal')?.classList.add('hidden');
   budgetSelectedDay = null;
   renderBudget();
+}
+
+// Save auto entries to Firestore (called once per month load)
+async function saveAutoEntriesToFirestore() {
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  for (let d=1; d<=daysInMonth; d++) {
+    const k = budgetKey(year, month, d);
+    const entries = budgetData[k] || [];
+    for (const entry of entries) {
+      if (!entry.auto || entry.id) continue; // skip if already saved
+      const ref = await addItem('budget_cal', { day: k, cat: entry.cat, amt: entry.amt, auto: true });
+      entry.id = ref.id;
+    }
+  }
+}
+
+// Delete budget entry from Firestore
+window.deleteBudgetEntry = async function(k, i) {
+  const entry = budgetData[k]?.[i];
+  if (entry?.id) await deleteItem('budget_cal', entry.id);
+  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
+  renderBudget();
+  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
 }
 
 function calcBudgetBilan() {
