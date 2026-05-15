@@ -1548,6 +1548,7 @@ function renderHome() {
   renderTodayList();
   renderBlocks();
   updateDayStats();
+  renderHomeRappels();
 }
 
 function renderTodayList() {
@@ -2467,9 +2468,10 @@ window.setDue = async function(type, e) {
   } else if (type === 'tomorrow') {
     const d = new Date(now); d.setDate(d.getDate()+1); iso = toLocalStr(d);
   } else if (type === 'nextweek') {
-    // Prochain lundi
+    // Prochain lundi — si aujourd'hui est lundi, aller au lundi suivant
     const d = new Date(now);
-    const daysUntilMonday = (8 - d.getDay()) % 7 || 7;
+    const day = d.getDay(); // 0=dim,1=lun,...,6=sam
+    const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7;
     d.setDate(d.getDate() + daysUntilMonday);
     iso = toLocalStr(d);
   } else if (type === 'custom') {
