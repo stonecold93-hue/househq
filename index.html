@@ -2498,14 +2498,14 @@ function renderCarteRows(carte) {
         <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
         <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary()">
         <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
-        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes()">✕</button>`;
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes();saveCartes()">✕</button>`;
     } else {
       div.innerHTML = `
         <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
         <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}" oninput="cartesData['${carte}'][${i}].pay=parseFloat(this.value)||0;renderCartesSummary()">
         <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary();syncCarteToCal('${carte}',${i})">
         <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
-        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes()">✕</button>`;
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes();saveCartes()">✕</button>`;
     }
     container.appendChild(div);
   });
@@ -2514,16 +2514,19 @@ function renderCarteRows(carte) {
 window.addCarteRow = function(carte) {
   cartesData[carte].push({ date:'', pay:0, dep:0, raison:'' });
   renderCartes();
+  saveCartes();
 }
 
 async function saveCartes() {
-  await setDoc(doc(db, 'users', uid(), 'settings', 'cartes'), {
-    amex:   JSON.stringify(cartesData.amex),
-    capone: JSON.stringify(cartesData.capone),
-    amazon: JSON.stringify(cartesData.amazon),
-    amexLimite:   document.getElementById('amex-limite')?.value || '1000',
-    caponeLimite: document.getElementById('capone-limite')?.value || '125',
-  });
+  try {
+    await setDoc(doc(db, 'users', uid(), 'settings', 'cartes'), {
+      amex:   JSON.stringify(cartesData.amex),
+      capone: JSON.stringify(cartesData.capone),
+      amazon: JSON.stringify(cartesData.amazon),
+      amexLimite:   document.getElementById('amex-limite')?.value || '1000',
+      caponeLimite: document.getElementById('capone-limite')?.value || '125',
+    });
+  } catch(e) { console.error('saveCartes error:', e); }
 }
 
 // Lignes fixes qui reviennent chaque mois
@@ -2585,6 +2588,13 @@ async function loadCartes() {
 }
 
 window.renderCartesSummary = function() {
+  // Sync Amazon total into Amex 'Amazon' row automatically
+  const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
+  const amexAmazonRow = (cartesData.amex||[]).find(r => r.raison === 'Amazon');
+  if (amexAmazonRow) {
+    amexAmazonRow.dep = amazonTotal;
+    renderCarteRows('amex'); // re-render to show updated value
+  }
   saveCartes();
   ['amex','capone'].forEach(carte => {
     const rows = cartesData[carte] || [];
@@ -2597,9 +2607,8 @@ window.renderCartesSummary = function() {
     const diffEl = document.getElementById(`${carte}-diff`);
     if (diffEl) { diffEl.textContent=(diff>=0?'+':'')+diff.toFixed(2)+'$'; diffEl.style.color=diff>=0?'var(--teal)':'#F06060'; }
   });
-  const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
   const el = document.getElementById('amazon-total-dep');
-  if (el) el.textContent = amazonTotal.toFixed(2)+'$';
+  if (el) el.textContent = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0).toFixed(2)+'$';
   renderBudgetCharts();
 }
 
