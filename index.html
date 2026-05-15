@@ -376,6 +376,38 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .badge-week-r{background:rgba(90,180,240,.15);color:var(--blue,#5AB4F0);}
 .badge-repeat-r{background:rgba(168,85,247,.15);color:var(--c2);}
 
+/* ─── TODO INTERFACE ────────────────────────────────── */
+.todo-container{display:grid;grid-template-columns:300px 1fr;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:500px;}
+.todo-list-panel{border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;}
+.todo-detail-panel{background:var(--bg2);position:relative;}
+.todo-rappel-item{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background var(--transition);}
+.todo-rappel-item:hover,.todo-rappel-item.active{background:var(--bg3);}
+.todo-cb-sm{width:18px;height:18px;border:1.5px solid var(--border2);border-radius:50%;flex-shrink:0;cursor:pointer;transition:all var(--transition);}
+.todo-cb-sm.done{background:var(--c2);border-color:var(--c2);}
+.todo-cb-sm.done::after{content:'✓';font-size:9px;color:white;display:flex;align-items:center;justify-content:center;line-height:16px;}
+.todo-item-body{flex:1;min-width:0;}
+.todo-item-title{font-size:12px;color:var(--text);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.todo-item-title.done{text-decoration:line-through;opacity:.5;}
+.todo-item-sub{font-size:10px;margin-top:2px;}
+.todo-item-sub.due{color:#5AB4F0;}
+.todo-item-sub.rep{color:var(--c2);}
+.todo-item-sub.overdue{color:#F06060;}
+.todo-add-row{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text3);}
+.todo-add-row:hover{background:var(--bg3);color:var(--c2);}
+.todo-add-input{background:none;border:none;outline:none;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);flex:1;}
+.todo-add-input::placeholder{color:var(--text3);}
+.todo-cb-large{width:22px;height:22px;border:1.5px solid var(--border2);border-radius:50%;flex-shrink:0;cursor:pointer;}
+.todo-opt-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;position:relative;}
+.todo-opt-row:last-of-type{border-bottom:none;}
+.todo-opt-icon-wrap{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.todo-opt-label{font-size:12px;color:var(--text);flex:1;letter-spacing:.04em;}
+.todo-opt-val{font-size:11px;color:var(--text3);}
+.todo-popup{position:absolute;right:0;top:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:100;min-width:180px;padding:4px 0;box-shadow:0 4px 16px rgba(0,0,0,.3);}
+.todo-popup-item{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;transition:background var(--transition);}
+.todo-popup-item:hover{background:var(--bg3);}
+.todo-popup-text{font-size:12px;color:var(--text);letter-spacing:.04em;}
+.todo-popup-sub{font-size:10px;color:var(--text3);}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -651,40 +683,94 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
     <section id="tab-rappels" class="tab hidden">
       <div class="page-header">
         <h1 class="page-title">Rappels</h1>
-        <button class="btn-primary" id="add-rappel-btn">+ Nouveau rappel</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn-ghost" id="notif-permission-btn">🔔 Notifs</button>
+          <button class="btn-primary" id="add-rappel-btn">+ Nouveau</button>
+        </div>
       </div>
+      <p class="section-desc" id="notif-status" style="margin-bottom:12px;"></p>
 
-      <!-- Notifications -->
-      <div class="section-card">
-        <div class="section-top">
-          <h2 class="section-title">Notifications navigateur</h2>
-          <button class="btn-primary" id="notif-permission-btn">Activer</button>
+      <!-- Interface style To Do -->
+      <div class="todo-container">
+        <!-- Liste -->
+        <div class="todo-list-panel">
+          <div id="todo-rappel-list"></div>
         </div>
-        <p class="section-desc" id="notif-status">Les notifications te rappellent tes taches du jour.</p>
-      </div>
-
-      <!-- Rappels par echeance -->
-      <div class="section-card">
-        <h2 class="section-title" style="margin-bottom:12px;">Echeance</h2>
-        <div class="rappel-due-group" id="rappel-today">
-          <div class="rappel-group-label">Aujourd'hui</div>
-          <div class="rappel-group-list" id="rappel-today-list"></div>
-        </div>
-        <div class="rappel-due-group" id="rappel-tomorrow">
-          <div class="rappel-group-label">Demain</div>
-          <div class="rappel-group-list" id="rappel-tomorrow-list"></div>
-        </div>
-        <div class="rappel-due-group" id="rappel-week">
-          <div class="rappel-group-label">Cette semaine</div>
-          <div class="rappel-group-list" id="rappel-week-list"></div>
-        </div>
-        <div class="rappel-due-group" id="rappel-later">
-          <div class="rappel-group-label">Plus tard</div>
-          <div class="rappel-group-list" id="rappel-later-list"></div>
-        </div>
-        <div class="rappel-due-group" id="rappel-repeat-group">
-          <div class="rappel-group-label">Repetition</div>
-          <div class="rappel-group-list" id="rappel-repeat-list"></div>
+        <!-- Detail -->
+        <div class="todo-detail-panel" id="todo-detail-panel">
+          <div id="todo-detail-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:11px;letter-spacing:.1em;">
+            Selectionnez un rappel
+          </div>
+          <div id="todo-detail-content" style="display:none;padding:20px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+              <div class="todo-cb-large" id="todo-detail-cb"></div>
+              <div id="todo-detail-title" style="font-size:16px;color:var(--text);flex:1;"></div>
+            </div>
+            <!-- Echeance -->
+            <div class="todo-opt-row" id="todo-opt-due" onclick="toggleTodoPopup('due')">
+              <div class="todo-opt-icon-wrap" style="background:rgba(24,95,165,.15);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5AB4F0" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <span class="todo-opt-label">Echeance</span>
+              <span class="todo-opt-val" id="todo-due-val">Aucune</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+              <!-- Popup echeance -->
+              <div class="todo-popup" id="popup-due" style="display:none;">
+                <div class="todo-popup-item" onclick="setDue('today',event)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                  <div><div class="todo-popup-text">Aujourd'hui</div><div class="todo-popup-sub" id="popup-today-day"></div></div>
+                </div>
+                <div class="todo-popup-item" onclick="setDue('tomorrow',event)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  <div><div class="todo-popup-text">Demain</div><div class="todo-popup-sub" id="popup-tomorrow-day"></div></div>
+                </div>
+                <div class="todo-popup-item" onclick="setDue('nextweek',event)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <div><div class="todo-popup-text">Semaine prochaine</div><div class="todo-popup-sub" id="popup-nextweek-day"></div></div>
+                </div>
+                <div style="height:0.5px;background:var(--border);margin:4px 0;"></div>
+                <div class="todo-popup-item" onclick="setDue('custom',event)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <div class="todo-popup-text">Choisir une date</div>
+                </div>
+                <input type="date" id="popup-custom-date" style="display:none;margin:4px 14px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:inherit;font-size:11px;padding:4px 8px;border-radius:4px;" oninput="setDue('picked',event)">
+              </div>
+            </div>
+            <!-- Repetition -->
+            <div class="todo-opt-row" id="todo-opt-rep" onclick="toggleTodoPopup('rep')">
+              <div class="todo-opt-icon-wrap" style="background:var(--bg3);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              </div>
+              <span class="todo-opt-label">Repetition</span>
+              <span class="todo-opt-val" id="todo-rep-val">Aucune</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 18 15 12 9 6"/></svg>
+              <!-- Popup repetition -->
+              <div class="todo-popup" id="popup-rep" style="display:none;">
+                <div class="todo-popup-item" onclick="setRep('daily',event)"><div class="todo-popup-text">Quotidien</div></div>
+                <div class="todo-popup-item" onclick="setRep('weekdays',event)"><div class="todo-popup-text">Jours de semaine</div></div>
+                <div class="todo-popup-item" onclick="setRep('weekly',event)"><div class="todo-popup-text">Hebdomadaire</div></div>
+                <div class="todo-popup-item" onclick="setRep('monthly',event)"><div class="todo-popup-text">Mensuel</div></div>
+                <div class="todo-popup-item" onclick="setRep('yearly',event)"><div class="todo-popup-text">Annuel</div></div>
+                <div style="height:0.5px;background:var(--border);margin:4px 0;"></div>
+                <div class="todo-popup-item" onclick="setRep('none',event)"><div class="todo-popup-text" style="color:#F06060;">Supprimer</div></div>
+              </div>
+            </div>
+            <!-- Heure notif -->
+            <div class="todo-opt-row">
+              <div class="todo-opt-icon-wrap" style="background:rgba(244,166,35,.15);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </div>
+              <span class="todo-opt-label">Me le rappeler</span>
+              <input type="time" id="todo-notif-time" value="08:00" style="background:none;border:none;color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;outline:none;" onchange="saveTodoDetail()">
+            </div>
+            <!-- Note -->
+            <div style="margin-top:12px;">
+              <textarea id="todo-note" placeholder="Ajouter une note..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:8px;resize:vertical;min-height:60px;outline:none;" onchange="saveTodoDetail()"></textarea>
+            </div>
+            <div style="margin-top:12px;display:flex;justify-content:flex-end;">
+              <button class="btn-ghost" style="color:#F06060;font-size:10px;" onclick="deleteTodoRappel()">Supprimer</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -2169,301 +2255,231 @@ function renderHeatmap() {
 
 
 
-// ─── RAPPELS ──────────────────────────────────────────
+// ─── RAPPELS (TODO STYLE) ─────────────────────────────
 let rappels = [];
+let selectedRappelId = null;
+
+const DAYS_FR_COURT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS_FR_COURT = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
+
+const REP_LABELS = {
+  daily:'Quotidien', weekdays:'Jours de semaine', weekly:'Hebdomadaire',
+  monthly:'Mensuel', yearly:'Annuel', none:'Aucune'
+};
 
 async function loadRappels() {
   rappels = await getAll('rappels');
 }
 
-function openEditRappelModal(r) {
-  const freqLabels = {
-    daily:'Tous les jours', weekdays:'Jours de semaine', weekend:'Fin de semaine',
-    xdays:'Tous les X jours', xmonths:'Tous les X mois', custom:'Date precise', weekday:'Jour specifique'
-  };
-  openModal('Modifier le rappel', `
-    <div class="form-field">
-      <label class="form-label">Message</label>
-      <input class="form-input" id="m-rappel-text" value="${r.text || ''}">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Heure</label>
-      <input class="form-input" type="time" id="m-rappel-heure" value="${r.heure || '08:00'}">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Frequence</label>
-      <select class="form-select" id="m-rappel-freq-type" onchange="toggleRappelFreq()">
-        ${Object.entries(freqLabels).map(([v,l]) => `<option value="${v}"${r.freqType===v?' selected':''}>${l}</option>`).join('')}
-      </select>
-    </div>
-    <div id="m-rappel-xdays-wrap" class="form-field" style="display:${r.freqType==='xdays'?'flex':'none'};">
-      <label class="form-label">Nombre de jours</label>
-      <input class="form-input" type="number" id="m-rappel-xdays" value="${r.freqType==='xdays'?r.freqVal:''}" min="1">
-    </div>
-    <div id="m-rappel-xmonths-wrap" class="form-field" style="display:${r.freqType==='xmonths'?'flex':'none'};">
-      <label class="form-label">Nombre de mois</label>
-      <input class="form-input" type="number" id="m-rappel-xmonths" value="${r.freqType==='xmonths'?r.freqVal:''}" min="1">
-    </div>
-    <div id="m-rappel-custom-wrap" class="form-field" style="display:${r.freqType==='custom'?'flex':'none'};">
-      <label class="form-label">Date precise</label>
-      <input class="form-input" type="date" id="m-rappel-custom-date" value="${r.freqType==='custom'?r.freqVal:''}">
-    </div>
-    <div id="m-rappel-weekday-wrap" class="form-field" style="display:${r.freqType==='weekday'?'flex':'none'};">
-      <label class="form-label">Jour de la semaine</label>
-      <select class="form-select" id="m-rappel-weekday">
-        ${['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'].map((d,i) =>
-          `<option value="${i+1===7?0:i+1}"${r.freqVal===(i+1===7?'0':String(i+1))?' selected':''}>${d}</option>`
-        ).join('')}
-      </select>
-    </div>
-    <div class="form-field">
-      <label class="form-label">Note (optionnel)</label>
-      <input class="form-input" id="m-rappel-note" value="${r.note || ''}">
-    </div>
-  `, async () => {
-    const text     = document.getElementById('m-rappel-text')?.value.trim();
-    const heure    = document.getElementById('m-rappel-heure')?.value;
-    const freqType = document.getElementById('m-rappel-freq-type')?.value;
-    const note     = document.getElementById('m-rappel-note')?.value.trim();
-    if (!text) return;
-    const wdNames  = {0:'Dimanche',1:'Lundi',2:'Mardi',3:'Mercredi',4:'Jeudi',5:'Vendredi',6:'Samedi'};
-    let jours = '', freqVal = r.freqVal;
-    switch(freqType) {
-      case 'daily':    jours='Tous les jours'; break;
-      case 'weekdays': jours='Jours de semaine'; break;
-      case 'weekend':  jours='Fin de semaine'; break;
-      case 'xdays':    freqVal=document.getElementById('m-rappel-xdays')?.value; jours=`Tous les ${freqVal} jours`; break;
-      case 'xmonths':  freqVal=document.getElementById('m-rappel-xmonths')?.value; jours=`Tous les ${freqVal} mois`; break;
-      case 'custom':   freqVal=document.getElementById('m-rappel-custom-date')?.value; jours=`Le ${freqVal}`; break;
-      case 'weekday':  freqVal=document.getElementById('m-rappel-weekday')?.value; jours=`Chaque ${wdNames[freqVal]}`; break;
-    }
-    const updated = { text, heure, jours, freqType, freqVal, note };
-    await updateItem('rappels', r.id, updated);
-    const idx = rappels.findIndex(x => x.id === r.id);
-    if (idx >= 0) rappels[idx] = { ...rappels[idx], ...updated };
-    renderRappels();
-    renderHomeRappels();
-    closeModal();
-  });
-}
-
-function makeRappelItem(r, showBadge) {
-  const isRepeat = !['today','tomorrow','week','later'].includes(showBadge);
-  const item = document.createElement('div');
-  item.className = 'rappel-item';
-  item.style.borderLeft = isRepeat ? '2px solid var(--c3)' : '2px solid var(--teal-dim)';
-
-  const badgeClass = showBadge === 'today'    ? 'badge-today-r' :
-                     showBadge === 'tomorrow'  ? 'badge-tomorrow-r' :
-                     showBadge === 'week'      ? 'badge-week-r' : 'badge-repeat-r';
-  const badgeText  = showBadge === 'today'    ? "Aujourd'hui" :
-                     showBadge === 'tomorrow'  ? 'Demain' :
-                     showBadge === 'week'      ? 'Cette semaine' : r.jours || '';
-
-  const icon = isRepeat ? '↻' : '📅';
-
-  item.innerHTML = `
-    <div class="rappel-cb" id="rcb-${r.id}"></div>
-    <div class="rappel-info">
-      <div class="rappel-text" id="rtxt-${r.id}">${icon} ${r.text}</div>
-      <div class="rappel-meta">${r.heure}${r.note ? ' · '+r.note : ''}</div>
-    </div>
-    <span class="rappel-time-badge ${badgeClass}">${badgeText}</span>
-    <button class="btn-ghost" style="font-size:10px;padding:4px 8px;opacity:0;transition:opacity .2s;" class="rappel-edit-btn">✎</button>
-    <button class="rappel-delete" style="opacity:0;transition:opacity .2s;">✕</button>`;
-
-  item.onmouseenter = () => {
-    item.querySelectorAll('.rappel-delete, .btn-ghost').forEach(b => b.style.opacity='1');
-  };
-  item.onmouseleave = () => {
-    item.querySelectorAll('.rappel-delete, .btn-ghost').forEach(b => b.style.opacity='0');
-  };
-
-  item.querySelector('.btn-ghost').onclick = () => openEditRappelModal(r);
-
-  item.querySelector('.rappel-delete').onclick = async () => {
-    await deleteItem('rappels', r.id);
-    rappels = rappels.filter(x => x.id !== r.id);
-    renderRappels();
-    renderHomeRappels();
-  };
-
-  const cb = item.querySelector('.rappel-cb');
-  cb.onclick = () => {
-    cb.classList.toggle('done');
-    item.querySelector('.rappel-text').classList.toggle('done');
-  };
-  return item;
-}
-
 function renderRappels() {
-  const today    = new Date(); today.setHours(0,0,0,0);
-  const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
-  const nextWeek = new Date(today); nextWeek.setDate(today.getDate()+7);
+  const list = document.getElementById('todo-rappel-list');
+  if (!list) return;
+  list.innerHTML = '';
 
-  const lists = {
-    today:    document.getElementById('rappel-today-list'),
-    tomorrow: document.getElementById('rappel-tomorrow-list'),
-    week:     document.getElementById('rappel-week-list'),
-    later:    document.getElementById('rappel-later-list'),
-    repeat:   document.getElementById('rappel-repeat-list'),
-  };
-  Object.values(lists).forEach(l => { if(l) l.innerHTML=''; });
+  // Bouton ajouter
+  const addRow = document.createElement('div');
+  addRow.className = 'todo-add-row';
+  addRow.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <input class="todo-add-input" id="todo-new-input" placeholder="Ajouter un rappel..." onkeydown="if(event.key==='Enter')createTodoRappel()">`;
+  list.appendChild(addRow);
 
-  const groups = { today:[], tomorrow:[], week:[], later:[], repeat:[] };
-
-  rappels.forEach(r => {
-    // Rappels avec date precise
-    if (r.freqType === 'custom' && r.freqVal) {
-      const d = new Date(r.freqVal); d.setHours(0,0,0,0);
-      if (d.getTime() === today.getTime())          groups.today.push(r);
-      else if (d.getTime() === tomorrow.getTime())  groups.tomorrow.push(r);
-      else if (d <= nextWeek)                       groups.week.push(r);
-      else                                          groups.later.push(r);
-    } else {
-      // Rappels avec repetition
-      groups.repeat.push(r);
-    }
-  });
-
-  const empty = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel</p>';
   if (!rappels.length) {
-    if (lists.today) lists.today.innerHTML = empty;
+    const empty = document.createElement('div');
+    empty.style.cssText = 'padding:24px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.1em;';
+    empty.textContent = 'Aucun rappel';
+    list.appendChild(empty);
     return;
   }
 
-  Object.entries(groups).forEach(([key, items]) => {
-    const el = lists[key];
-    if (!el) return;
-    const badge = key === 'repeat' ? 'repeat' : key;
-    if (!items.length) { el.innerHTML = '<p style="font-size:10px;color:var(--text3);padding:4px 0;">—</p>'; return; }
-    items.forEach(r => el.appendChild(makeRappelItem(r, badge)));
-  });
-
-  // Masquer groupes vides
-  ['rappel-today','rappel-tomorrow','rappel-week','rappel-later','rappel-repeat-group'].forEach(id => {
-    const group = document.getElementById(id);
-    if (!group) return;
-    const list = group.querySelector('.rappel-group-list');
-    const key  = id.replace('rappel-','').replace('-group','');
-    const hasItems = groups[key === 'repeat' ? 'repeat' : key]?.length > 0;
-    group.style.display = hasItems ? 'block' : 'none';
-  });
-}
-
-function renderHomeRappels() {
-  const el = document.getElementById('home-rappels-list');
-  if (!el) return;
-  el.innerHTML = '';
   const today = new Date(); today.setHours(0,0,0,0);
 
-  // Afficher rappels du jour + repetitions
-  const toShow = rappels.filter(r => {
-    if (r.freqType === 'daily') return true;
-    if (r.freqType === 'weekdays') return today.getDay() >= 1 && today.getDay() <= 5;
-    if (r.freqType === 'weekend')  return today.getDay() === 0 || today.getDay() === 6;
-    if (r.freqType === 'weekday')  return today.getDay() === parseInt(r.freqVal);
-    if (r.freqType === 'custom' && r.freqVal) {
-      const d = new Date(r.freqVal); d.setHours(0,0,0,0);
-      return d.getTime() === today.getTime();
-    }
-    return true;
-  });
+  rappels.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'todo-rappel-item' + (r.id === selectedRappelId ? ' active' : '');
+    item.dataset.id = r.id;
 
-  if (!toShow.length) {
-    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
-    return;
-  }
-  toShow.forEach(r => el.appendChild(makeRappelItem(r, 'today')));
+    // Sous-titre
+    let sub = '', subClass = 'rep';
+    if (r.dueDate) {
+      const d = new Date(r.dueDate); d.setHours(0,0,0,0);
+      const diff = Math.round((d - today) / 86400000);
+      if (diff < 0)      { sub = 'En retard'; subClass = 'overdue'; }
+      else if (diff === 0) { sub = "Aujourd'hui · " + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      else if (diff === 1) { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      else { sub = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()]; subClass = 'due'; }
+    } else if (r.repeat && r.repeat !== 'none') {
+      sub = REP_LABELS[r.repeat] || r.repeat;
+      subClass = 'rep';
+    }
+
+    const subHtml = sub ? `<div class="todo-item-sub ${subClass}">${sub}</div>` : '';
+    item.innerHTML = `
+      <div class="todo-cb-sm${r.done?' done':''}" data-id="${r.id}"></div>
+      <div class="todo-item-body">
+        <div class="todo-item-title${r.done?' done':''}">${r.text}</div>
+        ${subHtml}
+      </div>`;
+
+    item.querySelector('.todo-cb-sm').onclick = (e) => {
+      e.stopPropagation();
+      toggleTodoRappelDone(r.id);
+    };
+    item.onclick = () => selectTodoRappel(r.id);
+    list.appendChild(item);
+  });
 }
 
-document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
-  openModal('Nouveau rappel', `
-    <div class="form-field">
-      <label class="form-label">Message</label>
-      <input class="form-input" id="m-rappel-text" placeholder="Ex: Pharmacie, Jardinage...">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Heure</label>
-      <input class="form-input" type="time" id="m-rappel-heure" value="08:00">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Frequence</label>
-      <select class="form-select" id="m-rappel-freq-type" onchange="toggleRappelFreq()">
-        <option value="daily">Tous les jours</option>
-        <option value="weekdays">Jours de semaine</option>
-        <option value="weekend">Fin de semaine</option>
-        <option value="xdays">Tous les X jours</option>
-        <option value="xmonths">Tous les X mois</option>
-        <option value="custom">Date precise</option>
-        <option value="weekday">Jour specifique</option>
-      </select>
-    </div>
-    <div id="m-rappel-xdays-wrap" class="form-field" style="display:none;">
-      <label class="form-label">Tous les combien de jours ?</label>
-      <input class="form-input" type="number" id="m-rappel-xdays" placeholder="Ex: 2" min="1" max="365">
-    </div>
-    <div id="m-rappel-xmonths-wrap" class="form-field" style="display:none;">
-      <label class="form-label">Tous les combien de mois ?</label>
-      <input class="form-input" type="number" id="m-rappel-xmonths" placeholder="Ex: 3" min="1" max="12">
-    </div>
-    <div id="m-rappel-custom-wrap" class="form-field" style="display:none;">
-      <label class="form-label">Date precise</label>
-      <input class="form-input" type="date" id="m-rappel-custom-date">
-    </div>
-    <div id="m-rappel-weekday-wrap" class="form-field" style="display:none;">
-      <label class="form-label">Jour de la semaine</label>
-      <select class="form-select" id="m-rappel-weekday">
-        <option value="1">Lundi</option><option value="2">Mardi</option>
-        <option value="3">Mercredi</option><option value="4">Jeudi</option>
-        <option value="5">Vendredi</option><option value="6">Samedi</option>
-        <option value="0">Dimanche</option>
-      </select>
-    </div>
-    <div class="form-field">
-      <label class="form-label">Note (optionnel)</label>
-      <input class="form-input" id="m-rappel-note" placeholder="Ex: Apporter la carte...">
-    </div>
-  `, async () => {
-    const text     = document.getElementById('m-rappel-text')?.value.trim();
-    const heure    = document.getElementById('m-rappel-heure')?.value;
-    const freqType = document.getElementById('m-rappel-freq-type')?.value;
-    const note     = document.getElementById('m-rappel-note')?.value.trim();
-    if (!text) return;
-    let jours = '', freqVal = null;
-    const wdNames = {0:'Dimanche',1:'Lundi',2:'Mardi',3:'Mercredi',4:'Jeudi',5:'Vendredi',6:'Samedi'};
-    switch(freqType) {
-      case 'daily':    jours = 'Tous les jours'; break;
-      case 'weekdays': jours = 'Jours de semaine'; break;
-      case 'weekend':  jours = 'Fin de semaine'; break;
-      case 'xdays':
-        freqVal = parseInt(document.getElementById('m-rappel-xdays')?.value)||2;
-        jours = `Tous les ${freqVal} jours`; break;
-      case 'xmonths':
-        freqVal = parseInt(document.getElementById('m-rappel-xmonths')?.value)||1;
-        jours = `Tous les ${freqVal} mois`; break;
-      case 'custom':
-        freqVal = document.getElementById('m-rappel-custom-date')?.value;
-        jours = `Le ${freqVal}`; break;
-      case 'weekday':
-        freqVal = document.getElementById('m-rappel-weekday')?.value;
-        jours = `Chaque ${wdNames[freqVal]}`; break;
-    }
-    const ref = await addItem('rappels', { text, heure, jours, freqType, freqVal, note });
-    rappels.push({ id: ref.id, text, heure, jours, freqType, freqVal, note });
-    renderRappels();
-    closeModal();
-    scheduleNotif(text, heure);
+function selectTodoRappel(id) {
+  selectedRappelId = id;
+  const r = rappels.find(x => x.id === id);
+  if (!r) return;
+
+  // Update active state
+  document.querySelectorAll('.todo-rappel-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
   });
+
+  // Show detail
+  document.getElementById('todo-detail-empty').style.display = 'none';
+  document.getElementById('todo-detail-content').style.display = 'block';
+  document.getElementById('todo-detail-title').textContent = r.text;
+  document.getElementById('todo-detail-cb').className = 'todo-cb-large' + (r.done ? ' done' : '');
+  document.getElementById('todo-detail-cb').onclick = () => toggleTodoRappelDone(id);
+
+  // Due date
+  const dueVal = document.getElementById('todo-due-val');
+  if (r.dueDate) {
+    const d = new Date(r.dueDate); d.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff === 0) dueVal.textContent = "Aujourd'hui";
+    else if (diff === 1) dueVal.textContent = 'Demain';
+    else dueVal.textContent = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()];
+    dueVal.style.color = diff < 0 ? '#F06060' : '#5AB4F0';
+  } else {
+    dueVal.textContent = 'Aucune';
+    dueVal.style.color = 'var(--text3)';
+  }
+
+  // Repeat
+  document.getElementById('todo-rep-val').textContent = REP_LABELS[r.repeat] || 'Aucune';
+  document.getElementById('todo-notif-time').value = r.heure || '08:00';
+  document.getElementById('todo-note').value = r.note || '';
+
+  // Popup days
+  const now = new Date();
+  const tom = new Date(now); tom.setDate(now.getDate()+1);
+  const nwk = new Date(now); nwk.setDate(now.getDate() + (8 - now.getDay() || 7));
+  const el1 = document.getElementById('popup-today-day');
+  const el2 = document.getElementById('popup-tomorrow-day');
+  const el3 = document.getElementById('popup-nextweek-day');
+  if (el1) el1.textContent = DAYS_FR_COURT[now.getDay()];
+  if (el2) el2.textContent = DAYS_FR_COURT[tom.getDay()];
+  if (el3) el3.textContent = DAYS_FR_COURT[nwk.getDay()];
+}
+
+async function createTodoRappel() {
+  const input = document.getElementById('todo-new-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  const ref = await addItem('rappels', { text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
+  rappels.push({ id: ref.id, text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
+  if (input) input.value = '';
+  renderRappels();
+  renderHomeRappels();
+  selectTodoRappel(ref.id);
+}
+
+async function toggleTodoRappelDone(id) {
+  const r = rappels.find(x => x.id === id);
+  if (!r) return;
+  r.done = !r.done;
+  await updateItem('rappels', id, { done: r.done });
+  renderRappels();
+  renderHomeRappels();
+  if (id === selectedRappelId) selectTodoRappel(id);
+}
+
+async function deleteTodoRappel() {
+  if (!selectedRappelId) return;
+  await deleteItem('rappels', selectedRappelId);
+  rappels = rappels.filter(x => x.id !== selectedRappelId);
+  selectedRappelId = null;
+  document.getElementById('todo-detail-empty').style.display = 'flex';
+  document.getElementById('todo-detail-content').style.display = 'none';
+  renderRappels();
+  renderHomeRappels();
+}
+
+window.toggleTodoPopup = function(type) {
+  const duePopup = document.getElementById('popup-due');
+  const repPopup = document.getElementById('popup-rep');
+  if (type === 'due') {
+    const isOpen = duePopup.style.display !== 'none';
+    duePopup.style.display = isOpen ? 'none' : 'block';
+    repPopup.style.display = 'none';
+  } else {
+    const isOpen = repPopup.style.display !== 'none';
+    repPopup.style.display = isOpen ? 'none' : 'block';
+    duePopup.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#todo-opt-due') && !e.target.closest('#todo-opt-rep')) {
+    document.getElementById('popup-due')?.style && (document.getElementById('popup-due').style.display='none');
+    document.getElementById('popup-rep')?.style && (document.getElementById('popup-rep').style.display='none');
+  }
 });
 
-window.toggleRappelFreq = function() {
-  const type = document.getElementById('m-rappel-freq-type')?.value;
-  const show = (id, v) => { const e=document.getElementById(id); if(e) e.style.display=v?'flex':'none'; };
-  show('m-rappel-xdays-wrap',   type==='xdays');
-  show('m-rappel-xmonths-wrap', type==='xmonths');
-  show('m-rappel-custom-wrap',  type==='custom');
-  show('m-rappel-weekday-wrap', type==='weekday');
+window.setDue = async function(type, e) {
+  e.stopPropagation();
+  if (!selectedRappelId) return;
+  const r = rappels.find(x => x.id === selectedRappelId);
+  if (!r) return;
+  const now = new Date(); now.setHours(0,0,0,0);
+  let date = null;
+  if (type === 'today')    { date = new Date(now); }
+  else if (type === 'tomorrow') { date = new Date(now); date.setDate(now.getDate()+1); }
+  else if (type === 'nextweek') { date = new Date(now); date.setDate(now.getDate()+(8-now.getDay()||7)); }
+  else if (type === 'custom') {
+    document.getElementById('popup-custom-date').style.display = 'block';
+    return;
+  } else if (type === 'picked') {
+    const val = document.getElementById('popup-custom-date').value;
+    if (!val) return;
+    date = new Date(val);
+  }
+  if (!date) return;
+  const iso = date.toISOString().split('T')[0];
+  r.dueDate = iso;
+  await updateItem('rappels', r.id, { dueDate: iso });
+  document.getElementById('popup-due').style.display = 'none';
+  document.getElementById('popup-custom-date').style.display = 'none';
+  renderRappels();
+  selectTodoRappel(r.id);
+}
+
+window.setRep = async function(rep, e) {
+  e.stopPropagation();
+  if (!selectedRappelId) return;
+  const r = rappels.find(x => x.id === selectedRappelId);
+  if (!r) return;
+  r.repeat = rep;
+  await updateItem('rappels', r.id, { repeat: rep });
+  document.getElementById('popup-rep').style.display = 'none';
+  renderRappels();
+  selectTodoRappel(r.id);
+}
+
+window.saveTodoDetail = async function() {
+  if (!selectedRappelId) return;
+  const r = rappels.find(x => x.id === selectedRappelId);
+  if (!r) return;
+  r.heure = document.getElementById('todo-notif-time')?.value || '08:00';
+  r.note  = document.getElementById('todo-note')?.value || '';
+  await updateItem('rappels', r.id, { heure: r.heure, note: r.note });
 }
 
 // Notifications navigateur
