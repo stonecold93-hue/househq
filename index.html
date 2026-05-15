@@ -2176,31 +2176,118 @@ async function loadRappels() {
   rappels = await getAll('rappels');
 }
 
+function openEditRappelModal(r) {
+  const freqLabels = {
+    daily:'Tous les jours', weekdays:'Jours de semaine', weekend:'Fin de semaine',
+    xdays:'Tous les X jours', xmonths:'Tous les X mois', custom:'Date precise', weekday:'Jour specifique'
+  };
+  openModal('Modifier le rappel', `
+    <div class="form-field">
+      <label class="form-label">Message</label>
+      <input class="form-input" id="m-rappel-text" value="${r.text || ''}">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Heure</label>
+      <input class="form-input" type="time" id="m-rappel-heure" value="${r.heure || '08:00'}">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Frequence</label>
+      <select class="form-select" id="m-rappel-freq-type" onchange="toggleRappelFreq()">
+        ${Object.entries(freqLabels).map(([v,l]) => `<option value="${v}"${r.freqType===v?' selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div id="m-rappel-xdays-wrap" class="form-field" style="display:${r.freqType==='xdays'?'flex':'none'};">
+      <label class="form-label">Nombre de jours</label>
+      <input class="form-input" type="number" id="m-rappel-xdays" value="${r.freqType==='xdays'?r.freqVal:''}" min="1">
+    </div>
+    <div id="m-rappel-xmonths-wrap" class="form-field" style="display:${r.freqType==='xmonths'?'flex':'none'};">
+      <label class="form-label">Nombre de mois</label>
+      <input class="form-input" type="number" id="m-rappel-xmonths" value="${r.freqType==='xmonths'?r.freqVal:''}" min="1">
+    </div>
+    <div id="m-rappel-custom-wrap" class="form-field" style="display:${r.freqType==='custom'?'flex':'none'};">
+      <label class="form-label">Date precise</label>
+      <input class="form-input" type="date" id="m-rappel-custom-date" value="${r.freqType==='custom'?r.freqVal:''}">
+    </div>
+    <div id="m-rappel-weekday-wrap" class="form-field" style="display:${r.freqType==='weekday'?'flex':'none'};">
+      <label class="form-label">Jour de la semaine</label>
+      <select class="form-select" id="m-rappel-weekday">
+        ${['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'].map((d,i) =>
+          `<option value="${i+1===7?0:i+1}"${r.freqVal===(i+1===7?'0':String(i+1))?' selected':''}>${d}</option>`
+        ).join('')}
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Note (optionnel)</label>
+      <input class="form-input" id="m-rappel-note" value="${r.note || ''}">
+    </div>
+  `, async () => {
+    const text     = document.getElementById('m-rappel-text')?.value.trim();
+    const heure    = document.getElementById('m-rappel-heure')?.value;
+    const freqType = document.getElementById('m-rappel-freq-type')?.value;
+    const note     = document.getElementById('m-rappel-note')?.value.trim();
+    if (!text) return;
+    const wdNames  = {0:'Dimanche',1:'Lundi',2:'Mardi',3:'Mercredi',4:'Jeudi',5:'Vendredi',6:'Samedi'};
+    let jours = '', freqVal = r.freqVal;
+    switch(freqType) {
+      case 'daily':    jours='Tous les jours'; break;
+      case 'weekdays': jours='Jours de semaine'; break;
+      case 'weekend':  jours='Fin de semaine'; break;
+      case 'xdays':    freqVal=document.getElementById('m-rappel-xdays')?.value; jours=`Tous les ${freqVal} jours`; break;
+      case 'xmonths':  freqVal=document.getElementById('m-rappel-xmonths')?.value; jours=`Tous les ${freqVal} mois`; break;
+      case 'custom':   freqVal=document.getElementById('m-rappel-custom-date')?.value; jours=`Le ${freqVal}`; break;
+      case 'weekday':  freqVal=document.getElementById('m-rappel-weekday')?.value; jours=`Chaque ${wdNames[freqVal]}`; break;
+    }
+    const updated = { text, heure, jours, freqType, freqVal, note };
+    await updateItem('rappels', r.id, updated);
+    const idx = rappels.findIndex(x => x.id === r.id);
+    if (idx >= 0) rappels[idx] = { ...rappels[idx], ...updated };
+    renderRappels();
+    renderHomeRappels();
+    closeModal();
+  });
+}
+
 function makeRappelItem(r, showBadge) {
+  const isRepeat = !['today','tomorrow','week','later'].includes(showBadge);
   const item = document.createElement('div');
   item.className = 'rappel-item';
-  const badgeClass = showBadge === 'today' ? 'badge-today-r' :
-                     showBadge === 'tomorrow' ? 'badge-tomorrow-r' :
-                     showBadge === 'week' ? 'badge-week-r' : 'badge-repeat-r';
-  const badgeText  = showBadge === 'today' ? "Aujourd'hui" :
-                     showBadge === 'tomorrow' ? 'Demain' :
-                     showBadge === 'week' ? 'Cette semaine' : r.jours || '';
+  item.style.borderLeft = isRepeat ? '2px solid var(--c3)' : '2px solid var(--teal-dim)';
+
+  const badgeClass = showBadge === 'today'    ? 'badge-today-r' :
+                     showBadge === 'tomorrow'  ? 'badge-tomorrow-r' :
+                     showBadge === 'week'      ? 'badge-week-r' : 'badge-repeat-r';
+  const badgeText  = showBadge === 'today'    ? "Aujourd'hui" :
+                     showBadge === 'tomorrow'  ? 'Demain' :
+                     showBadge === 'week'      ? 'Cette semaine' : r.jours || '';
+
+  const icon = isRepeat ? '↻' : '📅';
+
   item.innerHTML = `
     <div class="rappel-cb" id="rcb-${r.id}"></div>
     <div class="rappel-info">
-      <div class="rappel-text" id="rtxt-${r.id}">${r.text}</div>
+      <div class="rappel-text" id="rtxt-${r.id}">${icon} ${r.text}</div>
       <div class="rappel-meta">${r.heure}${r.note ? ' · '+r.note : ''}</div>
     </div>
     <span class="rappel-time-badge ${badgeClass}">${badgeText}</span>
+    <button class="btn-ghost" style="font-size:10px;padding:4px 8px;opacity:0;transition:opacity .2s;" class="rappel-edit-btn">✎</button>
     <button class="rappel-delete" style="opacity:0;transition:opacity .2s;">✕</button>`;
-  item.onmouseenter = () => item.querySelector('.rappel-delete').style.opacity='1';
-  item.onmouseleave = () => item.querySelector('.rappel-delete').style.opacity='0';
+
+  item.onmouseenter = () => {
+    item.querySelectorAll('.rappel-delete, .btn-ghost').forEach(b => b.style.opacity='1');
+  };
+  item.onmouseleave = () => {
+    item.querySelectorAll('.rappel-delete, .btn-ghost').forEach(b => b.style.opacity='0');
+  };
+
+  item.querySelector('.btn-ghost').onclick = () => openEditRappelModal(r);
+
   item.querySelector('.rappel-delete').onclick = async () => {
     await deleteItem('rappels', r.id);
     rappels = rappels.filter(x => x.id !== r.id);
     renderRappels();
     renderHomeRappels();
   };
+
   const cb = item.querySelector('.rappel-cb');
   cb.onclick = () => {
     cb.classList.toggle('done');
