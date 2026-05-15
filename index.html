@@ -2318,11 +2318,13 @@ function renderRappels() {
     // Sous-titre
     let sub = '', subClass = 'rep';
     if (r.dueDate) {
-      const d = new Date(r.dueDate); d.setHours(0,0,0,0);
-      const diff = Math.round((d - today) / 86400000);
-      if (diff < 0)      { sub = 'En retard'; subClass = 'overdue'; }
-      else if (diff === 0) { sub = "Aujourd'hui · " + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
-      else if (diff === 1) { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      const d = new Date(r.dueDate + 'T12:00:00');
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate()+1);
+      const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
+      if (r.dueDate < todayStr)        { sub = 'En retard'; subClass = 'overdue'; }
+      else if (r.dueDate === todayStr) { sub = "Aujourd'hui · " + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      else if (r.dueDate === tomorrowStr) { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
       else { sub = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()]; subClass = 'due'; }
     } else if (r.repeat && r.repeat !== 'none') {
       sub = getRepLabel(r);
@@ -2366,13 +2368,18 @@ function selectTodoRappel(id) {
   // Due date
   const dueVal = document.getElementById('todo-due-val');
   if (r.dueDate) {
-    const d = new Date(r.dueDate); d.setHours(0,0,0,0);
-    const today = new Date(); today.setHours(0,0,0,0);
-    const diff = Math.round((d - today) / 86400000);
-    if (diff === 0) dueVal.textContent = "Aujourd'hui";
-    else if (diff === 1) dueVal.textContent = 'Demain';
-    else dueVal.textContent = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()];
-    dueVal.style.color = diff < 0 ? '#F06060' : '#5AB4F0';
+    const d = new Date(r.dueDate + 'T12:00:00');
+    const today = new Date();
+    const todayStr2 = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate()+1);
+    const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
+    if (r.dueDate === todayStr2) { dueVal.textContent = "Aujourd'hui"; dueVal.style.color = '#5AB4F0'; }
+    else if (r.dueDate === tomorrowStr) { dueVal.textContent = 'Demain'; dueVal.style.color = '#5AB4F0'; }
+    else {
+      const diff = Math.round((d - today) / 86400000);
+      dueVal.textContent = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()];
+      dueVal.style.color = diff < 0 ? '#F06060' : '#5AB4F0';
+    }
   } else {
     dueVal.textContent = 'Aucune';
     dueVal.style.color = 'var(--text3)';
