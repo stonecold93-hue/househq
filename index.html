@@ -3349,7 +3349,10 @@ function renderHomeRappels() {
   });
 }
 
-// ─── NAVIGATION ──────────────────────────────────────
+document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
+  const input = document.getElementById('todo-new-input');
+  if (input) { input.focus(); input.select(); }
+});
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
