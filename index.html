@@ -641,7 +641,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <h1 class="page-title">Budget</h1>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:11px;color:var(--text3);">Salaire</span>
-          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="calcBudgetSummary();saveSalary()">
+          <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" oninput="_budgetSettings.salary=parseFloat(this.value)||0;calcBudgetSummary();saveSalary()">
           <span style="color:var(--text3);font-size:11px;">$</span>
         </div>
       </div>
@@ -651,7 +651,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div class="stat-card"><span class="stat-value" id="b-salaire">0$</span><span class="stat-label">Salaire</span></div>
         <div class="stat-card">
           <div style="display:flex;align-items:center;gap:6px;">
-            <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="saveSolde();calcArgentRestant()" value="0">
+            <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="_budgetSettings.solde=parseFloat(this.value)||0;calcArgentRestant();saveSolde()" value="0">
             <span style="font-size:14px;color:var(--teal);">$</span>
           </div>
           <span class="stat-label">Solde actuel (reel)</span>
@@ -2314,6 +2314,17 @@ function fmtB(n){ return Math.round(n).toLocaleString('fr-CA')+'$'; }
 let _budgetSettings = { salary: 0, solde: 0 };
 
 async function loadBudget() {
+  // 1. Charger les settings Firestore EN PREMIER avant tout
+  try {
+    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
+    if (snap.exists()) {
+      const d = snap.data();
+      _budgetSettings.salary = parseFloat(d.salary) || 0;
+      _budgetSettings.solde  = parseFloat(d.solde)  || 0;
+    }
+  } catch(e) { console.log('Firestore budget settings error:', e); }
+
+  // 2. Charger les transactions du calendrier
   const items = await getAll('budget_cal');
   budgetData = {};
   items.forEach(item => {
@@ -2321,47 +2332,47 @@ async function loadBudget() {
     budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt, auto:item.auto||false});
   });
 
-  // Load saved salary + solde into global cache
-  try {
-    const salaryDoc = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
-    if (salaryDoc.exists()) {
-      const data = salaryDoc.data();
-      _budgetSettings.salary = data.salary || 0;
-      _budgetSettings.solde  = data.solde  || 0;
-    }
-  } catch(e) { console.log('No budget settings saved yet'); }
-
+  // 3. Appliquer les settings dans le DOM
   applyBudgetSettings();
 
+  // 4. Init les rangees dettes/actifs
   const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
   const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
   dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
   actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+
+  // 5. Charger les cartes et auto-entries
   await loadCartes();
   checkAutoEntries();
   await saveAutoEntriesToFirestore();
+
+  // 6. Render APRES que tout est chargé
   renderBudget();
   renderCartes();
 }
 
 function applyBudgetSettings() {
   const salaryEl = document.getElementById('budget-salary');
-  if (salaryEl) salaryEl.value = _budgetSettings.salary;
+  if (salaryEl) salaryEl.value = _budgetSettings.salary || 0;
   const soldeEl = document.getElementById('b-solde-input');
-  if (soldeEl) soldeEl.value = _budgetSettings.solde;
+  if (soldeEl) soldeEl.value = _budgetSettings.solde || 0;
 }
 
 // Save salary + solde to Firestore
 async function saveSalary() {
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  _budgetSettings.salary = salary;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde: _budgetSettings.solde });
+  _budgetSettings.salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), {
+    salary: _budgetSettings.salary,
+    solde:  _budgetSettings.solde
+  });
 }
 
 async function saveSolde() {
-  const solde = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  _budgetSettings.solde = solde;
-  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary: _budgetSettings.salary, solde });
+  _budgetSettings.solde = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), {
+    salary: _budgetSettings.salary,
+    solde:  _budgetSettings.solde
+  });
 }
 
 function renderBudget() {
