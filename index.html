@@ -2348,9 +2348,9 @@ async function loadBudget() {
 
 function applyBudgetSettings() {
   const salaryEl = document.getElementById('budget-salary');
-  if (salaryEl) salaryEl.value = _budgetSettings.salary || 0;
+  if (salaryEl) { salaryEl.value = ''; salaryEl.value = String(_budgetSettings.salary || 0); }
   const soldeEl = document.getElementById('b-solde-input');
-  if (soldeEl) soldeEl.value = _budgetSettings.solde || 0;
+  if (soldeEl)  { soldeEl.value  = ''; soldeEl.value  = String(_budgetSettings.solde  || 0); }
 }
 
 // Save salary + solde to Firestore
