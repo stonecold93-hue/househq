@@ -3350,8 +3350,16 @@ function renderHomeRappels() {
 }
 
 document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
-  const input = document.getElementById('todo-new-input');
-  if (input) { input.focus(); input.select(); }
+  // Switch to rappels tab first if not already there
+  const rappelsTab = document.getElementById('tab-rappels');
+  if (rappelsTab?.classList.contains('hidden')) {
+    switchTab('rappels');
+  }
+  // Wait for render then focus
+  setTimeout(() => {
+    const input = document.getElementById('todo-new-input');
+    if (input) { input.focus(); input.select(); }
+  }, 100);
 });
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
