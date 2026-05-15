@@ -646,12 +646,18 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
-      <!-- Résumé -->
+      <!-- Métriques principales -->
       <div class="stats-row">
         <div class="stat-card"><span class="stat-value" id="b-salaire">0$</span><span class="stat-label">Salaire</span></div>
-        <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Total depenses</span></div>
-        <div class="stat-card"><span class="stat-value" id="b-reste">0$</span><span class="stat-label">Reste</span></div>
-        <div class="stat-card"><span class="stat-value" id="b-restant" style="color:var(--amber)">0$</span><span class="stat-label">Jours avec depenses</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-solde" style="color:var(--teal)">0$</span><span class="stat-label">Solde actuel</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Depenses payees</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-reste" style="color:var(--amber)">0$</span><span class="stat-label">Depenses restantes</span></div>
+      </div>
+
+      <!-- Prochains paiements -->
+      <div class="section-card">
+        <h2 class="section-title">Prochains paiements prevus</h2>
+        <div id="next-payments-list" style="display:flex;flex-direction:column;gap:0;margin-top:10px;"></div>
       </div>
 
       <!-- Calendrier -->
@@ -2388,22 +2394,45 @@ function renderBudget() {
   calcBudgetSummary(monthTotal, activeDays);
   calcBudgetBilan();
   renderBudgetCharts();
+  renderNextPayments();
 }
 
-// ─── AUTO ENTRIES JEUDI/VENDREDI ─────────────────────
+// ─── AUTO ENTRIES ─────────────────────────────────────
 function checkAutoEntries() {
   const year = budgetYear, month = budgetMonth;
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  const autoEntries = [
-    { dow:4, cat:'Hypotheque',   amt:256.88 },
-    { dow:4, cat:'Marge vieille', amt:73.56 },
-    { dow:5, cat:'REER',          amt:35.00 },
+
+  // Entrees par jour de semaine (dow: 0=dim,1=lun,...,5=ven,4=jeu)
+  const dowEntries = [
+    { dow:4, cat:'Hypotheque',    amt:256.88 },
+    { dow:4, cat:'Marge vieille', amt:73.56  },
+    { dow:5, cat:'REER',          amt:35.00  },
   ];
+
+  // Entrees par jour du mois (dom: jour fixe du mois)
+  const domEntries = [
+    { dom:1,  cat:'Ass. maison', amt:180.22 },
+    { dom:15, cat:'Ass. Eric',   amt:16.10  },
+    { dom:15, cat:'Ass. Ryan',   amt:27.77  },
+  ];
+
   for (let d=1; d<=daysInMonth; d++) {
     const date = new Date(year, month, d);
     const k = budgetKey(year, month, d);
-    autoEntries.forEach(entry => {
+
+    // Par jour de semaine
+    dowEntries.forEach(entry => {
       if (entry.dow !== date.getDay()) return;
+      const existing = budgetData[k] || [];
+      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
+        if (!budgetData[k]) budgetData[k] = [];
+        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
+      }
+    });
+
+    // Par jour du mois
+    domEntries.forEach(entry => {
+      if (entry.dom !== d) return;
       const existing = budgetData[k] || [];
       if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
         if (!budgetData[k]) budgetData[k] = [];
@@ -2543,29 +2572,88 @@ function renderBudgetCharts() {
 }
 
 window.calcBudgetSummary = function(monthTotal, activeDays) {
-  if (monthTotal === undefined) {
-    monthTotal = 0;
-    const grid = document.getElementById('budget-cal-grid');
-    if (!grid) return;
-    const daysInMonth = new Date(budgetYear, budgetMonth+1, 0).getDate();
-    for (let d=1; d<=daysInMonth; d++) {
-      const k = budgetKey(budgetYear, budgetMonth, d);
-      const entries = budgetData[k] || [];
-      monthTotal += entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
-    }
-    activeDays = Object.keys(budgetData).filter(k => k.startsWith(`${budgetYear}-${String(budgetMonth+1).padStart(2,'0')}`)).length;
+  const today = new Date();
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Calcul depenses payees (jusqu'a aujourd'hui) vs restantes (apres aujourd'hui)
+  let paidTotal = 0, remainingTotal = 0;
+  for (let d=1; d<=daysInMonth; d++) {
+    const k = budgetKey(year, month, d);
+    const entries = budgetData[k] || [];
+    const dayTotal = entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
+    const date = new Date(year, month, d);
+    if (date <= today) paidTotal += dayTotal;
+    else remainingTotal += dayTotal;
   }
+
   const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const reste = salary - monthTotal;
-  const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  setEl('b-salaire', fmtB(salary));
-  setEl('b-depenses', fmtB(monthTotal));
-  setEl('b-restant', activeDays + ' jours');
-  const resteEl = document.getElementById('b-reste');
-  if (resteEl) {
-    resteEl.textContent = fmtB(reste);
-    resteEl.style.color = reste >= 0 ? 'var(--teal)' : '#F06060';
+  const solde  = salary - paidTotal;
+
+  const setEl = (id,v,color) => {
+    const e = document.getElementById(id);
+    if (!e) return;
+    e.textContent = v;
+    if (color) e.style.color = color;
+  };
+  setEl('b-salaire',  fmtB(salary));
+  setEl('b-solde',    fmtB(solde),   solde >= 0 ? 'var(--teal)' : '#F06060');
+  setEl('b-depenses', '-'+fmtB(paidTotal));
+  setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
+
+  renderNextPayments();
+}
+
+function renderNextPayments() {
+  const el = document.getElementById('next-payments-list');
+  if (!el) return;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const DAYS_FR3 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const MONTHS_FR3 = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
+
+  let upcoming = [];
+  for (let d=1; d<=daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    date.setHours(0,0,0,0);
+    if (date < today) continue; // seulement futur et aujourd'hui
+    const k = budgetKey(year, month, d);
+    const entries = budgetData[k] || [];
+    entries.forEach(e => {
+      const diffDays = Math.round((date - today) / 86400000);
+      upcoming.push({ date, d, diffDays, cat: e.cat, amt: e.amt, auto: e.auto });
+    });
   }
+
+  // Trier par date
+  upcoming.sort((a,b) => a.date - b.date);
+  // Limiter à 8 prochains
+  upcoming = upcoming.slice(0, 8);
+
+  el.innerHTML = '';
+  if (!upcoming.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun paiement prevu</p>';
+    return;
+  }
+
+  upcoming.forEach(p => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);';
+    const dateStr = `${DAYS_FR3[p.date.getDay()]} ${p.d} ${MONTHS_FR3[month]}`;
+    let badgeStyle, badgeText;
+    if (p.diffDays === 0) { badgeStyle='background:rgba(240,96,96,.15);color:#F06060;'; badgeText="Aujourd'hui"; }
+    else if (p.diffDays <= 3) { badgeStyle='background:rgba(244,166,35,.15);color:var(--amber);'; badgeText=`Dans ${p.diffDays}j`; }
+    else { badgeStyle='background:var(--bg3);color:var(--text3);'; badgeText=`Dans ${p.diffDays}j`; }
+    row.innerHTML = `
+      <span style="font-size:11px;color:var(--text3);min-width:80px;">${dateStr}</span>
+      <span style="font-size:12px;color:var(--text);flex:1;">${p.cat}${p.auto?' <span style="font-size:9px;color:var(--text3);">auto</span>':''}</span>
+      <span style="font-size:13px;font-weight:500;color:#F06060;">-${fmtB(p.amt)}</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.05em;${badgeStyle}">${badgeText}</span>
+    `;
+    el.appendChild(row);
+  });
 }
 
 function openBudgetDay(d, k) {
