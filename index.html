@@ -2081,13 +2081,17 @@ function renderRappels() {
   rappels.forEach(r => {
     const item = document.createElement('div');
     item.className = 'rappel-item';
+    const freqIcon = {
+      'daily':'🔁', 'weekdays':'📅', 'weekend':'🏖',
+      'xdays':'⏱', 'xmonths':'📆', 'custom':'📌', 'weekday':'🗓'
+    }[r.freqType] || '🔔';
     item.innerHTML = `
       <span class="rappel-time">${r.heure}</span>
       <div style="flex:1">
-        <div class="rappel-text">${r.text}</div>
-        <div class="rappel-days">${r.jours || 'Tous les jours'}</div>
+        <div class="rappel-text">${freqIcon} ${r.text}</div>
+        <div class="rappel-days">${r.jours || 'Tous les jours'}${r.note ? ' · '+r.note : ''}</div>
       </div>
-      <button class="rappel-delete" data-id="${r.id}">X</button>
+      <button class="rappel-delete" data-id="${r.id}">✕</button>
     `;
     item.querySelector('.rappel-delete').onclick = async () => {
       await deleteItem('rappels', r.id);
@@ -2102,33 +2106,90 @@ document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
   openModal('Nouveau rappel', `
     <div class="form-field">
       <label class="form-label">Message</label>
-      <input class="form-input" id="m-rappel-text" placeholder="Ex: Faire les blocs Clean">
+      <input class="form-input" id="m-rappel-text" placeholder="Ex: Pharmacie, Jardinage...">
     </div>
     <div class="form-field">
       <label class="form-label">Heure</label>
       <input class="form-input" type="time" id="m-rappel-heure" value="08:00">
     </div>
     <div class="form-field">
-      <label class="form-label">Jours</label>
-      <select class="form-select" id="m-rappel-jours">
-        <option value="Tous les jours">Tous les jours</option>
-        <option value="Jours de semaine">Jours de semaine</option>
-        <option value="Fin de semaine">Fin de semaine</option>
-        <option value="Lundi">Lundi seulement</option>
+      <label class="form-label">Frequence</label>
+      <select class="form-select" id="m-rappel-freq-type" onchange="toggleRappelFreq()">
+        <option value="daily">Tous les jours</option>
+        <option value="weekdays">Jours de semaine</option>
+        <option value="weekend">Fin de semaine</option>
+        <option value="xdays">Tous les X jours</option>
+        <option value="xmonths">Tous les X mois</option>
+        <option value="custom">Date precise</option>
+        <option value="weekday">Jour specifique</option>
       </select>
     </div>
+    <div id="m-rappel-xdays-wrap" class="form-field" style="display:none;">
+      <label class="form-label">Tous les combien de jours ?</label>
+      <input class="form-input" type="number" id="m-rappel-xdays" placeholder="Ex: 2" min="1" max="365">
+    </div>
+    <div id="m-rappel-xmonths-wrap" class="form-field" style="display:none;">
+      <label class="form-label">Tous les combien de mois ?</label>
+      <input class="form-input" type="number" id="m-rappel-xmonths" placeholder="Ex: 3" min="1" max="12">
+    </div>
+    <div id="m-rappel-custom-wrap" class="form-field" style="display:none;">
+      <label class="form-label">Date precise</label>
+      <input class="form-input" type="date" id="m-rappel-custom-date">
+    </div>
+    <div id="m-rappel-weekday-wrap" class="form-field" style="display:none;">
+      <label class="form-label">Jour de la semaine</label>
+      <select class="form-select" id="m-rappel-weekday">
+        <option value="1">Lundi</option><option value="2">Mardi</option>
+        <option value="3">Mercredi</option><option value="4">Jeudi</option>
+        <option value="5">Vendredi</option><option value="6">Samedi</option>
+        <option value="0">Dimanche</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Note (optionnel)</label>
+      <input class="form-input" id="m-rappel-note" placeholder="Ex: Apporter la carte...">
+    </div>
   `, async () => {
-    const text  = document.getElementById('m-rappel-text')?.value.trim();
-    const heure = document.getElementById('m-rappel-heure')?.value;
-    const jours = document.getElementById('m-rappel-jours')?.value;
+    const text     = document.getElementById('m-rappel-text')?.value.trim();
+    const heure    = document.getElementById('m-rappel-heure')?.value;
+    const freqType = document.getElementById('m-rappel-freq-type')?.value;
+    const note     = document.getElementById('m-rappel-note')?.value.trim();
     if (!text) return;
-    const ref = await addItem('rappels', { text, heure, jours });
-    rappels.push({ id: ref.id, text, heure, jours });
+    let jours = '', freqVal = null;
+    const wdNames = {0:'Dimanche',1:'Lundi',2:'Mardi',3:'Mercredi',4:'Jeudi',5:'Vendredi',6:'Samedi'};
+    switch(freqType) {
+      case 'daily':    jours = 'Tous les jours'; break;
+      case 'weekdays': jours = 'Jours de semaine'; break;
+      case 'weekend':  jours = 'Fin de semaine'; break;
+      case 'xdays':
+        freqVal = parseInt(document.getElementById('m-rappel-xdays')?.value)||2;
+        jours = `Tous les ${freqVal} jours`; break;
+      case 'xmonths':
+        freqVal = parseInt(document.getElementById('m-rappel-xmonths')?.value)||1;
+        jours = `Tous les ${freqVal} mois`; break;
+      case 'custom':
+        freqVal = document.getElementById('m-rappel-custom-date')?.value;
+        jours = `Le ${freqVal}`; break;
+      case 'weekday':
+        freqVal = document.getElementById('m-rappel-weekday')?.value;
+        jours = `Chaque ${wdNames[freqVal]}`; break;
+    }
+    const ref = await addItem('rappels', { text, heure, jours, freqType, freqVal, note });
+    rappels.push({ id: ref.id, text, heure, jours, freqType, freqVal, note });
     renderRappels();
     closeModal();
     scheduleNotif(text, heure);
   });
 });
+
+window.toggleRappelFreq = function() {
+  const type = document.getElementById('m-rappel-freq-type')?.value;
+  const show = (id, v) => { const e=document.getElementById(id); if(e) e.style.display=v?'flex':'none'; };
+  show('m-rappel-xdays-wrap',   type==='xdays');
+  show('m-rappel-xmonths-wrap', type==='xmonths');
+  show('m-rappel-custom-wrap',  type==='custom');
+  show('m-rappel-weekday-wrap', type==='weekday');
+}
 
 // Notifications navigateur
 document.getElementById('notif-permission-btn')?.addEventListener('click', async () => {
