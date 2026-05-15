@@ -2453,21 +2453,20 @@ window.setDue = async function(type, e) {
   if (!selectedRappelId) return;
   const r = rappels.find(x => x.id === selectedRappelId);
   if (!r) return;
-  const now = new Date(); now.setHours(0,0,0,0);
-  let date = null;
-  if (type === 'today')    { date = new Date(now); }
-  else if (type === 'tomorrow') { date = new Date(now); date.setDate(now.getDate()+1); }
-  else if (type === 'nextweek') { date = new Date(now); date.setDate(now.getDate()+(8-now.getDay()||7)); }
+  const now = new Date();
+  const toLocalStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  let iso = null;
+  if (type === 'today') { iso = toLocalStr(now); }
+  else if (type === 'tomorrow') { const d=new Date(now); d.setDate(now.getDate()+1); iso=toLocalStr(d); }
+  else if (type === 'nextweek') { const d=new Date(now); d.setDate(now.getDate()+(8-now.getDay()||7)); iso=toLocalStr(d); }
   else if (type === 'custom') {
     document.getElementById('popup-custom-date').style.display = 'block';
     return;
   } else if (type === 'picked') {
-    const val = document.getElementById('popup-custom-date').value;
-    if (!val) return;
-    date = new Date(val);
+    iso = document.getElementById('popup-custom-date').value;
+    if (!iso) return;
   }
-  if (!date) return;
-  const iso = date.toISOString().split('T')[0];
+  if (!iso) return;
   r.dueDate = iso;
   await updateItem('rappels', r.id, { dueDate: iso });
   document.getElementById('popup-due').style.display = 'none';
@@ -3269,6 +3268,53 @@ document.getElementById('budget-modal-close')?.addEventListener('click', () => {
 document.getElementById('budget-day-modal')?.addEventListener('click', e => {
   if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); budgetSelectedDay=null; }
 });
+
+function renderHomeRappels() {
+  const el = document.getElementById('home-rappels-list');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const dow = now.getDay();
+
+  const toShow = rappels.filter(r => {
+    if (!r.repeat || r.repeat === 'none') {
+      return r.dueDate === todayStr;
+    }
+    if (r.repeat === 'daily') return true;
+    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+    if (r.repeat === 'weekly') return true;
+    if (r.repeat === 'monthly') return true;
+    if (r.repeat === 'yearly') return true;
+    if (r.repeat?.startsWith('xdays:')) {
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T00:00:00');
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((now - start) / 86400000);
+      return diff >= 0 && diff % n === 0;
+    }
+    return false;
+  });
+
+  if (!toShow.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
+    return;
+  }
+
+  toShow.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'rappel-item';
+    item.innerHTML = `
+      <div class="rappel-cb"></div>
+      <div class="rappel-info">
+        <div class="rappel-text">${r.text}</div>
+        <div class="rappel-meta">${r.heure||''}${r.note?' · '+r.note:''}</div>
+      </div>
+      <span class="rappel-time-badge badge-today-r">Aujourd'hui</span>`;
+    el.appendChild(item);
+  });
+}
 
 // ─── NAVIGATION ──────────────────────────────────────
 document.querySelectorAll('.nav-btn').forEach(btn => {
