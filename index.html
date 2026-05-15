@@ -744,6 +744,29 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
+      <!-- Résumé Amazon -->
+      <div class="section-card">
+        <h2 class="section-title">Résumé Amazon par catégorie</h2>
+        <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:12px;">
+          <div style="flex:1;min-width:180px;">
+            <div style="position:relative;width:100%;height:220px;">
+              <canvas id="amazonDonut" role="img" aria-label="Dépenses Amazon par catégorie">Résumé des dépenses Amazon.</canvas>
+            </div>
+          </div>
+          <div style="flex:1;min-width:200px;overflow-x:auto;">
+            <table class="year-table" style="width:100%;">
+              <thead><tr><th>Raison</th><th style="text-align:right;">Montant</th><th style="text-align:right;">%</th></tr></thead>
+              <tbody id="amazon-summary-body"></tbody>
+              <tfoot><tr>
+                <td style="font-weight:500;color:var(--text);">Total</td>
+                <td style="text-align:right;font-weight:500;color:var(--text);" id="amazon-summary-total">0$</td>
+                <td style="text-align:right;color:var(--text3);">100%</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Graphiques budget -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="section-card">
@@ -2485,6 +2508,7 @@ function renderCartes() {
   renderCarteRows('capone');
   renderCarteRows('amazon');
   renderCartesSummary();
+  renderAmazonChart();
 }
 
 function renderCarteRows(carte) {
@@ -2636,6 +2660,7 @@ window.renderCartesSummary = function() {
 
   saveCartes();
   renderBudgetCharts();
+  renderAmazonChart();
 }
 
 function syncCarteToCal(carte, idx) {
@@ -2655,6 +2680,66 @@ function syncCarteToCal(carte, idx) {
 
 // ─── BUDGET CHARTS ────────────────────────────────────
 let _budgetDonut=null, _budgetWeekly=null;
+
+let _amazonDonutChart = null;
+
+function renderAmazonChart() {
+  const rows = cartesData.amazon || [];
+
+  // Grouper par raison
+  const groups = {};
+  rows.forEach(r => {
+    const key = r.raison || 'Autre';
+    groups[key] = (groups[key] || 0) + (parseFloat(r.dep) || 0);
+  });
+
+  const entries = Object.entries(groups).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const total   = entries.reduce((s,[,v]) => s+v, 0);
+  const colors  = ['#534AB7','#1D9E75','#378ADD','#BA7517','#E24B4A','#888780','#D4537E','#639922','#F4A623','#C2714F'];
+
+  // Table
+  const tbody = document.getElementById('amazon-summary-body');
+  if (tbody) {
+    tbody.innerHTML = '';
+    entries.forEach(([raison, amt], i) => {
+      const pct = total > 0 ? Math.round(amt/total*100) : 0;
+      const tr  = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="display:flex;align-items:center;gap:6px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0;"></span>
+          ${raison}
+        </td>
+        <td style="text-align:right;">${amt.toFixed(2)}$</td>
+        <td style="text-align:right;">${pct}%</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  const totalEl = document.getElementById('amazon-summary-total');
+  if (totalEl) totalEl.textContent = total.toFixed(2)+'$';
+
+  // Donut
+  const ctx = document.getElementById('amazonDonut');
+  if (!ctx) return;
+  if (_amazonDonutChart) _amazonDonutChart.destroy();
+  _amazonDonutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(([r]) => r),
+      datasets: [{
+        data: entries.map(([,v]) => parseFloat(v.toFixed(2))),
+        backgroundColor: colors.slice(0, entries.length),
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      cutout: '65%'
+    }
+  });
+}
 
 function renderBudgetCharts() {
   const year=budgetYear, month=budgetMonth;
