@@ -352,7 +352,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .carte-total-dep{color:#F06060;font-weight:500;}
 .carte-diff{color:var(--amber);font-weight:500;}
 .amazon-row{display:grid;grid-template-columns:60px 70px 1fr 20px;gap:4px;padding:5px 8px;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);align-items:center;}
-.amazon-sub{grid-template-columns:60px 70px 1fr 20px;}
+.carte-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;padding:2px 4px;}
+.carte-del-btn:hover{color:#F06060;}
 
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
@@ -2493,19 +2494,33 @@ function renderCarteRows(carte) {
   (cartesData[carte] || []).forEach((row, i) => {
     const div = document.createElement('div');
     div.className = carte === 'amazon' ? 'carte-row amazon-row' : 'carte-row';
+    div.dataset.idx = i;
+    div.dataset.carte = carte;
+
     if (carte === 'amazon') {
       div.innerHTML = `
-        <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
-        <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary()">
-        <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
-        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes();saveCartes()">✕</button>`;
+        <input type="text" placeholder="MM/DD" value="${row.date||''}">
+        <input type="number" placeholder="0.00" value="${row.dep||''}">
+        <input type="text" placeholder="Raison" value="${row.raison||''}">
+        <button class="carte-del-btn">✕</button>`;
+      const [dateIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
+      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
+      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
+      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
+      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
     } else {
       div.innerHTML = `
-        <input type="text" placeholder="MM/DD" value="${row.date||''}" oninput="cartesData['${carte}'][${i}].date=this.value">
-        <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}" oninput="cartesData['${carte}'][${i}].pay=parseFloat(this.value)||0;renderCartesSummary()">
-        <input type="number" placeholder="0.00" value="${row.dep||''}" oninput="cartesData['${carte}'][${i}].dep=parseFloat(this.value)||0;renderCartesSummary();syncCarteToCal('${carte}',${i})">
-        <input type="text" placeholder="Raison" value="${row.raison||''}" oninput="cartesData['${carte}'][${i}].raison=this.value">
-        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;" onclick="cartesData['${carte}'].splice(${i},1);renderCartes();saveCartes()">✕</button>`;
+        <input type="text" placeholder="MM/DD" value="${row.date||''}">
+        <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}">
+        <input type="number" placeholder="0.00" value="${row.dep||''}">
+        <input type="text" placeholder="Raison" value="${row.raison||''}">
+        <button class="carte-del-btn">✕</button>`;
+      const [dateIn, payIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
+      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
+      payIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].pay    = parseFloat(payIn.value)||0; renderCartesSummary(); };
+      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
+      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
+      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
     }
     container.appendChild(div);
   });
