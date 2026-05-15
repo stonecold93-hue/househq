@@ -648,15 +648,9 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 
       <!-- Métriques principales -->
       <div class="stats-row">
+        <div class="stat-card"><span class="stat-value" id="b-salaire" style="color:var(--text)">0$</span><span class="stat-label">Salaire</span></div>
         <div class="stat-card">
           <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
-            <input type="number" id="budget-salary" value="0" class="budget-salary-input" placeholder="0" style="font-size:22px;width:140px;text-align:center;" oninput="_budgetSettings.salary=parseFloat(this.value)||0;calcBudgetSummary();saveSalary()">
-            <span style="font-size:14px;color:var(--text2);">$</span>
-          </div>
-          <span class="stat-label">Salaire</span>
-        </div>
-        <div class="stat-card">
-          <div style="display:flex;align-items:center;gap:6px;">
             <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" style="width:120px;font-size:22px;" oninput="_budgetSettings.solde=parseFloat(this.value)||0;calcArgentRestant();saveSolde()" value="0">
             <span style="font-size:14px;color:var(--teal);">$</span>
           </div>
@@ -2673,6 +2667,7 @@ window.calcBudgetSummary = function(monthTotal, activeDays) {
     if (color) e.style.color = color;
   };
   _remainingTotal = remainingTotal;
+  setEl('b-salaire',  fmtB(salary));
   setEl('b-depenses', fmtB(paidTotal));
   setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
 
