@@ -614,7 +614,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="clean-calendar">Calendrier</button>
         <button class="sub-tab" data-subtab="clean-tasks">Liste de taches</button>
-        <button class="sub-tab" data-subtab="clean-modifier" onclick="renderCleanScheduleEditor()">✎ Modifier horaire</button>
       </div>
       <div id="clean-calendar" class="sub-content active">
         <div class="section-card">
@@ -624,16 +623,16 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       </div>
       <div id="clean-tasks" class="sub-content hidden">
         <div class="section-card">
-          <div class="section-top"><h2 class="section-title">Liste de taches menage</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
-          <div id="clean-task-list" class="task-list"></div>
-        </div>
-      </div>
-      <div id="clean-modifier" class="sub-content hidden">
-        <div class="section-card">
-          <h2 class="section-title" style="margin-bottom:8px;">Modifier l'horaire des taches</h2>
-          <p style="font-size:10px;color:var(--text3);letter-spacing:.05em;margin-bottom:14px;">Modifie les taches par journee — le calendrier se met a jour automatiquement</p>
+          <div class="section-top">
+            <h2 class="section-title">Taches par journee</h2>
+            <button class="btn-primary" onclick="saveCleanScheduleEdit()">💾 Sauvegarder</button>
+          </div>
+          <p style="font-size:10px;color:var(--text3);margin-bottom:14px;letter-spacing:.05em;">Modifie les taches et leur journee — le calendrier se met a jour automatiquement</p>
           <div id="clean-schedule-editor"></div>
-          <button class="btn-primary" style="margin-top:14px;" onclick="saveCleanScheduleEdit()">💾 Sauvegarder</button>
+        </div>
+        <div class="section-card" style="margin-top:12px;">
+          <div class="section-top"><h2 class="section-title">Taches ponctuelles</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
+          <div id="clean-task-list" class="task-list"></div>
         </div>
       </div>
     </section>
@@ -3889,6 +3888,8 @@ document.querySelectorAll('.sub-tab').forEach(btn => {
       c.classList.toggle('active', isActive);
       c.classList.toggle('hidden', !isActive);
     });
+    // Render clean schedule editor when Liste de taches opens
+    if (target === 'clean-tasks') renderCleanScheduleEditor();
   });
 });
 
