@@ -608,7 +608,18 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 
     <!-- CLEAN -->
     <section id="tab-clean" class="tab hidden">
-      <div class="page-header"><h1 class="page-title">Clean</h1></div>
+      <div class="page-header">
+        <h1 class="page-title">Clean</h1>
+        <button class="btn-ghost" id="toggle-clean-edit" onclick="toggleCleanEdit()">✎ Modifier</button>
+      </div>
+
+      <!-- Taches editables -->
+      <div class="section-card" id="clean-edit-panel" style="display:none;">
+        <h2 class="section-title" style="margin-bottom:12px;">Taches par journee</h2>
+        <p style="font-size:10px;color:var(--text3);letter-spacing:.05em;margin-bottom:14px;">Modifie les taches et les jours — le calendrier se met a jour automatiquement</p>
+        <div id="clean-schedule-editor"></div>
+        <button class="btn-primary" style="margin-top:12px;" onclick="saveCleanScheduleEdit()">💾 Sauvegarder</button>
+      </div>
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="clean-calendar">Calendrier</button>
         <button class="sub-tab" data-subtab="clean-tasks">Liste de taches</button>
@@ -1149,6 +1160,7 @@ onAuthStateChanged(auth, async user => {
 // ─── LOAD ALL ─────────────────────────────────────────
 async function loadAll() {
   setDates();
+  await loadCleanSchedule();
   await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels(), loadBudget(), loadAmazonTracker()]);
   await seedTodayCleanTasks();
   await loadTodayTasks();
@@ -1234,35 +1246,37 @@ async function deleteItem(col, id) {
 // JS getDay(): 0=dim,1=lun,2=mar,3=mer,4=jeu,5=ven,6=sam
 // JS getDay(): 0=dim,1=lun,2=mar,3=mer,4=jeu,5=ven,6=sam
 // Bloc1 (15min) + Bloc2 (15min) = taches fixes par jour
-const CLEAN_SCHEDULE = {
-  1: { // Lundi - rotation 4 semaines
-    rotation: true
-  },
-  2: { // Mardi
-    b1: "Laver panneau armoire haut",
-    b2: "Nettoyer tablette et ornement"
-  },
-  3: { // Mercredi
-    b1: "Balayeuse etages principal",
-    b2: "Laver plancher etages principal"
-  },
-  4: { // Jeudi
-    b1: "Nettoyer tablette et ornement salle manger",
-    b2: "Nettoyer tablette et ornement salon"
-  },
-  5: { // Vendredi
-    b1: "Passer balayeuse + laver plancher Ryan",
-    b2: "Passer balayeuse cave"
-  },
-  6: { // Samedi
-    b1: "Passer balayeuse + laver plancher 2e etage",
-    b2: "Nettoyer tablettes plantes"
-  },
-  0: { // Dimanche
-    b1: "Nettoyer salle d'eau 2e",
-    b2: "Balayeuse escalier cave/plafond"
-  }
+// CLEAN_SCHEDULE - editable via l'onglet Clean
+let CLEAN_SCHEDULE = {
+  1: { rotation: true, label: "Lundi" },
+  2: { b1: "Laver panneau armoire haut", b2: "Laver panneau armoire bas", label: "Mardi" },
+  3: { b1: "Balayeuse etages principal", b2: "Laver plancher etages principal", label: "Mercredi" },
+  4: { b1: "Nettoyer tablette et ornement salle manger", b2: "Nettoyer tablette et ornement salon", label: "Jeudi" },
+  5: { b1: "Passer balayeuse + laver plancher Ryan", b2: "Passer balayeuse cave", label: "Vendredi" },
+  6: { b1: "Passer balayeuse + laver plancher 2e etage", b2: "Nettoyer tablettes plantes", label: "Samedi" },
+  0: { b1: "Nettoyer salle d'eau 2e", b2: "Balayeuse escalier cave/plafond", label: "Dimanche" }
 };
+
+async function saveCleanSchedule() {
+  try {
+    await setDoc(doc(db, 'users', uid(), 'settings', 'clean_schedule'), {
+      data: JSON.stringify(CLEAN_SCHEDULE)
+    });
+  } catch(e) { console.error('saveCleanSchedule:', e); }
+}
+
+async function loadCleanSchedule() {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'clean_schedule'));
+    if (snap.exists()) {
+      const saved = JSON.parse(snap.data().data || '{}');
+      // Merge saved with defaults
+      Object.keys(saved).forEach(k => {
+        if (CLEAN_SCHEDULE[k]) CLEAN_SCHEDULE[k] = { ...CLEAN_SCHEDULE[k], ...saved[k] };
+      });
+    }
+  } catch(e) { console.error('loadCleanSchedule:', e); }
+}
 
 // Lundi rotation 4 semaines
 const LUNDI_ROTATION = [
@@ -3760,6 +3774,93 @@ function renderHistorique() {
 // Filtres
 document.getElementById('historique-filter-type')?.addEventListener('change', renderHistorique);
 document.getElementById('historique-filter-month')?.addEventListener('change', renderHistorique);
+
+
+// ─── CLEAN SCHEDULE EDITOR ───────────────────────────
+function toggleCleanEdit() {
+  const panel = document.getElementById('clean-edit-panel');
+  const btn   = document.getElementById('toggle-clean-edit');
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '✕ Fermer' : '✎ Modifier';
+  if (isHidden) renderCleanScheduleEditor();
+}
+
+function renderCleanScheduleEditor() {
+  const el = document.getElementById('clean-schedule-editor');
+  if (!el) return;
+  el.innerHTML = '';
+  const DAYS = [
+    {dow:1, label:'Lundi (rotation 4 sem)'},
+    {dow:2, label:'Mardi'},
+    {dow:3, label:'Mercredi'},
+    {dow:4, label:'Jeudi'},
+    {dow:5, label:'Vendredi'},
+    {dow:6, label:'Samedi'},
+    {dow:0, label:'Dimanche'}
+  ];
+
+  DAYS.forEach(({dow, label}) => {
+    const d = CLEAN_SCHEDULE[dow];
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);';
+
+    if (d.rotation) {
+      // Lundi - show rotation entries
+      row.style.gridTemplateColumns = '120px 1fr';
+      row.innerHTML = `
+        <span style="font-size:11px;color:var(--text2);font-weight:500;">${label}</span>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          ${[0,1,2,3].map(i => `
+            <div style="display:flex;gap:6px;align-items:center;font-size:10px;color:var(--text3);">
+              <span style="min-width:50px;">Sem ${i+1}:</span>
+              <input data-lundi="${i}" data-field="b1" value="${LUNDI_ROTATION[i].b1}" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:3px 6px;border-radius:4px;outline:none;">
+              <input data-lundi="${i}" data-field="b2" value="${LUNDI_ROTATION[i].b2}" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:3px 6px;border-radius:4px;outline:none;">
+            </div>`).join('')}
+        </div>`;
+    } else {
+      row.innerHTML = `
+        <span style="font-size:11px;color:var(--text2);font-weight:500;">${label}</span>
+        <input data-dow="${dow}" data-field="b1" value="${d.b1||''}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;border-radius:4px;outline:none;">
+        <input data-dow="${dow}" data-field="b2" value="${d.b2||''}" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;border-radius:4px;outline:none;">`;
+    }
+    el.appendChild(row);
+  });
+
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = 'display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;padding:0 0 6px;border-bottom:2px solid var(--border2);margin-bottom:4px;';
+  header.innerHTML = `<span></span><span style="font-size:9px;color:var(--text3);letter-spacing:.12em;">TACHE 1 (15 min)</span><span style="font-size:9px;color:var(--text3);letter-spacing:.12em;">TACHE 2 (15 min)</span>`;
+  el.insertBefore(header, el.firstChild);
+}
+
+window.saveCleanScheduleEdit = async function() {
+  // Save regular days
+  const inputs = document.querySelectorAll('#clean-schedule-editor input[data-dow]');
+  inputs.forEach(inp => {
+    const dow = parseInt(inp.dataset.dow);
+    const field = inp.dataset.field;
+    if (CLEAN_SCHEDULE[dow]) CLEAN_SCHEDULE[dow][field] = inp.value;
+  });
+
+  // Save lundi rotation
+  const lundiInputs = document.querySelectorAll('#clean-schedule-editor input[data-lundi]');
+  lundiInputs.forEach(inp => {
+    const i = parseInt(inp.dataset.lundi);
+    const field = inp.dataset.field;
+    LUNDI_ROTATION[i][field] = inp.value;
+  });
+
+  await saveCleanSchedule();
+
+  const btn = document.getElementById('toggle-clean-edit');
+  btn.textContent = '✓ Sauvegarde!';
+  setTimeout(() => { btn.textContent = '✕ Fermer'; }, 2000);
+
+  // Refresh calendar
+  renderCleanCalendar();
+}
 
 function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
