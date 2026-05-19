@@ -423,6 +423,50 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .amazon-sum-label{font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:3px;}
 .amazon-sum-val{font-size:13px;font-weight:500;}
 
+/* ─── PROJECT ───────────────────────────────────────── */
+.proj-container{display:grid;grid-template-columns:260px 1fr;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:560px;}
+.proj-sidebar{border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;}
+.proj-cat-tabs{display:flex;border-bottom:1px solid var(--border);}
+.proj-cat-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text3);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all var(--transition);}
+.proj-cat-tab:hover{color:var(--text2);}
+.proj-cat-tab.active{color:var(--text);border-bottom-color:var(--c2);}
+.proj-list-panel{flex:1;overflow-y:auto;padding:8px;}
+.proj-sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:2px;transition:background var(--transition);}
+.proj-sidebar-item:hover,.proj-sidebar-item.active{background:var(--bg3);}
+.proj-sidebar-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;}
+.proj-sidebar-info{flex:1;min-width:0;}
+.proj-sidebar-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.proj-sidebar-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.proj-sidebar-bar{height:3px;background:var(--border);border-radius:2px;margin-top:4px;}
+.proj-sidebar-bar-fill{height:3px;border-radius:2px;}
+.proj-detail-panel{background:var(--bg2);display:flex;flex-direction:column;}
+.proj-detail-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.proj-detail-title{font-size:16px;font-weight:600;color:var(--text);font-family:'Cormorant Garamond',serif;}
+.proj-detail-cat{font-size:10px;color:var(--text3);letter-spacing:.1em;margin-top:2px;}
+.proj-detail-badge{font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(168,85,247,.15);color:var(--c2);letter-spacing:.08em;}
+.proj-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);}
+.proj-stat-card{background:var(--bg3);border-radius:var(--radius-sm);padding:10px;text-align:center;}
+.proj-stat-val{font-size:18px;font-weight:600;font-family:'Cormorant Garamond',serif;color:var(--text);}
+.proj-stat-label{font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.etape-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;transition:border-color var(--transition);background:var(--bg3);}
+.etape-row:hover{border-color:var(--border2);}
+.etape-cb{width:18px;height:18px;border:1.5px solid var(--border2);border-radius:4px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);}
+.etape-cb.done{background:var(--teal);border-color:var(--teal);}
+.etape-cb.done::after{content:'✓';font-size:10px;color:white;}
+.etape-name{flex:1;font-size:12px;color:var(--text);outline:none;background:none;border:none;font-family:'DM Mono',monospace;}
+.etape-name.done{text-decoration:line-through;color:var(--text3);}
+.etape-name:focus{background:var(--bg2);border-radius:4px;padding:2px 6px;}
+.dur-btns{display:flex;gap:3px;flex-shrink:0;}
+.dur-btn{font-size:10px;padding:3px 8px;border:0.5px solid var(--border2);border-radius:20px;cursor:pointer;color:var(--text3);background:none;transition:all var(--transition);}
+.dur-btn:hover{border-color:var(--text2);color:var(--text2);}
+.dur-btn.d15{background:rgba(52,196,114,.15);color:var(--teal);border-color:var(--teal-dim);}
+.dur-btn.d30{background:rgba(194,113,79,.15);color:var(--coral);border-color:var(--coral-dim);}
+.etape-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
+.etape-row:hover .etape-del{opacity:1;}
+.etape-del:hover{color:#F06060;}
+.proj-add-etape-btn{width:100%;background:none;border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--text3);cursor:pointer;margin-top:4px;transition:all var(--transition);}
+.proj-add-etape-btn:hover{border-color:var(--c3);color:var(--c2);}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -585,24 +629,49 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 
     <!-- PROJECT -->
     <section id="tab-project" class="tab hidden">
-      <div class="page-header"><h1 class="page-title">Project</h1></div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" data-subtab="proj-calendar">Calendrier</button>
-        <button class="sub-tab" data-subtab="proj-list">Liste de projets</button>
+      <div class="page-header">
+        <h1 class="page-title">Project</h1>
+        <button class="btn-primary" id="add-project-btn">+ Nouveau projet</button>
       </div>
-      <div id="proj-calendar" class="sub-content active">
-        <div class="section-card">
-          <div class="section-top"><h2 class="section-title">Calendrier projets</h2><span class="badge-dynamic">Dynamique - depuis la liste</span></div>
-          <div class="calendar-grid" id="proj-calendar-grid"></div>
+      <div class="proj-container">
+        <div class="proj-sidebar">
+          <div class="proj-cat-tabs">
+            <button class="proj-cat-tab active" data-cat="int" onclick="switchProjCat('int',this)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              Interieur
+            </button>
+            <button class="proj-cat-tab" data-cat="ext" onclick="switchProjCat('ext',this)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Exterieur
+            </button>
+          </div>
+          <div class="proj-list-panel" id="proj-sidebar-list"></div>
         </div>
-      </div>
-      <div id="proj-list" class="sub-content hidden">
-        <div class="section-card">
-          <div class="section-top"><h2 class="section-title">Mes projets</h2><button class="btn-primary" id="add-project-btn">+ Nouveau projet</button></div>
-          <div id="project-list" class="project-list"></div>
+        <div class="proj-detail-panel" id="proj-detail-panel">
+          <div id="proj-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);font-size:11px;letter-spacing:.1em;gap:8px;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Selectionnez un projet
+          </div>
+          <div id="proj-detail-content" style="display:none;height:100%;overflow-y:auto;">
+            <div class="proj-detail-header">
+              <div style="flex:1;">
+                <div class="proj-detail-title" id="proj-detail-title">Projet</div>
+                <div class="proj-detail-cat" id="proj-detail-cat"></div>
+              </div>
+              <span class="proj-detail-badge" id="proj-detail-badge">0/0</span>
+              <button class="btn-ghost" style="font-size:10px;color:#F06060;" id="proj-delete-btn">Supprimer</button>
+            </div>
+            <div class="proj-stats-row" id="proj-stats-row"></div>
+            <div style="padding:16px 20px 20px;">
+              <div style="font-size:10px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;">Etapes</div>
+              <div id="proj-etapes-list"></div>
+              <button class="proj-add-etape-btn" onclick="addProjEtape()">+ Ajouter une etape</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
+
 
     <!-- MY YEAR -->
     <section id="tab-myyear" class="tab hidden">
@@ -1799,69 +1868,172 @@ document.getElementById('add-clean-task-btn')?.addEventListener('click', () => {
 });
 
 // ─── PROJECTS ─────────────────────────────────────────
+let selectedProjId = null;
+let currentProjCat = 'int';
+
+const PROJ_COLORS = ['#534AB7','#1D9E75','#BA7517','#C2714F','#378ADD','#D4537E'];
+
 async function loadProjects() {
   projects = await getAll('projects');
 }
 
 function renderProjects() {
-  const el = document.getElementById('project-list');
+  renderProjSidebar();
+  if (selectedProjId) {
+    const p = projects.find(x => x.id === selectedProjId);
+    if (p) renderProjDetail(p);
+  }
+}
+
+function renderProjSidebar() {
+  const el = document.getElementById('proj-sidebar-list');
   if (!el) return;
   el.innerHTML = '';
-  const colors = ['#A855F7','#34C472','#C2714F','#5AB4F0','#F4A623'];
-  if (!projects.length) {
-    el.innerHTML = `<p style="font-size:11px;color:var(--text3);text-align:center;padding:24px;letter-spacing:.1em;">Aucun projet</p>`;
+  const filtered = projects.filter(p => (p.cat || 'int') === currentProjCat);
+  if (!filtered.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:16px;text-align:center;letter-spacing:.05em;">Aucun projet</p>';
     return;
   }
-  projects.forEach((p, i) => {
+  filtered.forEach((p, i) => {
+    const etapes = p.etapes || [];
+    const done = etapes.filter(e => e.done).length;
+    const total = etapes.length;
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    const color = PROJ_COLORS[i % PROJ_COLORS.length];
     const item = document.createElement('div');
-    item.className = 'project-item';
-    const pct   = p.total ? Math.round((p.done||0)/p.total*100) : 0;
-    const color = colors[i % colors.length];
+    item.className = 'proj-sidebar-item' + (p.id === selectedProjId ? ' active' : '');
+    item.dataset.id = p.id;
     item.innerHTML = `
-      <div class="project-color" style="background:${color}"></div>
-      <div class="project-info">
-        <div class="project-name">${p.name}</div>
-        <div class="project-meta">${p.description || '—'}</div>
+      <div class="proj-sidebar-icon" style="background:${color}22;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       </div>
-      <div class="project-progress">${pct}%</div>
-      <button class="task-delete" data-id="${p.id}" style="opacity:1;">✕</button>
-    `;
-    item.querySelector('.task-delete').onclick = async (e) => {
-      e.stopPropagation();
-      await deleteItem('projects', p.id);
-      projects = projects.filter(x => x.id !== p.id);
-      renderProjects();
-      renderProjectCalendar();
-    };
+      <div class="proj-sidebar-info">
+        <div class="proj-sidebar-name">${p.name}</div>
+        <div class="proj-sidebar-sub">${done} / ${total} etapes</div>
+        <div class="proj-sidebar-bar">
+          <div class="proj-sidebar-bar-fill" style="width:${pct}%;background:${color};"></div>
+        </div>
+      </div>`;
+    item.onclick = () => selectProject(p.id);
     el.appendChild(item);
   });
 }
 
-document.getElementById('add-project-btn')?.addEventListener('click', () => {
-  openModal('Nouveau projet', `
-    <div class="form-field">
-      <label class="form-label">Nom du projet</label>
-      <input class="form-input" id="m-proj-name" placeholder="Ex : Rénovation cuisine">
-    </div>
-    <div class="form-field">
-      <label class="form-label">Description</label>
-      <textarea class="form-textarea" id="m-proj-desc" placeholder="Description du projet..."></textarea>
-    </div>
-    <div class="form-field">
-      <label class="form-label">Nombre de tâches estimé</label>
-      <input class="form-input" type="number" id="m-proj-total" placeholder="10" min="1">
-    </div>
-  `, async () => {
-    const name  = document.getElementById('m-proj-name')?.value.trim();
-    const desc  = document.getElementById('m-proj-desc')?.value.trim();
-    const total = parseInt(document.getElementById('m-proj-total')?.value) || 0;
-    if (!name) return;
-    const ref = await addItem('projects', { name, description: desc, total, done: 0 });
-    projects.push({ id: ref.id, name, description: desc, total, done: 0 });
-    renderProjects();
-    renderProjectCalendar();
-    closeModal();
+function selectProject(id) {
+  selectedProjId = id;
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  document.querySelectorAll('.proj-sidebar-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
   });
+  renderProjDetail(p);
+}
+
+function renderProjDetail(p) {
+  document.getElementById('proj-empty-state').style.display = 'none';
+  document.getElementById('proj-detail-content').style.display = 'block';
+  document.getElementById('proj-detail-title').textContent = p.name;
+  document.getElementById('proj-detail-cat').textContent = p.cat === 'ext' ? 'Exterieur' : 'Interieur';
+
+  const etapes = p.etapes || [];
+  const done = etapes.filter(e => e.done).length;
+  const total = etapes.length;
+  const totalMins = etapes.reduce((s,e) => s+(e.dur||15), 0);
+  const doneMins  = etapes.filter(e=>e.done).reduce((s,e) => s+(e.dur||15), 0);
+  const restMins  = totalMins - doneMins;
+  document.getElementById('proj-detail-badge').textContent = `${done}/${total}`;
+
+  // Stats
+  const statsEl = document.getElementById('proj-stats-row');
+  if (statsEl) {
+    const fmtMin = m => m >= 60 ? `${Math.floor(m/60)}h${m%60?m%60+'m':''}` : `${m}m`;
+    statsEl.innerHTML = `
+      <div class="proj-stat-card"><div class="proj-stat-val">${fmtMin(totalMins)}</div><div class="proj-stat-label">Temps total</div></div>
+      <div class="proj-stat-card"><div class="proj-stat-val">${total>0?Math.round(done/total*100):0}%</div><div class="proj-stat-label">Complete</div></div>
+      <div class="proj-stat-card"><div class="proj-stat-val">${fmtMin(restMins)}</div><div class="proj-stat-label">Restant</div></div>`;
+  }
+
+  // Etapes
+  const el = document.getElementById('proj-etapes-list');
+  if (!el) return;
+  el.innerHTML = '';
+  etapes.forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'etape-row';
+    row.innerHTML = `
+      <div class="etape-cb${e.done?' done':''}" data-idx="${i}"></div>
+      <input class="etape-name${e.done?' done':''}" value="${e.name||''}" placeholder="Nom de l'etape" data-idx="${i}">
+      <div class="dur-btns">
+        <button class="dur-btn${e.dur===15?' d15':''}" data-dur="15" data-idx="${i}">15 min</button>
+        <button class="dur-btn${e.dur!==15?' d30':''}" data-dur="30" data-idx="${i}">30 min</button>
+      </div>
+      <button class="etape-del" data-idx="${i}">✕</button>`;
+
+    row.querySelector('.etape-cb').onclick = async () => {
+      p.etapes[i].done = !p.etapes[i].done;
+      await updateItem('projects', p.id, { etapes: p.etapes });
+      renderProjDetail(p);
+      renderProjSidebar();
+    };
+    row.querySelector('.etape-name').oninput = async (ev) => {
+      p.etapes[i].name = ev.target.value;
+      await updateItem('projects', p.id, { etapes: p.etapes });
+    };
+    row.querySelectorAll('.dur-btn').forEach(btn => {
+      btn.onclick = async () => {
+        p.etapes[i].dur = parseInt(btn.dataset.dur);
+        await updateItem('projects', p.id, { etapes: p.etapes });
+        renderProjDetail(p);
+      };
+    });
+    row.querySelector('.etape-del').onclick = async () => {
+      p.etapes.splice(i, 1);
+      await updateItem('projects', p.id, { etapes: p.etapes });
+      renderProjDetail(p);
+      renderProjSidebar();
+    };
+    el.appendChild(row);
+  });
+
+  // Delete project btn
+  document.getElementById('proj-delete-btn').onclick = async () => {
+    if (!confirm('Supprimer ce projet ?')) return;
+    await deleteItem('projects', p.id);
+    projects = projects.filter(x => x.id !== p.id);
+    selectedProjId = null;
+    document.getElementById('proj-empty-state').style.display = 'flex';
+    document.getElementById('proj-detail-content').style.display = 'none';
+    renderProjSidebar();
+  };
+}
+
+window.addProjEtape = async function() {
+  if (!selectedProjId) return;
+  const p = projects.find(x => x.id === selectedProjId);
+  if (!p) return;
+  if (!p.etapes) p.etapes = [];
+  p.etapes.push({ name:'', dur:15, done:false });
+  await updateItem('projects', p.id, { etapes: p.etapes });
+  renderProjDetail(p);
+};
+
+window.switchProjCat = function(cat, btn) {
+  currentProjCat = cat;
+  document.querySelectorAll('.proj-cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedProjId = null;
+  document.getElementById('proj-empty-state').style.display = 'flex';
+  document.getElementById('proj-detail-content').style.display = 'none';
+  renderProjSidebar();
+};
+
+document.getElementById('add-project-btn')?.addEventListener('click', async () => {
+  const name = prompt('Nom du projet:');
+  if (!name?.trim()) return;
+  const ref = await addItem('projects', { name: name.trim(), cat: currentProjCat, etapes: [] });
+  projects.push({ id: ref.id, name: name.trim(), cat: currentProjCat, etapes: [] });
+  renderProjSidebar();
+  selectProject(ref.id);
 });
 
 // ─── CALENDARS ───────────────────────────────────────
@@ -3598,6 +3770,7 @@ function switchTab(tab) {
   // Lazy render on first switch
   if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
+  if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
   if (tab === 'myyear')  { renderYearStats(); loadHistorique(); }
   if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); calcAmazonTotal(); }
