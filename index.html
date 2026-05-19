@@ -408,6 +408,21 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .todo-popup-text{font-size:12px;color:var(--text);letter-spacing:.04em;}
 .todo-popup-sub{font-size:10px;color:var(--text3);}
 
+/* ─── AMAZON TRACKER ────────────────────────────────── */
+.amazon-col-heads{display:grid;grid-template-columns:1fr 130px 90px 28px;gap:8px;padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.amazon-col-head{font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;}
+.amazon-tracker-row{display:grid;grid-template-columns:1fr 130px 90px 28px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.amazon-tracker-row input,.amazon-tracker-row select{background:none;border:none;outline:none;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);width:100%;}
+.amazon-tracker-row input[type=number]{color:#F06060;text-align:right;}
+.amazon-tracker-row select option{background:var(--bg2);}
+.amazon-tracker-row input:focus,.amazon-tracker-row select:focus{background:var(--bg3);border-radius:4px;padding:2px 6px;}
+.amazon-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
+.amazon-tracker-row:hover .amazon-del-btn{opacity:1;}
+.amazon-del-btn:hover{color:#F06060;}
+.amazon-sum-item{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 12px;text-align:center;min-width:90px;}
+.amazon-sum-label{font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:3px;}
+.amazon-sum-val{font-size:13px;font-weight:500;}
+
 /* ─── MOBILE ─────────────────────────────────────────── */
 @media (max-width: 600px) {
   .topnav{padding:0 12px;}
@@ -677,6 +692,30 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
+      <!-- Historique taches cochees -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Historique des taches cochees</h2>
+          <div style="display:flex;gap:8px;">
+            <select id="historique-filter-type" class="form-select" style="font-size:10px;padding:4px 8px;">
+              <option value="all">Toutes</option>
+              <option value="clean">Clean</option>
+              <option value="project">Projet</option>
+            </select>
+            <select id="historique-filter-month" class="form-select" style="font-size:10px;padding:4px 8px;">
+              <option value="all">Tous les mois</option>
+              <option value="2026-01">Janvier</option>
+              <option value="2026-02">Fevrier</option>
+              <option value="2026-03">Mars</option>
+              <option value="2026-04">Avril</option>
+              <option value="2026-05">Mai</option>
+              <option value="2026-06">Juin</option>
+            </select>
+          </div>
+        </div>
+        <div id="historique-list" style="max-height:400px;overflow-y:auto;"></div>
+      </div>
+
     </section>
 
     <!-- RAPPELS -->
@@ -917,23 +956,33 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
-      <!-- Graphiques budget -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="section-card">
-          <h2 class="section-title" style="margin-bottom:4px;">Depenses par categorie</h2>
-          <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Basé sur les transactions du calendrier</p>
-          <div style="position:relative;width:100%;height:200px;">
+      <!-- Graphique depenses par categorie -->
+      <div class="section-card">
+        <h2 class="section-title" style="margin-bottom:4px;">Depenses par categorie</h2>
+        <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Base sur les transactions du calendrier</p>
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center;">
+          <div style="position:relative;width:100%;height:180px;">
             <canvas id="budget-donut" role="img" aria-label="Repartition des depenses par categorie"></canvas>
           </div>
-          <div id="budget-donut-legend" style="display:flex;flex-direction:column;gap:5px;margin-top:10px;font-size:11px;"></div>
+          <div id="budget-donut-legend" style="display:flex;flex-direction:column;gap:5px;font-size:11px;"></div>
         </div>
-        <div class="section-card">
-          <h2 class="section-title" style="margin-bottom:4px;">Depenses par semaine</h2>
-          <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Total par semaine du mois</p>
-          <div style="position:relative;width:100%;height:200px;">
-            <canvas id="budget-weekly-chart" role="img" aria-label="Depenses par semaine du mois"></canvas>
-          </div>
+      </div>
+
+      <!-- Tracker Amazon -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">🛒 Tracker Amazon</h2>
+          <span class="stat-value" id="amazon-grand-total" style="font-size:20px;color:#F06060;">0.00$</span>
         </div>
+        <div class="amazon-col-heads">
+          <span class="amazon-col-head">Description</span>
+          <span class="amazon-col-head">Categorie</span>
+          <span class="amazon-col-head" style="text-align:right;">Montant</span>
+          <span></span>
+        </div>
+        <div id="amazon-tracker-rows"></div>
+        <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addAmazonRow()">+ Ajouter un achat</button>
+        <div id="amazon-tracker-summary" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);"></div>
       </div>
 
       <!-- Dettes et Actifs -->
@@ -1064,7 +1113,7 @@ onAuthStateChanged(auth, async user => {
 // ─── LOAD ALL ─────────────────────────────────────────
 async function loadAll() {
   setDates();
-  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels(), loadBudget()]);
+  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels(), loadBudget(), loadAmazonTracker()]);
   await seedTodayCleanTasks();
   await loadTodayTasks();
   renderHome();
@@ -3365,6 +3414,180 @@ document.querySelectorAll('.link-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+
+// ─── AMAZON TRACKER ──────────────────────────────────
+const AMAZON_CATS = ['Pharmacie','Aliments','Chat','Quincaillerie','Maison','Cadeaux','Activites','Menager','Autre'];
+const AMAZON_COLORS = {
+  'Pharmacie':'#534AB7','Aliments':'#1D9E75','Chat':'#378ADD',
+  'Quincaillerie':'#BA7517','Maison':'#C2714F','Cadeaux':'#D4537E',
+  'Activites':'#F4A623','Menager':'#888780','Autre':'#555'
+};
+const AMAZON_INIT = [
+  {desc:'Pharmacie',cat:'Pharmacie',amt:7.78},{desc:'Menager',cat:'Menager',amt:7.78},
+  {desc:'Aliments',cat:'Aliments',amt:7.28},{desc:'Aliments',cat:'Aliments',amt:11.47},
+  {desc:'Pharmacie',cat:'Pharmacie',amt:9.16},{desc:'Chat',cat:'Chat',amt:24.00},
+  {desc:'Pharmacie',cat:'Pharmacie',amt:8.78},{desc:'Aliments',cat:'Aliments',amt:20.39},
+  {desc:'Chat',cat:'Chat',amt:20.47},{desc:'Aliments',cat:'Aliments',amt:11.27},
+  {desc:'Cadeaux',cat:'Cadeaux',amt:27.57},{desc:'Activites',cat:'Activites',amt:25.28},
+  {desc:'Activites',cat:'Activites',amt:26.43},{desc:'Quincaillerie',cat:'Quincaillerie',amt:67.44},
+  {desc:'Maison',cat:'Maison',amt:28.73},{desc:'Chat',cat:'Chat',amt:24.00},
+  {desc:'Cadeaux',cat:'Cadeaux',amt:14.69},{desc:'Quincaillerie',cat:'Quincaillerie',amt:57.44},
+];
+let amazonTrackerData = [];
+
+function makeAmazonRow(desc='', cat='Autre', amt='', idx=0) {
+  const container = document.getElementById('amazon-tracker-rows');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'amazon-tracker-row';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <input type="text" placeholder="Description" value="${desc}">
+    <select>${AMAZON_CATS.map(c=>`<option${c===cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input type="number" placeholder="0.00" value="${amt||''}">
+    <button class="amazon-del-btn">✕</button>`;
+  const [descIn,catSel,amtIn,delBtn] = div.querySelectorAll('input,select,button');
+  descIn.oninput  = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].desc=descIn.value; saveAmazonTracker(); };
+  catSel.onchange = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].cat=catSel.value; calcAmazonTotal(); saveAmazonTracker(); };
+  amtIn.oninput   = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].amt=parseFloat(amtIn.value)||0; calcAmazonTotal(); saveAmazonTracker(); };
+  delBtn.onclick  = () => {
+    amazonTrackerData.splice(div.dataset.idx*1, 1);
+    div.remove();
+    document.querySelectorAll('.amazon-tracker-row').forEach((r,i) => r.dataset.idx=i);
+    calcAmazonTotal(); saveAmazonTracker();
+  };
+  container.appendChild(div);
+}
+
+window.addAmazonRow = function() {
+  amazonTrackerData.push({desc:'',cat:'Autre',amt:0});
+  makeAmazonRow('','Autre','',amazonTrackerData.length-1);
+  calcAmazonTotal();
+}
+
+function calcAmazonTotal() {
+  let total = 0;
+  const catTotals = {};
+  amazonTrackerData.forEach(r => {
+    total += r.amt||0;
+    catTotals[r.cat] = (catTotals[r.cat]||0)+(r.amt||0);
+  });
+  const totalEl = document.getElementById('amazon-grand-total');
+  if (totalEl) totalEl.textContent = total.toFixed(2)+'$';
+  const sumEl = document.getElementById('amazon-tracker-summary');
+  if (sumEl) {
+    sumEl.innerHTML = '';
+    Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).forEach(([cat,val]) => {
+      const d = document.createElement('div');
+      d.className = 'amazon-sum-item';
+      d.innerHTML = `<div class="amazon-sum-label">${cat}</div><div class="amazon-sum-val" style="color:${AMAZON_COLORS[cat]||'#888'}">${val.toFixed(2)}$</div>`;
+      sumEl.appendChild(d);
+    });
+  }
+  // Sync to Amex Amazon row
+  const amexRow = (cartesData.amex||[]).find(r=>r.raison==='Amazon');
+  if (amexRow) { amexRow.dep = total; renderCartesSummary(); }
+}
+
+async function saveAmazonTracker() {
+  try { await setDoc(doc(db,'users',uid(),'settings','amazon_tracker'),{data:JSON.stringify(amazonTrackerData)}); }
+  catch(e) { console.error('saveAmazonTracker:',e); }
+}
+
+async function loadAmazonTracker() {
+  try {
+    const snap = await getDoc(doc(db,'users',uid(),'settings','amazon_tracker'));
+    if (snap.exists()) { amazonTrackerData = JSON.parse(snap.data().data||'[]'); }
+    else { amazonTrackerData = AMAZON_INIT.map(r=>({...r})); await saveAmazonTracker(); }
+  } catch(e) { amazonTrackerData = AMAZON_INIT.map(r=>({...r})); }
+  const container = document.getElementById('amazon-tracker-rows');
+  if (container) container.innerHTML = '';
+  amazonTrackerData.forEach((r,i) => makeAmazonRow(r.desc,r.cat,r.amt,i));
+  calcAmazonTotal();
+}
+
+
+// ─── HISTORIQUE TACHES ───────────────────────────────
+let allTasks = [];
+
+async function loadHistorique() {
+  try {
+    const snap = await getDocs(collection(db, 'users', uid(), 'tasks'));
+    allTasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderHistorique();
+  } catch(e) { console.error('loadHistorique:', e); }
+}
+
+function renderHistorique() {
+  const el = document.getElementById('historique-list');
+  if (!el) return;
+
+  const typeFilter  = document.getElementById('historique-filter-type')?.value || 'all';
+  const monthFilter = document.getElementById('historique-filter-month')?.value || 'all';
+
+  let tasks = allTasks.filter(t => t.date);
+  if (typeFilter !== 'all') tasks = tasks.filter(t => t.type === typeFilter);
+  if (monthFilter !== 'all') tasks = tasks.filter(t => t.date?.startsWith(monthFilter));
+
+  // Sort by date desc
+  tasks.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  if (!tasks.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:16px 0;text-align:center;letter-spacing:.1em;">Aucune tache trouvee</p>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  tasks.forEach(t => {
+    if (!byDate[t.date]) byDate[t.date] = [];
+    byDate[t.date].push(t);
+  });
+
+  el.innerHTML = '';
+  const DAYS_SHORT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const MONTHS_SHORT = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
+
+  Object.entries(byDate).sort((a,b) => b[0].localeCompare(a[0])).forEach(([date, dayTasks]) => {
+    const d = new Date(date + 'T12:00:00');
+    const dateStr = `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+    const dayStr  = DAYS_SHORT[d.getDay()];
+    const totalMins = dayTasks.reduce((s,t) => {
+      const blockMins = (t.block === 'proj1' || t.block === 'proj2') ? 30 : 15;
+      return s + blockMins;
+    }, 0);
+
+    const group = document.createElement('div');
+    group.style.cssText = 'margin-bottom:12px;';
+    group.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);margin-bottom:4px;">
+        <span style="font-size:11px;font-weight:500;color:var(--text);min-width:60px;">${dateStr}</span>
+        <span style="font-size:10px;color:var(--text3);">${dayStr}</span>
+        <span style="font-size:10px;color:var(--teal);margin-left:auto;">${totalMins} min</span>
+      </div>`;
+
+    dayTasks.forEach(t => {
+      const row = document.createElement('div');
+      const isClean = t.type === 'clean';
+      const blockLabel = t.block ? t.block.replace('clean','Clean ').replace('proj','Projet ') : '';
+      const blockMins = (t.block === 'proj1' || t.block === 'proj2') ? 30 : 15;
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 8px;font-size:11px;';
+      row.innerHTML = `
+        <span style="width:6px;height:6px;border-radius:50%;background:${isClean?'var(--teal)':'var(--coral)'};flex-shrink:0;${t.done?'':'opacity:.4'}"></span>
+        <span style="flex:1;color:${t.done?'var(--text2)':'var(--text3)'};${t.done?'':'opacity:.6'}">${t.text||'—'}</span>
+        <span style="font-size:9px;color:var(--text3);">${blockLabel}</span>
+        <span style="font-size:9px;color:${isClean?'var(--teal)':'var(--coral)'};">${blockMins}m</span>
+        ${t.done ? '<span style="font-size:9px;color:var(--teal);">✓</span>' : '<span style="font-size:9px;color:var(--text3);">○</span>'}`;
+      group.appendChild(row);
+    });
+    el.appendChild(group);
+  });
+}
+
+// Filtres
+document.getElementById('historique-filter-type')?.addEventListener('change', renderHistorique);
+document.getElementById('historique-filter-month')?.addEventListener('change', renderHistorique);
+
 function switchTab(tab) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab').forEach(t => {
@@ -3376,7 +3599,8 @@ function switchTab(tab) {
   if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
   if (tab === 'rappels') { renderRappels(); }
-  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); }
+  if (tab === 'myyear')  { renderYearStats(); loadHistorique(); }
+  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); calcAmazonTotal(); }
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
