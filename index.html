@@ -1247,6 +1247,7 @@ async function deleteItem(col, id) {
 // Bloc1 (15min) + Bloc2 (15min) = taches fixes par jour
 // CLEAN_SCHEDULE - editable via l'onglet Clean
 let CLEAN_SCHEDULE = {
+  _version: 2,
   1: { rotation: true, label: "Lundi" },
   2: { b1: "Passer balayeuse + laver plancher Ryan", b2: "Passer balayeuse cave", label: "Mardi" },
   3: { b1: "Balayeuse etages principal", b2: "Laver plancher etages principal", label: "Mercredi" },
@@ -1269,10 +1270,14 @@ async function loadCleanSchedule() {
     const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'clean_schedule'));
     if (snap.exists()) {
       const saved = JSON.parse(snap.data().data || '{}');
-      // Merge saved with defaults
-      Object.keys(saved).forEach(k => {
-        if (CLEAN_SCHEDULE[k]) CLEAN_SCHEDULE[k] = { ...CLEAN_SCHEDULE[k], ...saved[k] };
-      });
+      // Si la version ne correspond pas, ignorer et utiliser le code
+      if (saved._version && saved._version >= CLEAN_SCHEDULE._version) {
+        Object.keys(saved).forEach(k => {
+          if (k !== '_version' && CLEAN_SCHEDULE[k]) {
+            CLEAN_SCHEDULE[k] = { ...CLEAN_SCHEDULE[k], ...saved[k] };
+          }
+        });
+      }
     }
   } catch(e) { console.error('loadCleanSchedule:', e); }
 }
