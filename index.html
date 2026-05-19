@@ -712,51 +712,13 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
-      <!-- Stats taches - occurrences -->
+      <!-- Resume par mois -->
       <div class="section-card">
-        <h2 class="section-title">Occurrences par tache</h2>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Nombre de fois effectuee depuis le debut de l'annee</p>
-        <div style="position:relative;width:100%;height:340px;">
-          <canvas id="chart-occurrences" role="img" aria-label="Graphique horizontal du nombre d occurrences par tache">Occurrences par tache de menage.</canvas>
-        </div>
-      </div>
-
-      <!-- Stats taches - minutes -->
-      <div class="section-card">
-        <h2 class="section-title">Minutes totales par tache</h2>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Temps cumule en minutes depuis le debut de l'annee</p>
-        <div style="position:relative;width:100%;height:340px;">
-          <canvas id="chart-minutes" role="img" aria-label="Graphique horizontal du temps total par tache">Minutes totales par tache de menage.</canvas>
-        </div>
-      </div>
-
-      <!-- Repartition par categorie + table -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="section-card">
-          <h2 class="section-title">Repartition par categorie</h2>
-          <div style="position:relative;width:100%;height:200px;margin-bottom:12px;">
-            <canvas id="chart-donut" role="img" aria-label="Repartition du temps par categorie de menage">Planchers 35%, Surfaces 28%, Bain 15%, Special 14%, Linge 8%.</canvas>
-          </div>
-          <div id="donut-legend" style="display:flex;flex-direction:column;gap:6px;font-size:11px;"></div>
-        </div>
-        <div class="section-card">
-          <h2 class="section-title">Resume par mois</h2>
-          <div style="overflow-x:auto;">
-            <table class="year-table" id="year-summary-table">
-              <thead><tr><th>Mois</th><th>Jours</th><th>Taches</th><th>Heures</th><th>Moy/j</th></tr></thead>
-              <tbody id="year-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Table detaillee des taches -->
-      <div class="section-card">
-        <h2 class="section-title">Tableau detaille des taches</h2>
+        <h2 class="section-title">Resume par mois</h2>
         <div style="overflow-x:auto;">
-          <table class="year-table" id="task-detail-table">
-            <thead><tr><th>Tache</th><th>Occurrences</th><th>Total min</th><th>Moy/sem</th><th>Frequence</th></tr></thead>
-            <tbody id="task-table-body"></tbody>
+          <table class="year-table" id="year-summary-table">
+            <thead><tr><th>Mois</th><th>Jours</th><th>Taches</th><th>Heures</th><th>Moy/j</th></tr></thead>
+            <tbody id="year-table-body"></tbody>
           </table>
         </div>
       </div>
@@ -2210,7 +2172,6 @@ function renderYearStats() {
 
   renderHeatmap();
   renderMonthlyChartNew(monthCounts);
-  renderTaskCharts();
   renderYearTable(monthCounts);
 }
 
@@ -3684,8 +3645,26 @@ let allTasks = [];
 
 async function loadHistorique() {
   try {
+    // Load ALL tasks from Firestore - no limit
     const snap = await getDocs(collection(db, 'users', uid(), 'tasks'));
     allTasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Also add CLEAN_HISTORY tasks for complete history
+    Object.entries(CLEAN_HISTORY).forEach(([dateKey, tasks]) => {
+      tasks.forEach(t => {
+        // Only add if not already in Firestore tasks
+        const exists = allTasks.some(ft => ft.date === dateKey && ft.text === t.t);
+        if (!exists) {
+          allTasks.push({
+            id: 'hist_' + dateKey + '_' + t.b,
+            text: t.t,
+            date: dateKey,
+            type: 'clean',
+            block: t.b <= 2 ? 'clean' + t.b : 'proj' + (t.b - 2),
+            done: true
+          });
+        }
+      });
+    });
     renderHistorique();
   } catch(e) { console.error('loadHistorique:', e); }
 }
