@@ -2880,6 +2880,7 @@ async function loadBudget() {
   // 6. Render APRES que tout est chargé
   renderBudget();
   renderCartes();
+  calcArgentRestant(); // Calculer apres que le solde est applique
 }
 
 function applyBudgetSettings() {
@@ -3905,7 +3906,7 @@ function switchTab(tab) {
   if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
   if (tab === 'myyear')  { renderYearStats(); loadHistorique(); }
-  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); calcAmazonTotal(); }
+  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); calcAmazonTotal(); calcArgentRestant(); }
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
