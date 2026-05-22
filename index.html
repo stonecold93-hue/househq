@@ -1117,11 +1117,20 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ─── STATE ───────────────────────────────────────────
-let currentUser = null;
-let todayTasks  = [];
-let cleanTasks  = [];
-let projects    = [];
-let yearData    = {};
+let currentUser    = null;
+let todayTasks     = [];
+let cleanTasks     = [];
+let projects       = [];
+let yearData       = {};
+let budgetData     = {};
+let budgetYear     = new Date().getFullYear();
+let budgetMonth    = new Date().getMonth();
+let budgetSelectedDay = null;
+let cartesData     = { amex: [], capone: [], amazon: [] };
+let allTasks       = [];
+let amazonTrackerData = [];
+let _budgetSettings = { salary: 0, solde: 0 };
+let _remainingTotal = 0;
 
 // ─── DOM REFS ────────────────────────────────────────
 const loginScreen    = document.getElementById('login-screen');
@@ -2824,7 +2833,6 @@ const AMAZON_INIT = [
   {desc:'Maison',cat:'Maison',amt:28.73},{desc:'Chat',cat:'Chat',amt:24.00},
   {desc:'Cadeaux',cat:'Cadeaux',amt:14.69},{desc:'Quincaillerie',cat:'Quincaillerie',amt:57.44},
 ];
-let amazonTrackerData = [];
 
 function makeAmazonRow(desc='', cat='Autre', amt='', idx=0) {
   const container = document.getElementById('amazon-tracker-rows');
@@ -2899,7 +2907,6 @@ async function loadAmazonTracker() {
 
 
 // ─── HISTORIQUE TACHES ───────────────────────────────
-let allTasks = [];
 
 async function loadHistorique() {
   try {
