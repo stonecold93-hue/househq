@@ -2476,9 +2476,8 @@ function renderHeatmap() {
 let rappels = [];
 let selectedRappelId = null;
 
-const DAYS_FR_COURT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const DAYS_FR_COURT  = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 const MONTHS_FR_COURT = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
-
 const REP_LABELS = {
   daily:'Quotidien', weekdays:'Jours de semaine', weekly:'Hebdomadaire',
   monthly:'Mensuel', yearly:'Annuel', none:'Aucune'
@@ -2486,13 +2485,74 @@ const REP_LABELS = {
 
 function getRepLabel(r) {
   if (!r.repeat) return 'Aucune';
-  if (r.repeat.startsWith('xdays:')) return `Tous les ${r.repeat.split(':')[1]} jours`;
+  if (r.repeat.startsWith('xdays:'))  return `Tous les ${r.repeat.split(':')[1]} jours`;
   if (r.repeat.startsWith('xweeks:')) return `Toutes les ${r.repeat.split(':')[1]} semaines`;
   return REP_LABELS[r.repeat] || 'Aucune';
 }
 
+function toLocalStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function isRecurring(r) {
+  return r.repeat && r.repeat !== 'none';
+}
+
+// Check if recurring rappel should appear today
+function shouldShowToday(r) {
+  const now = new Date();
+  const todayStr = toLocalStr(now);
+  const dow = now.getDay();
+
+  // Si coché aujourd'hui — ne pas afficher
+  if (r.done && r.lastDone === todayStr) return false;
+
+  if (!isRecurring(r)) {
+    return r.dueDate === todayStr;
+  }
+  if (r.repeat === 'daily') return true;
+  if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+  if (r.repeat === 'weekly') {
+    if (!r.dueDate) return true;
+    return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
+  }
+  if (r.repeat === 'monthly') {
+    if (!r.dueDate) return true;
+    return now.getDate() === parseInt(r.dueDate.split('-')[2]);
+  }
+  if (r.repeat === 'yearly') {
+    if (!r.dueDate) return true;
+    const p = r.dueDate.split('-');
+    return now.getMonth()+1 === parseInt(p[1]) && now.getDate() === parseInt(p[2]);
+  }
+  if (r.repeat.startsWith('xdays:')) {
+    if (!r.dueDate) return false;
+    const start = new Date(r.dueDate + 'T12:00:00');
+    const n = parseInt(r.repeat.split(':')[1]) || 1;
+    const diff = Math.floor((now - start) / 86400000);
+    return diff >= 0 && diff % n === 0;
+  }
+  if (r.repeat.startsWith('xweeks:')) {
+    if (!r.dueDate) return false;
+    const start = new Date(r.dueDate + 'T12:00:00');
+    const n = parseInt(r.repeat.split(':')[1]) || 1;
+    const diff = Math.floor((now - start) / 86400000);
+    return diff >= 0 && diff % (n*7) === 0;
+  }
+  return false;
+}
+
 async function loadRappels() {
   rappels = await getAll('rappels');
+  // Auto-reset recurring rappels that were checked on a previous day
+  const todayStr = toLocalStr(new Date());
+  for (const r of rappels) {
+    if (r.done && isRecurring(r) && r.lastDone !== todayStr) {
+      r.done = false;
+      r.lastDone = null;
+      await updateItem('rappels', r.id, { done: false, lastDone: null });
+    }
+  }
 }
 
 function renderRappels() {
@@ -2500,30 +2560,15 @@ function renderRappels() {
   if (!list) return;
   list.innerHTML = '';
 
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-
-  // Auto-reset done for recurring rappels when new cycle arrives
-  rappels.forEach(r => {
-    if (!r.done) return;
-    const hasRepeat = r.repeat && r.repeat !== 'none';
-    if (!hasRepeat) return;
-    // Reset if: no lastDone, OR lastDone is not today
-    if (!r.lastDone || r.lastDone !== todayStr) {
-      r.done = false;
-      updateItem('rappels', r.id, { done: false, lastDone: null });
-    }
-  });
+  const todayStr = toLocalStr(new Date());
 
   if (!rappels.length) {
-    const empty = document.createElement('div');
-    empty.style.cssText = 'padding:24px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.1em;';
+    const empty = document.createElement('p');
+    empty.style.cssText = 'font-size:11px;color:var(--text3);padding:24px;text-align:center;letter-spacing:.1em;';
     empty.textContent = 'Aucun rappel';
     list.appendChild(empty);
     return;
   }
-
-  const today = new Date(); today.setHours(0,0,0,0);
 
   rappels.forEach(r => {
     const item = document.createElement('div');
@@ -2534,14 +2579,13 @@ function renderRappels() {
     let sub = '', subClass = 'rep';
     if (r.dueDate) {
       const d = new Date(r.dueDate + 'T12:00:00');
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-      const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate()+1);
-      const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
-      if (r.dueDate < todayStr && !r.done) { sub = 'En retard'; subClass = 'overdue'; }
-      else if (r.dueDate === todayStr) { sub = "Aujourd'hui · " + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
-      else if (r.dueDate === tomorrowStr) { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
-      else { sub = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()]; subClass = r.done ? '' : 'due'; }
-    } else if (r.repeat && r.repeat !== 'none') {
+      const tomorrowDate = new Date(); tomorrowDate.setDate(tomorrowDate.getDate()+1);
+      const tomorrowStr = toLocalStr(tomorrowDate);
+      if (!r.done && r.dueDate < todayStr)  { sub = 'En retard'; subClass = 'overdue'; }
+      else if (r.dueDate === todayStr)       { sub = "Aujourd'hui · " + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      else if (r.dueDate === tomorrowStr)    { sub = 'Demain · ' + DAYS_FR_COURT[d.getDay()]; subClass = 'due'; }
+      else                                   { sub = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()]; subClass = 'due'; }
+    } else if (isRecurring(r)) {
       sub = getRepLabel(r);
       subClass = 'rep';
     }
@@ -2554,10 +2598,7 @@ function renderRappels() {
         ${subHtml}
       </div>`;
 
-    item.querySelector('.todo-cb-sm').onclick = (e) => {
-      e.stopPropagation();
-      toggleTodoRappelDone(r.id);
-    };
+    item.querySelector('.todo-cb-sm').onclick = e => { e.stopPropagation(); toggleTodoRappelDone(r.id); };
     item.onclick = () => selectTodoRappel(r.id);
     list.appendChild(item);
   });
@@ -2568,67 +2609,54 @@ function selectTodoRappel(id) {
   const r = rappels.find(x => x.id === id);
   if (!r) return;
 
-  // Update active state
-  document.querySelectorAll('.todo-rappel-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.id === id);
-  });
+  document.querySelectorAll('.todo-rappel-item').forEach(el =>
+    el.classList.toggle('active', el.dataset.id === id));
 
-  // Show detail
-  document.getElementById('todo-detail-empty').style.display = 'none';
+  document.getElementById('todo-detail-empty').style.display  = 'none';
   document.getElementById('todo-detail-content').style.display = 'block';
   document.getElementById('todo-detail-title').textContent = r.text;
-  document.getElementById('todo-detail-cb').className = 'todo-cb-large' + (r.done ? ' done' : '');
+  document.getElementById('todo-detail-cb').className = 'todo-cb-large' + (r.done?' done':'');
   document.getElementById('todo-detail-cb').onclick = () => toggleTodoRappelDone(id);
 
-  // Due date
+  // Due date display
   const dueVal = document.getElementById('todo-due-val');
   if (r.dueDate) {
     const d = new Date(r.dueDate + 'T12:00:00');
-    const today = new Date();
-    const todayStr2 = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-    const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate()+1);
-    const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
-    if (r.dueDate === todayStr2) { dueVal.textContent = "Aujourd'hui"; dueVal.style.color = '#5AB4F0'; }
+    const todayStr    = toLocalStr(new Date());
+    const tomorrowDate = new Date(); tomorrowDate.setDate(tomorrowDate.getDate()+1);
+    const tomorrowStr  = toLocalStr(tomorrowDate);
+    if (r.dueDate === todayStr)      { dueVal.textContent = "Aujourd'hui"; dueVal.style.color = '#5AB4F0'; }
     else if (r.dueDate === tomorrowStr) { dueVal.textContent = 'Demain'; dueVal.style.color = '#5AB4F0'; }
     else {
-      const diff = Math.round((d - today) / 86400000);
+      const diff = Math.round((d - new Date()) / 86400000);
       dueVal.textContent = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()];
       dueVal.style.color = diff < 0 ? '#F06060' : '#5AB4F0';
     }
-  } else {
-    dueVal.textContent = 'Aucune';
-    dueVal.style.color = 'var(--text3)';
-  }
+  } else { dueVal.textContent = 'Aucune'; dueVal.style.color = 'var(--text3)'; }
 
-  // Repeat
   document.getElementById('todo-rep-val').textContent = getRepLabel(r);
   document.getElementById('todo-notif-time').value = r.heure || '08:00';
   document.getElementById('todo-note').value = r.note || '';
 
-  // Popup days
+  // Popup day labels
   const now = new Date();
   const tom = new Date(now); tom.setDate(now.getDate()+1);
-  const nwk = new Date(now); nwk.setDate(now.getDate() + (8 - now.getDay() || 7));
+  const daysUntilMon = (8 - now.getDay()) % 7 || 7;
+  const nwk = new Date(now); nwk.setDate(now.getDate() + daysUntilMon);
   const el1 = document.getElementById('popup-today-day');
   const el2 = document.getElementById('popup-tomorrow-day');
   const el3 = document.getElementById('popup-nextweek-day');
-  const toLocalStr2 = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  // Recalculate using local dates
-  const nowL = new Date();
-  const tomL = new Date(nowL); tomL.setDate(nowL.getDate()+1);
-  const daysUntilMon = (8 - nowL.getDay()) % 7 || 7;
-  const nwkL = new Date(nowL); nwkL.setDate(nowL.getDate() + daysUntilMon);
-  if (el1) el1.textContent = DAYS_FR_COURT[nowL.getDay()];
-  if (el2) el2.textContent = DAYS_FR_COURT[tomL.getDay()];
-  if (el3) el3.textContent = 'Lun ' + nwkL.getDate() + ' ' + MONTHS_FR_COURT[nwkL.getMonth()];
+  if (el1) el1.textContent = DAYS_FR_COURT[now.getDay()];
+  if (el2) el2.textContent = DAYS_FR_COURT[tom.getDay()];
+  if (el3) el3.textContent = 'Lun ' + nwk.getDate() + ' ' + MONTHS_FR_COURT[nwk.getMonth()];
 }
 
 async function createTodoRappel() {
   const input = document.getElementById('todo-new-input');
-  const text = input?.value.trim();
+  const text  = input?.value.trim();
   if (!text) return;
-  const ref = await addItem('rappels', { text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
-  rappels.push({ id: ref.id, text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
+  const ref = await addItem('rappels', { text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'', lastDone:null });
+  rappels.push({ id:ref.id, text, heure:'08:00', done:false, repeat:'none', dueDate:null, note:'', lastDone:null });
   if (input) input.value = '';
   renderRappels();
   renderHomeRappels();
@@ -2639,21 +2667,16 @@ async function toggleTodoRappelDone(id) {
   const r = rappels.find(x => x.id === id);
   if (!r) return;
   r.done = !r.done;
+  const todayStr = toLocalStr(new Date());
 
-  // Pour les rappels recurrents — sauvegarder la date du dernier cochage
-  const hasRepeat = r.repeat && r.repeat !== 'none';
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-
-  if (hasRepeat && r.done) {
-    // Sauvegarder la date du cochage
+  if (isRecurring(r) && r.done) {
     r.lastDone = todayStr;
-    await updateItem('rappels', id, { done: true, lastDone: todayStr });
-  } else if (hasRepeat && !r.done) {
+    await updateItem('rappels', id, { done:true, lastDone:todayStr });
+  } else if (isRecurring(r) && !r.done) {
     r.lastDone = null;
-    await updateItem('rappels', id, { done: false, lastDone: null });
+    await updateItem('rappels', id, { done:false, lastDone:null });
   } else {
-    await updateItem('rappels', id, { done: r.done });
+    await updateItem('rappels', id, { done:r.done });
   }
   renderRappels();
   renderHomeRappels();
@@ -2665,7 +2688,7 @@ async function deleteTodoRappel() {
   await deleteItem('rappels', selectedRappelId);
   rappels = rappels.filter(x => x.id !== selectedRappelId);
   selectedRappelId = null;
-  document.getElementById('todo-detail-empty').style.display = 'flex';
+  document.getElementById('todo-detail-empty').style.display  = 'flex';
   document.getElementById('todo-detail-content').style.display = 'none';
   renderRappels();
   renderHomeRappels();
@@ -2675,20 +2698,22 @@ window.toggleTodoPopup = function(type) {
   const duePopup = document.getElementById('popup-due');
   const repPopup = document.getElementById('popup-rep');
   if (type === 'due') {
-    const isOpen = duePopup.style.display !== 'none';
-    duePopup.style.display = isOpen ? 'none' : 'block';
+    const open = duePopup.style.display !== 'none';
+    duePopup.style.display = open ? 'none' : 'block';
     repPopup.style.display = 'none';
   } else {
-    const isOpen = repPopup.style.display !== 'none';
-    repPopup.style.display = isOpen ? 'none' : 'block';
+    const open = repPopup.style.display !== 'none';
+    repPopup.style.display = open ? 'none' : 'block';
     duePopup.style.display = 'none';
   }
 }
 
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   if (!e.target.closest('#todo-opt-due') && !e.target.closest('#todo-opt-rep')) {
-    document.getElementById('popup-due')?.style && (document.getElementById('popup-due').style.display='none');
-    document.getElementById('popup-rep')?.style && (document.getElementById('popup-rep').style.display='none');
+    const dp = document.getElementById('popup-due');
+    const rp = document.getElementById('popup-rep');
+    if (dp) dp.style.display = 'none';
+    if (rp) rp.style.display = 'none';
   }
 });
 
@@ -2697,18 +2722,13 @@ window.setDue = async function(type, e) {
   if (!selectedRappelId) return;
   const r = rappels.find(x => x.id === selectedRappelId);
   if (!r) return;
-  const toLocalStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   const now = new Date();
   let iso = null;
-  if (type === 'today') {
-    iso = toLocalStr(now);
-  } else if (type === 'tomorrow') {
-    const d = new Date(now); d.setDate(d.getDate()+1); iso = toLocalStr(d);
-  } else if (type === 'nextweek') {
-    // Prochain lundi — si aujourd'hui est lundi, aller au lundi suivant
+  if (type === 'today')    { iso = toLocalStr(now); }
+  else if (type === 'tomorrow') { const d=new Date(now); d.setDate(now.getDate()+1); iso=toLocalStr(d); }
+  else if (type === 'nextweek') {
     const d = new Date(now);
-    const day = d.getDay(); // 0=dim,1=lun,...,6=sam
-    const daysUntilMonday = day === 1 ? 7 : (8 - day) % 7;
+    const daysUntilMonday = (8 - d.getDay()) % 7 || 7;
     d.setDate(d.getDate() + daysUntilMonday);
     iso = toLocalStr(d);
   } else if (type === 'custom') {
@@ -2744,9 +2764,9 @@ window.setRepX = async function(e) {
   if (!selectedRappelId) return;
   const r = rappels.find(x => x.id === selectedRappelId);
   if (!r) return;
-  const n = parseInt(document.getElementById('popup-xdays-input')?.value) || 2;
+  const n    = parseInt(document.getElementById('popup-xdays-input')?.value) || 2;
   const unit = document.getElementById('popup-xunit')?.value || 'days';
-  const rep = unit === 'weeks' ? `xweeks:${n}` : `xdays:${n}`;
+  const rep  = unit === 'weeks' ? `xweeks:${n}` : `xdays:${n}`;
   r.repeat = rep;
   await updateItem('rappels', r.id, { repeat: rep });
   document.getElementById('popup-rep').style.display = 'none';
@@ -2763,826 +2783,15 @@ window.saveTodoDetail = async function() {
   await updateItem('rappels', r.id, { heure: r.heure, note: r.note });
 }
 
-// Notifications navigateur
-document.getElementById('notif-permission-btn')?.addEventListener('click', async () => {
-  const perm = await Notification.requestPermission();
-  const statusEl = document.getElementById('notif-status');
-  const btn = document.getElementById('notif-permission-btn');
-  if (perm === 'granted') {
-    if (statusEl) statusEl.textContent = 'Notifications activees !';
-    if (btn) btn.textContent = 'Active';
-    new Notification('HouseHQ', { body: 'Notifications activees avec succes !' });
-  } else {
-    if (statusEl) statusEl.textContent = 'Permission refusee. Verifie les parametres de ton navigateur.';
-  }
-});
-
-function scheduleNotif(text, heure) {
-  if (Notification.permission !== 'granted') return;
-  const [h, m] = heure.split(':').map(Number);
-  const now  = new Date();
-  const fire = new Date();
-  fire.setHours(h, m, 0, 0);
-  if (fire <= now) fire.setDate(fire.getDate() + 1);
-  const delay = fire - now;
-  setTimeout(() => {
-    new Notification('HouseHQ - Rappel', { body: text });
-  }, delay);
-}
-
-// ─── BUDGET ───────────────────────────────────────────
-function getFridays() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const days = new Date(year, month+1, 0).getDate();
-  const fridays = [];
-  for (let d=1; d<=days; d++) {
-    const date = new Date(year, month, d);
-    if (date.getDay() === 5) fridays.push(d);
-  }
-  return fridays;
-}
-
-function fmtBudget(n) {
-  return Math.round(n).toLocaleString('fr-CA') + '$';
-}
-
-function makeBudgetRow(containerId, label, amt, isPos) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  const row = document.createElement('div');
-  row.className = 'budget-edit-row';
-  row.innerHTML = `
-    <input type="text" class="budget-label-input" value="${label}" placeholder="Description" oninput="calcBudget()">
-    <input type="number" class="budget-amt-input${isPos?' pos':''}" value="${amt}" oninput="calcBudget()">
-    <button class="budget-del-btn" onclick="this.parentElement.remove();calcBudget()">x</button>
-  `;
-  el.appendChild(row);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ─── BUDGET CALENDAR ─────────────────────────────────
-const BUDGET_CATS = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro','Ass. maison','Ass. Eric','Ass. Ryan','Pharmacie','Service de garde','Epicerie','American Express','Capital One','Internet','Cellulaire','Spotify','Amazon','Autre'];
-const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
-const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-let budgetYear = new Date().getFullYear();
-let budgetMonth = new Date().getMonth();
-let budgetData = {};
-let budgetSelectedDay = null;
-
-function budgetKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
-function fmtB(n){ return Math.round(n).toLocaleString('fr-CA')+'$'; }
-
-// Budget settings cached globally
-let _budgetSettings = { salary: 0, solde: 0 };
-
-async function loadBudget() {
-  // 1. Charger les settings Firestore EN PREMIER avant tout
-  try {
-    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
-    if (snap.exists()) {
-      const d = snap.data();
-      _budgetSettings.salary = parseFloat(d.salary) || 0;
-      _budgetSettings.solde  = parseFloat(d.solde)  || 0;
-    }
-  } catch(e) { console.log('Firestore budget settings error:', e); }
-
-  // 2. Charger les transactions du calendrier
-  const items = await getAll('budget_cal');
-  budgetData = {};
-  items.forEach(item => {
-    if (!budgetData[item.day]) budgetData[item.day] = [];
-    budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt, auto:item.auto||false});
-  });
-
-  // 3. Appliquer les settings dans le DOM
-  applyBudgetSettings();
-
-  // 4. Init les rangees dettes/actifs
-  const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
-  const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
-  dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
-  actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
-
-  // 5. Charger les cartes et auto-entries
-  await loadCartes();
-  checkAutoEntries();
-  await saveAutoEntriesToFirestore();
-
-  // 6. Render APRES que tout est chargé
-  renderBudget();
-  renderCartes();
-}
-
-function applyBudgetSettings() {
-  const salaryEl = document.getElementById('budget-salary');
-  if (salaryEl) { salaryEl.value = ''; salaryEl.value = String(_budgetSettings.salary || 0); }
-  const soldeEl = document.getElementById('b-solde-input');
-  if (soldeEl)  { soldeEl.value  = ''; soldeEl.value  = String(_budgetSettings.solde  || 0); }
-}
-
-// Save salary + solde to Firestore
-async function saveSalary() { await saveBudgetSettings(); }
-async function saveSolde()  { await saveBudgetSettings(); }
-
-window.saveBudgetSettings = async function() {
-  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
-  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  _budgetSettings.salary = salary;
-  _budgetSettings.solde  = solde;
-  try {
-    await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde });
-    // Flash confirmation
-    const btn = document.querySelector('[onclick="saveBudgetSettings()"]');
-    if (btn) { btn.textContent = '✅ Sauvegarde!'; setTimeout(()=>btn.textContent='💾 Sauvegarder',2000); }
-  } catch(e) { console.error('Save error:', e); alert('Erreur sauvegarde: ' + e.message); }
-}
-
-function renderBudget() {
-  const titleEl = document.getElementById('budget-month-title');
-  if (titleEl) titleEl.textContent = MONTHS_FR[budgetMonth] + ' ' + budgetYear;
-  const grid = document.getElementById('budget-cal-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-
-  DAYS_FR.forEach(d => {
-    const h = document.createElement('div');
-    h.className = 'budget-cal-head';
-    h.textContent = d;
-    grid.appendChild(h);
-  });
-
-  const firstDay = new Date(budgetYear, budgetMonth, 1).getDay();
-  const daysInMonth = new Date(budgetYear, budgetMonth+1, 0).getDate();
-  const today = new Date();
-  let monthTotal = 0;
-  let activeDays = 0;
-
-  for (let i=0; i<firstDay; i++) {
-    const e = document.createElement('div');
-    e.className = 'budget-cal-empty';
-    grid.appendChild(e);
-  }
-
-  for (let d=1; d<=daysInMonth; d++) {
-    const k = budgetKey(budgetYear, budgetMonth, d);
-    const entries = budgetData[k] || [];
-    const dayTotal = entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
-    monthTotal += dayTotal;
-    if (dayTotal > 0) activeDays++;
-    const isToday = today.getFullYear()===budgetYear && today.getMonth()===budgetMonth && today.getDate()===d;
-    const cell = document.createElement('div');
-    cell.className = 'budget-cal-day' + (isToday ? ' today' : '');
-    cell.innerHTML = `<div class="budget-day-num">${d}</div>`;
-    entries.slice(0,2).forEach(e => {
-      const tag = document.createElement('div');
-      const cls = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro'].includes(e.cat)?'fixe':['American Express','Capital One'].includes(e.cat)?'carte':'autre';
-      tag.className = `budget-dep-tag ${cls}`;
-      tag.textContent = e.cat;
-      cell.appendChild(tag);
-    });
-    if (entries.length > 2) {
-      const more = document.createElement('div');
-      more.className = 'budget-dep-tag autre';
-      more.textContent = `+${entries.length-2}`;
-      cell.appendChild(more);
-    }
-    if (dayTotal > 0) {
-      const tot = document.createElement('div');
-      tot.className = 'budget-day-total';
-      tot.textContent = '-'+Math.round(dayTotal)+'$';
-      cell.appendChild(tot);
-    }
-    cell.onclick = () => openBudgetDay(d, k);
-    grid.appendChild(cell);
-  }
-
-  calcBudgetSummary(monthTotal, activeDays);
-  calcBudgetBilan();
-  renderBudgetCharts();
-  renderNextPayments();
-}
-
-// ─── AUTO ENTRIES ─────────────────────────────────────
-function checkAutoEntries() {
-  const year = budgetYear, month = budgetMonth;
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-
-  // Entrees par jour de semaine (dow: 0=dim,1=lun,...,5=ven,4=jeu)
-  const dowEntries = [
-    { dow:4, cat:'Hypotheque',    amt:256.88 },
-    { dow:4, cat:'Marge vieille', amt:73.56  },
-    { dow:5, cat:'REER',          amt:35.00  },
-  ];
-
-  // Entrees par jour du mois (dom: jour fixe du mois)
-  const domEntries = [
-    { dom:1,  cat:'Ass. maison', amt:180.22 },
-    { dom:15, cat:'Ass. Eric',   amt:16.10  },
-    { dom:15, cat:'Ass. Ryan',   amt:27.77  },
-  ];
-
-  for (let d=1; d<=daysInMonth; d++) {
-    const date = new Date(year, month, d);
-    const k = budgetKey(year, month, d);
-
-    // Par jour de semaine
-    dowEntries.forEach(entry => {
-      if (entry.dow !== date.getDay()) return;
-      const existing = budgetData[k] || [];
-      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
-        if (!budgetData[k]) budgetData[k] = [];
-        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
-      }
-    });
-
-    // Par jour du mois
-    domEntries.forEach(entry => {
-      if (entry.dom !== d) return;
-      const existing = budgetData[k] || [];
-      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
-        if (!budgetData[k]) budgetData[k] = [];
-        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
-      }
-    });
-  }
-}
-
-// ─── CARTES DE CREDIT ────────────────────────────────
-let cartesData = { amex: [], capone: [], amazon: [] };
-
-function renderCartes() {
-  renderCarteRows('amex');
-  renderCarteRows('capone');
-  renderCarteRows('amazon');
-  renderCartesSummary();
-  renderAmazonChart();
-}
-
-function renderCarteRows(carte) {
-  const container = document.getElementById(carte + '-rows');
-  if (!container) return;
-  container.innerHTML = '';
-  (cartesData[carte] || []).forEach((row, i) => {
-    const div = document.createElement('div');
-    div.className = carte === 'amazon' ? 'carte-row amazon-row' : 'carte-row';
-    div.dataset.idx = i;
-    div.dataset.carte = carte;
-
-    if (carte === 'amazon') {
-      div.innerHTML = `
-        <input type="text" placeholder="MM/DD" value="${row.date||''}">
-        <input type="number" placeholder="0.00" value="${row.dep||''}">
-        <input type="text" placeholder="Raison" value="${row.raison||''}">
-        <button class="carte-del-btn">✕</button>`;
-      const [dateIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
-      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
-      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
-      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
-      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
-    } else {
-      div.innerHTML = `
-        <input type="text" placeholder="MM/DD" value="${row.date||''}">
-        <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}">
-        <input type="number" placeholder="0.00" value="${row.dep||''}">
-        <input type="text" placeholder="Raison" value="${row.raison||''}">
-        <button class="carte-del-btn">✕</button>`;
-      const [dateIn, payIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
-      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
-      payIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].pay    = parseFloat(payIn.value)||0; renderCartesSummary(); };
-      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
-      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
-      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
-    }
-    container.appendChild(div);
-  });
-}
-
-window.addCarteRow = function(carte) {
-  cartesData[carte].push({ date:'', pay:0, dep:0, raison:'' });
-  renderCartes();
-  saveCartes();
-}
-
-async function saveCartes() {
-  try {
-    await setDoc(doc(db, 'users', uid(), 'settings', 'cartes'), {
-      amex:   JSON.stringify(cartesData.amex),
-      capone: JSON.stringify(cartesData.capone),
-      amazon: JSON.stringify(cartesData.amazon),
-      amexLimite:   document.getElementById('amex-limite')?.value || '1000',
-      caponeLimite: document.getElementById('capone-limite')?.value || '125',
-    });
-  } catch(e) { console.error('saveCartes error:', e); }
-}
-
-// Lignes fixes qui reviennent chaque mois
-const AMEX_FIXED = [
-  { date:'', pay:0, dep:120.67, raison:'Bell' },
-  { date:'', pay:0, dep:24.13,  raison:'Spotify' },
-  { date:'', pay:0, dep:399.96, raison:'Amazon' },
-  { date:'', pay:0, dep:17.25,  raison:'Blink' },
-];
-const CAPONE_FIXED = [
-  { date:'', pay:0, dep:38.58, raison:'Cellulaire' },
-  { date:'', pay:0, dep:9.20,  raison:'TSN+' },
-];
-const AMAZON_FIXED = [
-  { date:'', dep:7.78,  raison:'Pharmacie' },
-  { date:'', dep:7.78,  raison:'Menager' },
-  { date:'', dep:7.28,  raison:'Aliments' },
-  { date:'', dep:11.47, raison:'Aliments' },
-  { date:'', dep:9.16,  raison:'Pharmacie' },
-  { date:'', dep:24.00, raison:'Chat' },
-  { date:'', dep:8.78,  raison:'Pharmacie' },
-  { date:'', dep:20.39, raison:'Aliments' },
-  { date:'', dep:20.47, raison:'Chat' },
-  { date:'', dep:11.27, raison:'Aliments' },
-  { date:'', dep:27.57, raison:'Cadeaux' },
-  { date:'', dep:25.28, raison:'Activites' },
-  { date:'', dep:26.43, raison:'Activites' },
-  { date:'', dep:67.44, raison:'Quincaillerie' },
-  { date:'', dep:28.73, raison:'Maison' },
-  { date:'', dep:24.00, raison:'Chat' },
-  { date:'', dep:14.69, raison:'Cadeaux' },
-  { date:'', dep:57.44, raison:'Quincaillerie' },
-];
-
-async function loadCartes() {
-  try {
-    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'cartes'));
-    if (snap.exists()) {
-      const d = snap.data();
-      cartesData.amex   = JSON.parse(d.amex   || '[]');
-      cartesData.capone = JSON.parse(d.capone || '[]');
-      cartesData.amazon = JSON.parse(d.amazon || '[]');
-      const amexLimEl   = document.getElementById('amex-limite');
-      const caponeLimEl = document.getElementById('capone-limite');
-      if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
-      if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
-    } else {
-      // Premier chargement — pre-remplir avec les fixes
-      cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
-      cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
-      cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
-    }
-  } catch(e) {
-    // Erreur — utiliser les fixes par defaut
-    cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
-    cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
-    cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
-  }
-}
-
-window.renderCartesSummary = function() {
-  // Sync Amazon total into Amex 'Amazon' row silently (no re-render)
-  const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
-  const amexAmazonRow = (cartesData.amex||[]).find(r => r.raison === 'Amazon');
-  if (amexAmazonRow && amexAmazonRow.dep !== amazonTotal) {
-    amexAmazonRow.dep = amazonTotal;
-    // Update the input field directly without full re-render
-    const amexRows = document.querySelectorAll('#amex-rows .carte-row');
-    const amexIdx = cartesData.amex.indexOf(amexAmazonRow);
-    if (amexIdx >= 0 && amexRows[amexIdx]) {
-      const depInput = amexRows[amexIdx].querySelectorAll('input[type=number]')[1];
-      if (depInput) depInput.value = amazonTotal.toFixed(2);
-    }
-  }
-
-  // Totaux Amex + Capital One
-  ['amex','capone'].forEach(carte => {
-    const rows = cartesData[carte] || [];
-    const totalPay = rows.reduce((s,r) => s+(parseFloat(r.pay)||0), 0);
-    const totalDep = rows.reduce((s,r) => s+(parseFloat(r.dep)||0), 0);
-    const diff = totalPay - totalDep;
-    const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-    s(`${carte}-total-pay`, totalPay.toFixed(2)+'$');
-    s(`${carte}-total-dep`, totalDep.toFixed(2)+'$');
-    const diffEl = document.getElementById(`${carte}-diff`);
-    if (diffEl) { diffEl.textContent=(diff>=0?'+':'')+diff.toFixed(2)+'$'; diffEl.style.color=diff>=0?'var(--teal)':'#F06060'; }
-  });
-
-  // Total Amazon
-  const el = document.getElementById('amazon-total-dep');
-  if (el) el.textContent = amazonTotal.toFixed(2)+'$';
-
-  saveCartes();
-  renderBudgetCharts();
-  renderAmazonChart();
-}
-
-function syncCarteToCal(carte, idx) {
-  const row = cartesData[carte][idx];
-  if (!row?.date || !row?.dep) return;
-  const parts = row.date.split('/');
-  if (parts.length < 2) return;
-  const m = parseInt(parts[0])-1, d = parseInt(parts[1]);
-  if (isNaN(m)||isNaN(d)) return;
-  const k = budgetKey(budgetYear, m, d);
-  if (!budgetData[k]) budgetData[k] = [];
-  const catName = carte==='amex'?'American Express':carte==='capone'?'Capital One':'Amazon';
-  const existing = budgetData[k].find(e=>e.fromCarte===true&&e.carteIdx===idx&&e.carte===carte);
-  if (existing) { existing.amt=row.dep; }
-  else { budgetData[k].push({cat:catName, amt:row.dep, fromCarte:true, carte, carteIdx:idx}); }
-}
-
-// ─── BUDGET CHARTS ────────────────────────────────────
-let _budgetDonut=null, _budgetWeekly=null;
-
-let _amazonDonutChart = null;
-
-function renderAmazonChart() {
-  const rows = cartesData.amazon || [];
-
-  // Grouper par raison
-  const groups = {};
-  rows.forEach(r => {
-    const key = r.raison || 'Autre';
-    groups[key] = (groups[key] || 0) + (parseFloat(r.dep) || 0);
-  });
-
-  const entries = Object.entries(groups).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
-  const total   = entries.reduce((s,[,v]) => s+v, 0);
-  const colors  = ['#534AB7','#1D9E75','#378ADD','#BA7517','#E24B4A','#888780','#D4537E','#639922','#F4A623','#C2714F'];
-
-  // Table
-  const tbody = document.getElementById('amazon-summary-body');
-  if (tbody) {
-    tbody.innerHTML = '';
-    entries.forEach(([raison, amt], i) => {
-      const pct = total > 0 ? Math.round(amt/total*100) : 0;
-      const tr  = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="display:flex;align-items:center;gap:6px;">
-          <span style="width:10px;height:10px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0;"></span>
-          ${raison}
-        </td>
-        <td style="text-align:right;">${amt.toFixed(2)}$</td>
-        <td style="text-align:right;">${pct}%</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-  const totalEl = document.getElementById('amazon-summary-total');
-  if (totalEl) totalEl.textContent = total.toFixed(2)+'$';
-
-  // Donut
-  const ctx = document.getElementById('amazonDonut');
-  if (!ctx) return;
-  if (_amazonDonutChart) _amazonDonutChart.destroy();
-  _amazonDonutChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: entries.map(([r]) => r),
-      datasets: [{
-        data: entries.map(([,v]) => parseFloat(v.toFixed(2))),
-        backgroundColor: colors.slice(0, entries.length),
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      cutout: '65%'
-    }
-  });
-}
-
-function renderBudgetCharts() {
-  const year=budgetYear, month=budgetMonth;
-  const daysInMonth = new Date(year,month+1,0).getDate();
-  const catTotals={}, weekTotals=[0,0,0,0,0];
-
-  for (let d=1;d<=daysInMonth;d++) {
-    const k=budgetKey(year,month,d);
-    (budgetData[k]||[]).forEach(e=>{
-      const cat=e.cat||'Autre';
-      catTotals[cat]=(catTotals[cat]||0)+(e.amt||0);
-      const wi=Math.min(Math.floor((d-1)/7),4);
-      weekTotals[wi]+=(e.amt||0);
-    });
-  }
-  const cats=Object.keys(catTotals).filter(c=>catTotals[c]>0);
-  const vals=cats.map(c=>catTotals[c]);
-  const total=vals.reduce((s,v)=>s+v,0);
-  const colors=['#534AB7','#F06060','#1D9E75','#378ADD','#BA7517','#888780','#F4A623','#A855F7','#34C472','#C2714F'];
-
-  const donutCtx=document.getElementById('budget-donut');
-  if (donutCtx&&cats.length>0) {
-    if(_budgetDonut)_budgetDonut.destroy();
-    _budgetDonut=new Chart(donutCtx,{
-      type:'doughnut',
-      data:{labels:cats,datasets:[{data:vals,backgroundColor:colors.slice(0,cats.length),borderWidth:0,hoverOffset:4}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}
-    });
-    const legendEl=document.getElementById('budget-donut-legend');
-    if(legendEl){
-      legendEl.innerHTML='';
-      cats.forEach((cat,i)=>{
-        const pct=total>0?Math.round(vals[i]/total*100):0;
-        const row=document.createElement('div');
-        row.style.cssText='display:flex;align-items:center;gap:8px;';
-        row.innerHTML=`<span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span><span style="color:var(--text2);flex:1;font-size:10px;">${cat}</span><span style="color:var(--text3);font-size:10px;">${vals[i].toFixed(0)}$ (${pct}%)</span>`;
-        legendEl.appendChild(row);
-      });
-    }
-  }
-
-  const weekCtx=document.getElementById('budget-weekly-chart');
-  if(weekCtx){
-    if(_budgetWeekly)_budgetWeekly.destroy();
-    const wLabels=weekTotals.filter(v=>v>0).map((_,i)=>`Sem ${i+1}`);
-    const wData=weekTotals.filter(v=>v>0);
-    if(wData.length>0) _budgetWeekly=new Chart(weekCtx,{
-      type:'bar',
-      data:{labels:wLabels,datasets:[{label:'Depenses',data:wData,backgroundColor:'#F06060',borderRadius:4,borderSkipped:false}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{color:'#888',callback:v=>v+'$'}}}}
-    });
-  }
-}
-
-window.calcBudgetSummary = function(monthTotal, activeDays) {
-  const today = new Date();
-  const year = budgetYear, month = budgetMonth;
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-
-  // Calcul depenses payees (jusqu'a aujourd'hui) vs restantes (apres aujourd'hui)
-  let paidTotal = 0, remainingTotal = 0;
-  for (let d=1; d<=daysInMonth; d++) {
-    const k = budgetKey(year, month, d);
-    const entries = budgetData[k] || [];
-    const dayTotal = entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
-    const date = new Date(year, month, d);
-    if (date <= today) paidTotal += dayTotal;
-    else remainingTotal += dayTotal;
-  }
-
-  const setEl = (id,v,color) => {
-    const e = document.getElementById(id);
-    if (!e) return;
-    e.textContent = v;
-    if (color) e.style.color = color;
-  };
-  _remainingTotal = remainingTotal;
-  setEl('b-depenses', fmtB(paidTotal));
-  setEl('b-reste',    fmtB(remainingTotal), remainingTotal > 0 ? 'var(--amber)' : 'var(--teal)');
-
-  calcArgentRestant();
-  renderNextPayments();
-}
-
-let _remainingTotal = 0; // global pour calcArgentRestant
-
-function calcArgentRestant() {
-  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
-  const argent = solde - _remainingTotal;
-  const el = document.getElementById('b-argent-restant');
-  if (el) {
-    el.textContent = fmtB(argent);
-    el.style.color = argent >= 0 ? 'var(--teal)' : '#F06060';
-  }
-}
-
-function renderNextPayments() {
-  const el = document.getElementById('next-payments-list');
-  if (!el) return;
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const year = budgetYear, month = budgetMonth;
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const DAYS_FR3 = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  const MONTHS_FR3 = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
-
-  let upcoming = [];
-  for (let d=1; d<=daysInMonth; d++) {
-    const date = new Date(year, month, d);
-    date.setHours(0,0,0,0);
-    if (date < today) continue;
-    const k = budgetKey(year, month, d);
-    const entries = budgetData[k] || [];
-    entries.forEach(e => {
-      const diffDays = Math.round((date - today) / 86400000);
-      upcoming.push({ date, d, diffDays, cat: e.cat, amt: e.amt, auto: e.auto });
-    });
-  }
-
-  // Trier par date
-  upcoming.sort((a,b) => a.date - b.date);
-  // Limiter à 8 prochains
-  upcoming = upcoming.slice(0, 8);
-
-  el.innerHTML = '';
-  if (!upcoming.length) {
-    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun paiement prevu</p>';
-    return;
-  }
-
-  upcoming.forEach(p => {
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);';
-    const dateStr = `${DAYS_FR3[p.date.getDay()]} ${p.d} ${MONTHS_FR3[month]}`;
-    let badgeStyle, badgeText;
-    if (p.diffDays === 0) { badgeStyle='background:rgba(240,96,96,.15);color:#F06060;'; badgeText="Aujourd'hui"; }
-    else if (p.diffDays <= 3) { badgeStyle='background:rgba(244,166,35,.15);color:var(--amber);'; badgeText=`Dans ${p.diffDays}j`; }
-    else { badgeStyle='background:var(--bg3);color:var(--text3);'; badgeText=`Dans ${p.diffDays}j`; }
-    row.innerHTML = `
-      <span style="font-size:11px;color:var(--text3);min-width:80px;">${dateStr}</span>
-      <span style="font-size:12px;color:var(--text);flex:1;">${p.cat}${p.auto?' <span style="font-size:9px;color:var(--text3);">auto</span>':''}</span>
-      <span style="font-size:13px;font-weight:500;color:#F06060;">-${fmtB(p.amt)}</span>
-      <span style="font-size:10px;padding:2px 8px;border-radius:20px;letter-spacing:.05em;${badgeStyle}">${badgeText}</span>
-    `;
-    el.appendChild(row);
-  });
-}
-
-function openBudgetDay(d, k) {
-  budgetSelectedDay = k;
-  const date = new Date(budgetYear, budgetMonth, d);
-  const titleEl = document.getElementById('budget-modal-title');
-  if (titleEl) titleEl.textContent = DAYS_FR[date.getDay()] + ' ' + d + ' ' + MONTHS_FR[budgetMonth];
-  const entries = budgetData[k] || [];
-  const existEl = document.getElementById('budget-existing-entries');
-  if (existEl) {
-    existEl.innerHTML = '';
-    entries.forEach((e,i) => {
-      const row = document.createElement('div');
-      row.className = 'budget-existing-row';
-      row.innerHTML = `<span class="budget-existing-cat">${e.cat}</span><span class="budget-existing-amt">-${parseFloat(e.amt).toFixed(2)}$</span><button class="budget-del-entry" onclick="deleteBudgetEntry('${k}',${i})">✕</button>`;
-      existEl.appendChild(row);
-    });
-  }
-  const newEl = document.getElementById('budget-new-entries');
-  if (newEl) newEl.innerHTML = '';
-  if (!entries.length) addBudgetEntryRow();
-  document.getElementById('budget-day-modal')?.classList.remove('hidden');
-}
-
-window.deleteBudgetEntry = async function(k, i) {
-  const entry = budgetData[k]?.[i];
-  if (entry?.id) await deleteItem('budget_cal', entry.id);
-  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
-  renderBudget();
-  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
-}
-
-window.addBudgetEntryRow = function() {
-  const container = document.getElementById('budget-new-entries');
-  if (!container) return;
-  const row = document.createElement('div');
-  row.className = 'budget-entry-row';
-  row.innerHTML = `
-    <select class="budget-entry-select">${BUDGET_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
-    <input type="number" class="budget-entry-amt" placeholder="0.00" min="0" step="0.01">
-    <button class="budget-del-entry" onclick="this.parentElement.remove()">✕</button>
-  `;
-  container.appendChild(row);
-}
-
-window.saveBudgetDay = async function() {
-  if (!budgetSelectedDay) return;
-  const rows = document.getElementById('budget-new-entries')?.querySelectorAll('.budget-entry-row') || [];
-  for (const row of rows) {
-    const cat = row.querySelector('.budget-entry-select')?.value;
-    const amt = parseFloat(row.querySelector('.budget-entry-amt')?.value) || 0;
-    if (amt > 0) {
-      const ref = await addItem('budget_cal', { day: budgetSelectedDay, cat, amt, auto: false });
-      if (!budgetData[budgetSelectedDay]) budgetData[budgetSelectedDay] = [];
-      budgetData[budgetSelectedDay].push({ id: ref.id, cat, amt, auto: false });
-    }
-  }
-  document.getElementById('budget-day-modal')?.classList.add('hidden');
-  budgetSelectedDay = null;
-  renderBudget();
-}
-
-// Save auto entries to Firestore (called once per month load)
-async function saveAutoEntriesToFirestore() {
-  const year = budgetYear, month = budgetMonth;
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  for (let d=1; d<=daysInMonth; d++) {
-    const k = budgetKey(year, month, d);
-    const entries = budgetData[k] || [];
-    for (const entry of entries) {
-      if (!entry.auto || entry.id) continue; // skip if already saved
-      const ref = await addItem('budget_cal', { day: k, cat: entry.cat, amt: entry.amt, auto: true });
-      entry.id = ref.id;
-    }
-  }
-}
-
-// Delete budget entry from Firestore
-window.deleteBudgetEntry = async function(k, i) {
-  const entry = budgetData[k]?.[i];
-  if (entry?.id) await deleteItem('budget_cal', entry.id);
-  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
-  renderBudget();
-  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
-}
-
-function calcBudgetBilan() {
-  const dettes = getContainerTotal('budget-dettes');
-  const actifs = getContainerTotal('budget-actifs');
-  const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  setEl('b-total-dettes', fmtB(dettes));
-  const vn = document.getElementById('b-valeur-nette');
-  if (vn) {
-    vn.textContent = fmtB(actifs-dettes);
-    vn.style.color = (actifs-dettes) >= 0 ? 'var(--teal)' : '#F06060';
-  }
-}
-
-function getContainerTotal(containerId) {
-  const rows = document.getElementById(containerId)?.querySelectorAll('.budget-amt-input') || [];
-  let total = 0;
-  rows.forEach(i => total += parseFloat(i.value)||0);
-  return total;
-}
-
-window.addBudgetRow = function(containerId, isPos) {
-  makeBudgetRow(containerId, '', 0, isPos);
-}
-
-
-
-// Nav buttons
-document.getElementById('budget-prev')?.addEventListener('click', () => {
-  budgetMonth--; if(budgetMonth<0){budgetMonth=11;budgetYear--;} renderBudget();
-});
-document.getElementById('budget-next')?.addEventListener('click', () => {
-  budgetMonth++; if(budgetMonth>11){budgetMonth=0;budgetYear++;} renderBudget();
-});
-document.getElementById('budget-modal-close')?.addEventListener('click', () => {
-  document.getElementById('budget-day-modal')?.classList.add('hidden');
-  budgetSelectedDay = null;
-});
-document.getElementById('budget-day-modal')?.addEventListener('click', e => {
-  if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); budgetSelectedDay=null; }
-});
-
 function renderHomeRappels() {
   const el = document.getElementById('home-rappels-list');
   if (!el) return;
   el.innerHTML = '';
-
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  const dow = now.getDay();
-
-  const toShow = rappels.filter(r => {
-    if (!r.repeat || r.repeat === 'none') {
-      return r.dueDate === todayStr;
-    }
-    if (r.repeat === 'daily') return true;
-    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
-    if (r.repeat === 'weekly') {
-      if (!r.dueDate) return true;
-      const startDow = new Date(r.dueDate + 'T12:00:00').getDay();
-      return dow === startDow;
-    }
-    if (r.repeat === 'monthly') {
-      if (!r.dueDate) return true;
-      return now.getDate() === parseInt(r.dueDate.split('-')[2]);
-    }
-    if (r.repeat === 'yearly') {
-      if (!r.dueDate) return true;
-      const p = r.dueDate.split('-');
-      return now.getMonth()+1 === parseInt(p[1]) && now.getDate() === parseInt(p[2]);
-    }
-    if (r.repeat?.startsWith('xdays:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((now - start) / 86400000);
-      return diff >= 0 && diff % n === 0;
-    }
-    if (r.repeat?.startsWith('xweeks:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((now - start) / 86400000);
-      return diff >= 0 && diff % (n * 7) === 0;
-    }
-    return false;
-  });
-
+  const toShow = rappels.filter(r => !r.done && shouldShowToday(r));
   if (!toShow.length) {
     el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
     return;
   }
-
   toShow.forEach(r => {
     const item = document.createElement('div');
     item.className = 'rappel-item';
@@ -3596,27 +2805,6 @@ function renderHomeRappels() {
     el.appendChild(item);
   });
 }
-
-document.getElementById('add-rappel-btn')?.addEventListener('click', async () => {
-  const text = prompt('Nom du rappel:');
-  if (!text || !text.trim()) return;
-  const ref = await addItem('rappels', { text: text.trim(), heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
-  rappels.push({ id: ref.id, text: text.trim(), heure:'08:00', done:false, repeat:'none', dueDate:null, note:'' });
-  switchTab('rappels');
-  renderRappels();
-  selectTodoRappel(ref.id);
-});
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-    switchTab(tab);
-  });
-});
-
-document.querySelectorAll('.link-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
 
 // ─── AMAZON TRACKER ──────────────────────────────────
 const AMAZON_CATS = ['Pharmacie','Aliments','Chat','Quincaillerie','Maison','Cadeaux','Activites','Menager','Autre'];
