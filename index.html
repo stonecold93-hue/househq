@@ -2493,6 +2493,15 @@ function getRepLabel(r) {
 
 async function loadRappels() {
   rappels = await getAll('rappels');
+  // Auto-reset recurring rappels checked on a previous day
+  const todayStr = toLocalStr(new Date());
+  for (const r of rappels) {
+    if (r.done && isRecurring(r) && r.lastDone !== todayStr) {
+      r.done = false;
+      r.lastDone = null;
+      await updateItem('rappels', r.id, { done: false, lastDone: null });
+    }
+  }
 }
 
 function renderRappels() {
@@ -2620,11 +2629,28 @@ async function createTodoRappel() {
   selectTodoRappel(ref.id);
 }
 
+function isRecurring(r) {
+  return r.repeat && r.repeat !== 'none';
+}
+
+function toLocalStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
 async function toggleTodoRappelDone(id) {
   const r = rappels.find(x => x.id === id);
   if (!r) return;
   r.done = !r.done;
-  await updateItem('rappels', id, { done: r.done });
+  const todayStr = toLocalStr(new Date());
+  if (isRecurring(r) && r.done) {
+    r.lastDone = todayStr;
+    await updateItem('rappels', id, { done: true, lastDone: todayStr });
+  } else if (isRecurring(r) && !r.done) {
+    r.lastDone = null;
+    await updateItem('rappels', id, { done: false, lastDone: null });
+  } else {
+    await updateItem('rappels', id, { done: r.done });
+  }
   renderRappels();
   renderHomeRappels();
   if (id === selectedRappelId) selectTodoRappel(id);
