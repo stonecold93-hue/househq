@@ -2505,12 +2505,13 @@ function renderRappels() {
 
   // Auto-reset done for recurring rappels when new cycle arrives
   rappels.forEach(r => {
-    if (!r.done || !r.lastDone) return;
+    if (!r.done) return;
     const hasRepeat = r.repeat && r.repeat !== 'none';
     if (!hasRepeat) return;
-    // If lastDone is not today, reset done
-    if (r.lastDone !== todayStr) {
+    // Reset if: no lastDone, OR lastDone is not today
+    if (!r.lastDone || r.lastDone !== todayStr) {
       r.done = false;
+      updateItem('rappels', r.id, { done: false, lastDone: null });
     }
   });
 
