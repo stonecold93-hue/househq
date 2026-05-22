@@ -2500,6 +2500,20 @@ function renderRappels() {
   if (!list) return;
   list.innerHTML = '';
 
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+  // Auto-reset done for recurring rappels when new cycle arrives
+  rappels.forEach(r => {
+    if (!r.done || !r.lastDone) return;
+    const hasRepeat = r.repeat && r.repeat !== 'none';
+    if (!hasRepeat) return;
+    // If lastDone is not today, reset done
+    if (r.lastDone !== todayStr) {
+      r.done = false;
+    }
+  });
+
   if (!rappels.length) {
     const empty = document.createElement('div');
     empty.style.cssText = 'padding:24px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.1em;';
@@ -2624,7 +2638,22 @@ async function toggleTodoRappelDone(id) {
   const r = rappels.find(x => x.id === id);
   if (!r) return;
   r.done = !r.done;
-  await updateItem('rappels', id, { done: r.done });
+
+  // Pour les rappels recurrents — sauvegarder la date du dernier cochage
+  const hasRepeat = r.repeat && r.repeat !== 'none';
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+  if (hasRepeat && r.done) {
+    // Sauvegarder la date du cochage
+    r.lastDone = todayStr;
+    await updateItem('rappels', id, { done: true, lastDone: todayStr });
+  } else if (hasRepeat && !r.done) {
+    r.lastDone = null;
+    await updateItem('rappels', id, { done: false, lastDone: null });
+  } else {
+    await updateItem('rappels', id, { done: r.done });
+  }
   renderRappels();
   renderHomeRappels();
   if (id === selectedRappelId) selectTodoRappel(id);

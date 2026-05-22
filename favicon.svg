@@ -1,5 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#080212"/>
-  <text x="4" y="24" font-family="serif" font-size="22" font-style="italic" font-weight="300" fill="#A855F7">H</text>
-  <text x="16" y="24" font-family="serif" font-size="22" font-weight="600" fill="#DDB8FF">Q</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#030200" rx="12"/>
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFBF0"/>
+      <stop offset="50%" stop-color="#F4A623"/>
+      <stop offset="100%" stop-color="#8A5600"/>
+    </linearGradient>
+  </defs>
+  <rect x="38" y="14" width="6" height="10" fill="none" stroke="url(#g)" stroke-width="1.5"/>
+  <path d="M10 30 L32 12 L54 30" fill="none" stroke="url(#g)" stroke-width="2"/>
+  <rect x="14" y="30" width="36" height="22" fill="none" stroke="url(#g)" stroke-width="2"/>
+  <rect x="27" y="40" width="10" height="12" fill="none" stroke="url(#g)" stroke-width="1.5"/>
+  <text x="32" y="38" text-anchor="middle" font-family="serif" font-size="10" font-weight="600" fill="url(#g)">HQ</text>
 </svg>
