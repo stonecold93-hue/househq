@@ -2404,6 +2404,22 @@ function getRepLabel(r) {
 
 async function loadRappels() {
   rappels = await getAll('rappels');
+
+  // Auto-rappels fixes — ajouter si pas encore dans Firestore
+  const autoRappels = [
+    { key:'arrose-plantes-sem',     text:'Arrose plantes sem',      repeat:'weekly',   dueDate:'2026-05-26', heure:'08:00', note:'' },
+    { key:'arrose-plantes-3j',      text:'Arrose plantes 3 jours',  repeat:'xdays:3',  dueDate:'2026-05-23', heure:'08:00', note:'' },
+    { key:'bouffe-perruches',       text:'Bouffe perruches',        repeat:'xdays:2',  dueDate:'2026-05-24', heure:'08:00', note:'' },
+    { key:'nettoyage-cage-perruches',text:'Nettoyer cage perruches',repeat:'xweeks:3', dueDate:'2026-05-22', heure:'08:00', note:'' },
+  ];
+
+  for (const ar of autoRappels) {
+    const exists = rappels.find(r => r.autoKey === ar.key);
+    if (!exists) {
+      const ref = await addItem('rappels', { ...ar, autoKey: ar.key, done: false });
+      rappels.push({ id: ref.id, ...ar, autoKey: ar.key, done: false });
+    }
+  }
 }
 
 function renderRappels() {
