@@ -2320,9 +2320,19 @@ function renderYearTable(monthCounts) {
       }
     });
 
-    // Minutes et jours : EXACT_MINS prioritaire pour jan-mai, Firestore pour apres
+    // Minutes : EXACT_MINS pour jan-mai + Firestore pour taches apres le 19 mai
     const firestoreData = monthCounts[monthKey];
-    const useMins  = exactMins  || firestoreData?.mins  || 0;
+    // Pour les mois couverts par EXACT_MINS, on additionne les taches Firestore post-19 mai
+    let extraMins = 0;
+    if (exactMins > 0 && firestoreData?.mins > 0) {
+      // Calculer seulement les mins Firestore pour les dates PAS dans EXACT_MINS
+      Object.entries(yearData).forEach(([dateKey, d]) => {
+        if (dateKey.startsWith(monthKey) && !EXACT_MINS[dateKey] && d.minutes) {
+          extraMins += d.minutes;
+        }
+      });
+    }
+    const useMins  = exactMins + extraMins || firestoreData?.mins  || 0;
     const useDays  = exactDays  || firestoreData?.days  || 0;
     const useTasks = firestoreData?.tasks || exactTasks || 0;
 
