@@ -1080,6 +1080,47 @@ async function loadAll() {
   renderProjectCalendar();
   renderYearStats();
   importCleanHistory(); // import historique en arriere-plan
+  rebuildActivityFromTasks(); // reconstruire activity depuis les taches cochees
+}
+
+async function rebuildActivityFromTasks() {
+  try {
+    // Lire toutes les taches cochees dans Firestore
+    const snap = await getDocs(collection(db, 'users', uid(), 'tasks'));
+    const tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Grouper par date
+    const byDate = {};
+    tasks.forEach(t => {
+      if (!t.done || !t.date) return;
+      if (!byDate[t.date]) byDate[t.date] = [];
+      byDate[t.date].push(t);
+    });
+
+    // Pour chaque date, calculer les vraies minutes et mettre a jour activity
+    for (const [date, dayTasks] of Object.entries(byDate)) {
+      // Ne pas ecraser les donnees EXACT_MINS (jan-mai)
+      if (EXACT_MINS[date]) continue;
+
+      let mins = 0;
+      let count = 0;
+      dayTasks.forEach(t => {
+        const block = t.block || '';
+        // Blocs projet 1 et 2 = 30 min, tout le reste = 15 min
+        mins += (block === 'proj1' || block === 'proj2') ? 30 : 15;
+        count++;
+      });
+
+      if (mins > 0) {
+        await setDoc(doc(db, 'users', uid(), 'activity', date), { count, minutes: mins });
+        yearData[date] = { count, minutes: mins };
+      }
+    }
+    console.log('Activity rebuilt from tasks OK');
+    renderYearStats();
+  } catch(e) {
+    console.error('rebuildActivityFromTasks error:', e);
+  }
 }
 
 // Auto-seed les tâches clean du jour dans les blocs clean1/clean2 si pas encore fait
@@ -1642,7 +1683,12 @@ async function toggleTask(id, col, done) {
   if (col === 'tasks') {
     const t = todayTasks.find(t => t.id === id);
     if (t) t.done = done;
-    if (done) await recordActivity();
+    if (done) {
+      // Blocs 3 et 4 = 30 min, reste = 15 min
+      const block = t?.block || '';
+      const mins = (block === 'proj1' || block === 'proj2') ? 30 : 15;
+      await recordActivity(mins);
+    }
     renderHome();
   } else {
     const t = cleanTasks.find(t => t.id === id);
@@ -2029,11 +2075,12 @@ async function loadYearData() {
   snap.docs.forEach(d => { yearData[d.id] = d.data(); });
 }
 
-async function recordActivity() {
+async function recordActivity(mins) {
+  if (!mins) mins = 15;
   const key = todayKey();
   const existing = yearData[key] || { count: 0, minutes: 0 };
   existing.count   = (existing.count || 0) + 1;
-  existing.minutes = (existing.minutes || 0) + 15;
+  existing.minutes = (existing.minutes || 0) + mins;
   await setDoc(userRef('activity', key), existing);
   yearData[key] = existing;
   renderYearStats();
