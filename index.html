@@ -2087,40 +2087,31 @@ async function recordActivity(mins) {
 }
 
 function renderYearStats() {
-  // Source unique: EXACT_MINS pour l'historique jan-mai
-  // + yearData Firestore pour les jours futurs non couverts
   const monthCounts = {};
   let totalMins = 0, totalTasks = 0, activeDays = 0;
 
-  // 1. Partir de EXACT_MINS (source principale jan-mai)
+  // 1. EXACT_MINS = source de verite pour jan-mai (minutes depuis Excel)
   Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
     const m = dateKey.substring(0,7);
     if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
-    const tasks = CLEAN_HISTORY[dateKey]?.length || 0;
-    monthCounts[m].mins  += mins;
-    monthCounts[m].tasks += tasks;
+    monthCounts[m].mins += mins;
     monthCounts[m].days++;
     totalMins  += mins;
-    totalTasks += tasks;
     activeDays++;
   });
 
-  // 2. Ajouter les jours Firestore — combiner avec EXACT_MINS pour les memes jours
+  // 2. Firestore tasks = source de verite pour les taches (toutes les dates)
   Object.entries(yearData).forEach(([key, d]) => {
-    if (!d.count && !d.minutes) return;
+    if (!d.count) return;
     const m = key.substring(0,7);
     if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
-    if (EXACT_MINS[key]) {
-      // Ce jour est dans EXACT_MINS — ajouter seulement les taches Firestore (pas les minutes deja comptees)
-      monthCounts[m].tasks += d.count || 0;
-      totalTasks += d.count || 0;
-    } else {
-      // Jour non couvert par EXACT_MINS — tout ajouter
-      monthCounts[m].tasks += d.count || 0;
-      monthCounts[m].mins  += d.minutes || 0;
+    monthCounts[m].tasks += d.count || 0;
+    totalTasks += d.count || 0;
+    // Pour les dates apres EXACT_MINS, ajouter les minutes aussi
+    if (!EXACT_MINS[key]) {
+      monthCounts[m].mins += d.minutes || 0;
       monthCounts[m].days++;
       totalMins  += d.minutes || 0;
-      totalTasks += d.count || 0;
       activeDays++;
     }
   });
@@ -2329,12 +2320,11 @@ function renderYearTable(monthCounts) {
       }
     });
 
-    // Also include firestore data for current/future months
+    // Minutes : EXACT_MINS pour jan-mai, Firestore pour apres
     const firestoreData = monthCounts[monthKey];
-    // Combiner EXACT_MINS + Firestore (pas juste l'un ou l'autre)
     const useMins  = exactMins  + (firestoreData?.mins  || 0);
     const useDays  = exactDays  + (firestoreData?.days  || 0);
-    const useTasks = exactTasks + (firestoreData?.tasks || 0);
+    const useTasks = firestoreData?.tasks || exactTasks;
 
     if (!useMins && !useTasks) continue;
 
