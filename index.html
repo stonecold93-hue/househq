@@ -133,6 +133,9 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .block-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);}
 .clean-block .block-label{color:var(--teal);}
 .project-block .block-label{color:var(--coral);}
+.rappel-block{border-color:rgba(168,85,247,.3);}
+.rappel-block .block-label{color:var(--c2);}
+.rappel-block .block-duration{color:var(--text3);}
 .block-duration{font-size:10px;color:var(--text3);letter-spacing:.1em;}
 .block-tasks{display:flex;flex-direction:column;gap:6px;flex:1;}
 .add-task-to-block{background:none;border:1px dashed var(--border);border-radius:6px;color:var(--text3);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;padding:6px;cursor:pointer;transition:all var(--transition);}
@@ -569,6 +572,21 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
           <div class="block-tasks" id="block-clean2-tasks"></div>
           <button class="add-task-to-block" data-block="clean2">+ Tache</button>
+        </div>
+        <div class="time-block rappel-block" data-block="rapp1">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp1-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp1">+ Tache</button>
+        </div>
+        <div class="time-block rappel-block" data-block="rapp2">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp2-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp2">+ Tache</button>
+        </div>
+        <div class="time-block rappel-block" data-block="rapp3">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp3-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp3">+ Tache</button>
         </div>
         <div class="time-block project-block" data-block="proj1">
           <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
@@ -1605,8 +1623,26 @@ async function loadTodayTasks() {
 function renderHome() {
   renderTodayList();
   renderBlocks();
+  seedTodayRappelBlocks();
   updateDayStats();
   renderHomeRappels();
+}
+
+function seedTodayRappelBlocks() {
+  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+  const todayRappels = rappels.filter(r => r.dueDate === todayStr && !r.done);
+  const blocks = ['rapp1','rapp2','rapp3'];
+  blocks.forEach((block, i) => {
+    const el = document.getElementById(`block-${block}-tasks`);
+    if (!el) return;
+    el.innerHTML = '';
+    if (todayRappels[i]) {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:10px;color:var(--c2);padding:4px;letter-spacing:.05em;';
+      div.textContent = todayRappels[i].text;
+      el.appendChild(div);
+    }
+  });
 }
 
 function renderTodayList() {
@@ -1683,10 +1719,11 @@ async function toggleTask(id, col, done) {
     const t = todayTasks.find(t => t.id === id);
     if (t) t.done = done;
     if (done) {
-      // Blocs 3 et 4 = 30 min, reste = 15 min
       const block = t?.block || '';
-      const mins = (block === 'proj1' || block === 'proj2') ? 30 : 15;
-      await recordActivity(mins);
+      let mins = 15;
+      if (block === 'proj1' || block === 'proj2') mins = 30;
+      if (block === 'rapp1' || block === 'rapp2' || block === 'rapp3') mins = 0;
+      if (mins > 0) await recordActivity(mins);
     }
     renderHome();
   } else {
