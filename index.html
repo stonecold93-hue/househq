@@ -521,8 +521,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <span>Accueil</span>
       </button>
       <button class="nav-btn" data-tab="clean">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        <span>Clean</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Taches</span>
       </button>
       <button class="nav-btn" data-tab="project">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -531,10 +531,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <button class="nav-btn" data-tab="myyear">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span>My Year</span>
-      </button>
-      <button class="nav-btn" data-tab="rappels">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span>Rappels</span>
       </button>
       <button class="nav-btn" data-tab="budget">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -618,42 +614,85 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       <div class="section-card" id="home-rappels-card">
         <div class="section-top">
           <h2 class="section-title">Rappels</h2>
-          <button class="btn-ghost" onclick="switchTab('rappels')">Voir tout →</button>
+          <button class="btn-ghost" onclick="switchTab('clean')">Voir tout →</button>
         </div>
         <div id="home-rappels-list" class="rappel-list"></div>
       </div>
     </section>
 
-    <!-- CLEAN -->
+    <!-- TACHES (ancien Clean + Rappels fusionnes) -->
     <section id="tab-clean" class="tab hidden">
       <div class="page-header">
-        <h1 class="page-title">Clean</h1>
+        <h1 class="page-title">Taches</h1>
       </div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" data-subtab="clean-calendar">Calendrier</button>
-        <button class="sub-tab" data-subtab="clean-tasks">Liste de taches</button>
-      </div>
-      <div id="clean-calendar" class="sub-content active">
-        <div class="section-card">
-          <div class="section-top"><h2 class="section-title">Calendrier menage</h2><span class="badge-fixed">Fixe - 2x 15 min/jour</span></div>
-          <div class="calendar-grid" id="clean-calendar-grid"></div>
-        </div>
-      </div>
-      <div id="clean-tasks" class="sub-content hidden">
+
+      <!-- Deux calendriers cote a cote -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <!-- CALENDRIER CLEAN -->
         <div class="section-card">
           <div class="section-top">
-            <h2 class="section-title">Taches par journee</h2>
-            <button class="btn-primary" onclick="saveCleanScheduleEdit()">💾 Sauvegarder</button>
+            <h2 class="section-title">Clean</h2>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <span class="badge-fixed">2x 15 min</span>
+              <button class="btn-ghost" id="toggle-clean-edit-btn" onclick="toggleCleanEditInline()">Modifier</button>
+            </div>
           </div>
-          <p style="font-size:10px;color:var(--text3);margin-bottom:14px;letter-spacing:.05em;">Modifie les taches et leur journee — le calendrier se met a jour automatiquement</p>
-          <div id="clean-schedule-editor"></div>
+
+          <!-- Editeur taches (cache par defaut) -->
+          <div id="clean-edit-inline" style="display:none;margin-bottom:12px;">
+            <div id="clean-schedule-editor"></div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn-primary" onclick="saveCleanScheduleEdit()">Sauvegarder</button>
+              <button class="btn-ghost" onclick="toggleCleanEditInline()">Fermer</button>
+            </div>
+          </div>
+
+          <!-- Navigation mois clean -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <button class="btn-ghost" style="padding:4px 10px;" onclick="cleanCalPrev()">&#8592;</button>
+            <span id="clean-cal-month-title" style="font-size:11px;color:var(--text2);letter-spacing:.1em;"></span>
+            <button class="btn-ghost" style="padding:4px 10px;" onclick="cleanCalNext()">&#8594;</button>
+          </div>
+
+          <div class="calendar-grid" id="clean-calendar-grid"></div>
         </div>
-        <div class="section-card" style="margin-top:12px;">
-          <div class="section-top"><h2 class="section-title">Taches ponctuelles</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
-          <div id="clean-task-list" class="task-list"></div>
+
+        <!-- CALENDRIER RAPPELS -->
+        <div class="section-card">
+          <div class="section-top">
+            <h2 class="section-title">Rappels</h2>
+            <button class="btn-primary" id="add-rappel-btn">+ Nouveau</button>
+          </div>
+
+          <!-- Navigation mois rappels -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <button class="btn-ghost" style="padding:4px 10px;" onclick="rappelPrev()">&#8592;</button>
+            <span id="rappel-month-title" style="font-size:11px;color:var(--text2);letter-spacing:.1em;"></span>
+            <button class="btn-ghost" style="padding:4px 10px;" onclick="rappelNext()">&#8594;</button>
+          </div>
+
+          <div class="budget-cal-grid" id="rappel-cal-grid"></div>
+
+          <!-- Liste rappels sous le calendrier -->
+          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">Tous les rappels</div>
+            <div id="rappel-list-all"></div>
+          </div>
         </div>
+
       </div>
+
+      <!-- Section taches ponctuelles clean -->
+      <div class="section-card" style="margin-top:0;">
+        <div class="section-top"><h2 class="section-title">Taches ponctuelles</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
+        <div id="clean-task-list" class="task-list"></div>
+      </div>
+
     </section>
+
+    <!-- RAPPELS (section cachee — conservee pour compatibilite JS) -->
+    <section id="tab-rappels" class="tab hidden" style="display:none!important;"></section>
 
     <!-- PROJECT -->
     <section id="tab-project" class="tab hidden">
@@ -775,28 +814,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div id="historique-list" style="max-height:400px;overflow-y:auto;"></div>
       </div>
 
-    </section>
-
-    <!-- RAPPELS -->
-    <section id="tab-rappels" class="tab hidden">
-      <div class="page-header">
-        <h1 class="page-title">Rappels</h1>
-        <button class="btn-primary" id="add-rappel-btn">+ Nouveau</button>
-      </div>
-      <div class="section-card">
-        <div class="section-top">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <button class="btn-ghost" onclick="rappelPrev()">← Precedent</button>
-            <h2 class="section-title" id="rappel-month-title"></h2>
-            <button class="btn-ghost" onclick="rappelNext()">Suivant →</button>
-          </div>
-        </div>
-        <div class="budget-cal-grid" id="rappel-cal-grid"></div>
-      </div>
-      <div class="section-card">
-        <h2 class="section-title" style="margin-bottom:12px;">Tous les rappels</h2>
-        <div id="rappel-list-all"></div>
-      </div>
     </section>
 
         <!-- BUDGET -->
@@ -1649,11 +1666,13 @@ function renderTodayList() {
   const el = document.getElementById('today-tasks-list');
   if (!el) return;
   el.innerHTML = '';
-  if (!todayTasks.length) {
-    el.innerHTML = `<p style="font-size:11px;color:var(--text3);text-align:center;padding:24px;letter-spacing:.1em;">Aucune tâche pour aujourd'hui</p>`;
+  // Afficher seulement les taches sans bloc (ajoutees manuellement) — les taches clean sont dans les blocs
+  const displayTasks = todayTasks.filter(t => !t.block || t.block === '');
+  if (!displayTasks.length) {
+    el.innerHTML = `<p style="font-size:11px;color:var(--text3);text-align:center;padding:16px;letter-spacing:.1em;">Aucune tache supplementaire</p>`;
     return;
   }
-  todayTasks.forEach(t => el.appendChild(makeTaskItem(t, 'tasks')));
+  displayTasks.forEach(t => el.appendChild(makeTaskItem(t, 'tasks')));
 }
 
 function renderBlocks() {
@@ -2014,11 +2033,36 @@ document.getElementById('add-project-btn')?.addEventListener('click', async () =
   selectProject(ref.id);
 });
 
-// ─── CALENDARS ───────────────────────────────────────
+// ─── CLEAN CALENDAR NAV ──────────────────────────────
+let cleanCalYear  = new Date().getFullYear();
+let cleanCalMonth = new Date().getMonth();
+
+window.cleanCalPrev = function() {
+  cleanCalMonth--; if (cleanCalMonth < 0) { cleanCalMonth = 11; cleanCalYear--; }
+  renderCleanCalendar();
+};
+window.cleanCalNext = function() {
+  cleanCalMonth++; if (cleanCalMonth > 11) { cleanCalMonth = 0; cleanCalYear++; }
+  renderCleanCalendar();
+};
+
+window.toggleCleanEditInline = function() {
+  const panel = document.getElementById('clean-edit-inline');
+  const btn   = document.getElementById('toggle-clean-edit-btn');
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  if (btn) btn.textContent = isHidden ? 'Fermer' : 'Modifier';
+  if (isHidden) renderCleanScheduleEditor();
+};
+
 function renderCleanCalendar() {
   const el = document.getElementById('clean-calendar-grid');
+  const titleEl = document.getElementById('clean-cal-month-title');
   if (!el) return;
   el.innerHTML = '';
+  const MONTHS_LABEL = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  if (titleEl) titleEl.textContent = MONTHS_LABEL[cleanCalMonth] + ' ' + cleanCalYear;
   const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   days.forEach(d => {
     const h = document.createElement('div');
@@ -2026,23 +2070,22 @@ function renderCleanCalendar() {
     h.textContent = d;
     el.appendChild(h);
   });
+  const start = new Date(cleanCalYear, cleanCalMonth, 1);
+  const firstDay = (start.getDay() + 6) % 7;
+  const daysInMonth = new Date(cleanCalYear, cleanCalMonth + 1, 0).getDate();
   const today = new Date();
-  const year  = today.getFullYear();
-  const month = today.getMonth();
-  const start = new Date(year, month, 1);
-  const firstDay = (start.getDay() + 6) % 7; // 0=Lun
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   for (let i = 0; i < firstDay; i++) {
     el.appendChild(document.createElement('div'));
   }
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const date  = new Date(year, month, d);
+    const date  = new Date(cleanCalYear, cleanCalMonth, d);
     const tasks = getCleanTasksForDate(date);
     const cell  = document.createElement('div');
     cell.className = 'cal-day';
-    if (d === today.getDate()) cell.classList.add('today');
+    const isToday = d === today.getDate() && cleanCalMonth === today.getMonth() && cleanCalYear === today.getFullYear();
+    if (isToday) cell.classList.add('today');
     cell.classList.add('has-task');
 
     const num = document.createElement('div');
@@ -3766,15 +3809,6 @@ document.getElementById('historique-filter-month')?.addEventListener('change', r
 
 
 // ─── CLEAN SCHEDULE EDITOR ───────────────────────────
-function toggleCleanEdit() {
-  const panel = document.getElementById('clean-edit-panel');
-  const btn   = document.getElementById('toggle-clean-edit');
-  if (!panel) return;
-  const isHidden = panel.style.display === 'none';
-  panel.style.display = isHidden ? 'block' : 'none';
-  btn.textContent = isHidden ? '✕ Fermer' : '✎ Modifier';
-  if (isHidden) renderCleanScheduleEditor();
-}
 
 function renderCleanScheduleEditor() {
   const el = document.getElementById('clean-schedule-editor');
@@ -3843,9 +3877,9 @@ window.saveCleanScheduleEdit = async function() {
 
   await saveCleanSchedule();
 
-  const btn = document.getElementById('toggle-clean-edit');
-  btn.textContent = '✓ Sauvegarde!';
-  setTimeout(() => { btn.textContent = '✕ Fermer'; }, 2000);
+  const btn = document.getElementById('toggle-clean-edit-btn');
+  if (btn) btn.textContent = 'Modifier';
+  setTimeout(() => { if (btn) btn.textContent = 'Modifier'; }, 2000);
 
   // Refresh calendar
   renderCleanCalendar();
@@ -3859,7 +3893,7 @@ function switchTab(tab) {
     t.classList.toggle('hidden', !isActive);
   });
   // Lazy render on first switch
-  if (tab === 'clean')   renderCleanTasks();
+  if (tab === 'clean')   { renderCleanTasks(); renderCleanCalendar(); renderRappels(); }
   if (tab === 'project') renderProjects();
   if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
