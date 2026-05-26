@@ -1582,29 +1582,24 @@ const EXACT_MINS = {
   "2026-05-06": 45,
   "2026-05-07": 75,
   "2026-05-08": 45,
-  "2026-05-09": 45,
+  "2026-05-09": 75,
   "2026-05-10": 45,
   "2026-05-11": 30,
   "2026-05-12": 30,
   "2026-05-13": 90,
   "2026-05-14": 30,
-  "2026-05-15": 30,
-  "2026-05-16": 30,
-  "2026-05-17": 30,
-  "2026-05-18": 30,
-  "2026-05-19": 30,
-  "2026-05-20": 30,
-  "2026-05-21": 30,
-  "2026-05-22": 30,
-  "2026-05-23": 30,
-  "2026-05-24": 30,
-  "2026-05-25": 30,
+  "2026-05-15": 90,
+  "2026-05-16": 75,
+  "2026-05-17": 90,
+  "2026-05-18": 105,
+  "2026-05-19": 60,
+  "2026-05-20": 105,
+  "2026-05-21": 90,
+  "2026-05-22": 90,
+  "2026-05-23": 90,
+  "2026-05-24": 90,
+  "2026-05-25": 60,
   "2026-05-26": 30,
-  "2026-05-27": 30,
-  "2026-05-28": 30,
-  "2026-05-29": 30,
-  "2026-05-30": 30,
-  "2026-05-31": 30,
 };
 
 // Importe historique dans Firestore activity (My Year)
@@ -2206,7 +2201,9 @@ function renderYearStats() {
   let totalMins = 0, totalTasks = 0, activeDays = 0;
 
   // 1. EXACT_MINS = source de verite pour jan-mai (minutes depuis Excel)
+  const todayKeyY = new Date().toISOString().slice(0,10);
   Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
+    if (dateKey > todayKeyY) return; // ignorer les jours futurs
     const m = dateKey.substring(0,7);
     if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
     monthCounts[m].mins += mins;
@@ -2434,8 +2431,9 @@ function renderYearTable(monthCounts) {
 
     // Use EXACT_MINS for correct minutes per month
     let exactMins = 0, exactDays = 0, exactTasks = 0;
+    const todayKey2 = `${year}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
     Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
-      if (dateKey.startsWith(monthKey)) {
+      if (dateKey.startsWith(monthKey) && dateKey <= todayKey2) {
         exactMins += mins;
         exactDays++;
         const tasks = CLEAN_HISTORY[dateKey] || [];
