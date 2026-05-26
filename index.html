@@ -122,7 +122,10 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .stat-pill{font-size:10px;letter-spacing:.15em;padding:5px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--text2);}
 
 /* ─── BLOCKS GRID ────────────────────────────────────── */
-.blocks-grid{display:grid;grid-template-columns:1fr 1fr 2fr 2fr 1fr 1fr;gap:12px;}
+.blocks-grid{display:flex;flex-direction:column;gap:12px;}
+.blocks-row{display:grid;gap:12px;}
+.blocks-row-1{grid-template-columns:repeat(5,1fr);}
+.blocks-row-2{grid-template-columns:repeat(4,1fr);}
 .time-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;min-height:120px;transition:border-color var(--transition);}
 .time-block:hover{border-color:var(--border2);}
 .clean-block{border-top:2px solid var(--teal-dim);}
@@ -478,7 +481,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
   .nav-btn{padding:8px 10px;gap:0;}
   .user-name-sm{display:none;}
   .main-content{padding:16px 14px;gap:16px;}
-  .blocks-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .blocks-row-1{grid-template-columns:1fr 1fr;}
+  .blocks-row-2{grid-template-columns:1fr 1fr;}
   .stats-row{grid-template-columns:1fr 1fr;gap:8px;}
   .stat-value{font-size:26px;}
   .page-title{font-size:28px;}
@@ -558,57 +562,55 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           <span class="stat-pill" id="total-count">0 taches</span>
         </div>
       </div>
-      <div class="blocks-grid">
-        <div class="time-block clean-block" data-block="clean1">
-          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
-          <div class="block-tasks" id="block-clean1-tasks"></div>
-          <button class="add-task-to-block" data-block="clean1">+ Tache</button>
+        <div class="blocks-row blocks-row-1">
+          <div class="time-block clean-block" data-block="clean1">
+            <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+            <div class="block-tasks" id="block-clean1-tasks"></div>
+            <button class="add-task-to-block" data-block="clean1">+ Tache</button>
+          </div>
+          <div class="time-block clean-block" data-block="clean2">
+            <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+            <div class="block-tasks" id="block-clean2-tasks"></div>
+            <button class="add-task-to-block" data-block="clean2">+ Tache</button>
+          </div>
+          <div class="time-block rappel-block" data-block="rapp1">
+            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+            <div class="block-tasks" id="block-rapp1-tasks"></div>
+            <button class="add-task-to-block" data-block="rapp1">+ Tache</button>
+          </div>
+          <div class="time-block rappel-block" data-block="rapp2">
+            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+            <div class="block-tasks" id="block-rapp2-tasks"></div>
+            <button class="add-task-to-block" data-block="rapp2">+ Tache</button>
+          </div>
+          <div class="time-block rappel-block" data-block="rapp3">
+            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+            <div class="block-tasks" id="block-rapp3-tasks"></div>
+            <button class="add-task-to-block" data-block="rapp3">+ Tache</button>
+          </div>
         </div>
-        <div class="time-block clean-block" data-block="clean2">
-          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
-          <div class="block-tasks" id="block-clean2-tasks"></div>
-          <button class="add-task-to-block" data-block="clean2">+ Tache</button>
+        <div class="blocks-row blocks-row-2">
+          <div class="time-block project-block" data-block="proj1">
+            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+            <div class="block-tasks" id="block-proj1-tasks"></div>
+            <button class="add-task-to-block" data-block="proj1">+ Tache</button>
+          </div>
+          <div class="time-block project-block" data-block="proj2">
+            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+            <div class="block-tasks" id="block-proj2-tasks"></div>
+            <button class="add-task-to-block" data-block="proj2">+ Tache</button>
+          </div>
+          <div class="time-block project-block" data-block="proj3">
+            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+            <div class="block-tasks" id="block-proj3-tasks"></div>
+            <button class="add-task-to-block" data-block="proj3">+ Tache</button>
+          </div>
+          <div class="time-block project-block" data-block="proj4">
+            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+            <div class="block-tasks" id="block-proj4-tasks"></div>
+            <button class="add-task-to-block" data-block="proj4">+ Tache</button>
+          </div>
         </div>
-        <div class="time-block rappel-block" data-block="rapp1">
-          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-          <div class="block-tasks" id="block-rapp1-tasks"></div>
-          <button class="add-task-to-block" data-block="rapp1">+ Tache</button>
-        </div>
-        <div class="time-block rappel-block" data-block="rapp2">
-          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-          <div class="block-tasks" id="block-rapp2-tasks"></div>
-          <button class="add-task-to-block" data-block="rapp2">+ Tache</button>
-        </div>
-        <div class="time-block rappel-block" data-block="rapp3">
-          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-          <div class="block-tasks" id="block-rapp3-tasks"></div>
-          <button class="add-task-to-block" data-block="rapp3">+ Tache</button>
-        </div>
-        <div class="time-block project-block" data-block="proj1">
-          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
-          <div class="block-tasks" id="block-proj1-tasks"></div>
-          <button class="add-task-to-block" data-block="proj1">+ Tache</button>
-        </div>
-        <div class="time-block project-block" data-block="proj2">
-          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
-          <div class="block-tasks" id="block-proj2-tasks"></div>
-          <button class="add-task-to-block" data-block="proj2">+ Tache</button>
-        </div>
-        <div class="time-block project-block" data-block="proj3">
-          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
-          <div class="block-tasks" id="block-proj3-tasks"></div>
-          <button class="add-task-to-block" data-block="proj3">+ Tache</button>
-        </div>
-        <div class="time-block project-block" data-block="proj4">
-          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
-          <div class="block-tasks" id="block-proj4-tasks"></div>
-          <button class="add-task-to-block" data-block="proj4">+ Tache</button>
-        </div>
-      </div>
-      <div class="section-card">
-        <div class="section-top"><h2 class="section-title">Taches du jour</h2><button class="btn-ghost" id="add-today-task">+ Ajouter</button></div>
-        <div id="today-tasks-list" class="task-list"></div>
-      </div>
 
 
     </section>
