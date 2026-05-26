@@ -610,14 +610,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div id="today-tasks-list" class="task-list"></div>
       </div>
 
-      <!-- Rappels du jour sur l'accueil -->
-      <div class="section-card" id="home-rappels-card">
-        <div class="section-top">
-          <h2 class="section-title">Rappels</h2>
-          <button class="btn-ghost" onclick="switchTab('clean')">Voir tout →</button>
-        </div>
-        <div id="home-rappels-list" class="rappel-list"></div>
-      </div>
+
     </section>
 
     <!-- TACHES (ancien Clean + Rappels fusionnes) -->
@@ -1647,17 +1640,60 @@ function renderHome() {
 
 function seedTodayRappelBlocks() {
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
-  const todayRappels = rappels.filter(r => r.dueDate === todayStr && !r.done);
+  const dow = new Date().getDay();
+
+  const todayRappels = rappels.filter(r => {
+    if (!r.repeat || r.repeat === 'none') return r.dueDate === todayStr;
+    if (r.repeat === 'daily') return true;
+    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+    if (r.repeat === 'weekly') {
+      if (!r.dueDate) return true;
+      return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
+    }
+    if (r.repeat === 'monthly') {
+      if (!r.dueDate) return true;
+      return new Date().getDate() === parseInt(r.dueDate.split('-')[2]);
+    }
+    if (r.repeat?.startsWith('xdays:')) {
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T12:00:00');
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((new Date() - start) / 86400000);
+      return diff >= 0 && diff % n === 0;
+    }
+    if (r.repeat?.startsWith('xweeks:')) {
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T12:00:00');
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((new Date() - start) / 86400000);
+      return diff >= 0 && diff % (n * 7) === 0;
+    }
+    return false;
+  });
+
   const blocks = ['rapp1','rapp2','rapp3'];
   blocks.forEach((block, i) => {
     const el = document.getElementById(`block-${block}-tasks`);
     if (!el) return;
     el.innerHTML = '';
     if (todayRappels[i]) {
-      const div = document.createElement('div');
-      div.style.cssText = 'font-size:10px;color:var(--c2);padding:4px;letter-spacing:.05em;';
-      div.textContent = todayRappels[i].text;
-      el.appendChild(div);
+      const r = todayRappels[i];
+      const row = document.createElement('div');
+      row.className = 'block-task-item';
+      const cb = document.createElement('div');
+      cb.className = `block-task-cb${r.done ? ' checked' : ''}`;
+      cb.onclick = async () => {
+        r.done = !r.done;
+        await updateItem('rappels', r.id, { done: r.done });
+        renderHome();
+        renderRappels();
+      };
+      const txt = document.createElement('span');
+      txt.className = `block-task-text${r.done ? ' done' : ''}`;
+      txt.style.color = 'var(--c2)';
+      txt.textContent = r.text;
+      row.append(cb, txt);
+      el.appendChild(row);
     }
   });
 }
@@ -3536,69 +3572,8 @@ document.getElementById('budget-day-modal')?.addEventListener('click', e => {
 });
 
 function renderHomeRappels() {
-  const el = document.getElementById('home-rappels-list');
-  if (!el) return;
-  el.innerHTML = '';
-
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  const dow = now.getDay();
-
-  const toShow = rappels.filter(r => {
-    if (r.done) return false; // Ne pas afficher les rappels coches
-    if (!r.repeat || r.repeat === 'none') {
-      return r.dueDate === todayStr;
-    }
-    if (r.repeat === 'daily') return true;
-    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
-    if (r.repeat === 'weekly') {
-      if (!r.dueDate) return true;
-      const startDow = new Date(r.dueDate + 'T12:00:00').getDay();
-      return dow === startDow;
-    }
-    if (r.repeat === 'monthly') {
-      if (!r.dueDate) return true;
-      return now.getDate() === parseInt(r.dueDate.split('-')[2]);
-    }
-    if (r.repeat === 'yearly') {
-      if (!r.dueDate) return true;
-      const p = r.dueDate.split('-');
-      return now.getMonth()+1 === parseInt(p[1]) && now.getDate() === parseInt(p[2]);
-    }
-    if (r.repeat?.startsWith('xdays:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((now - start) / 86400000);
-      return diff >= 0 && diff % n === 0;
-    }
-    if (r.repeat?.startsWith('xweeks:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((now - start) / 86400000);
-      return diff >= 0 && diff % (n * 7) === 0;
-    }
-    return false;
-  });
-
-  if (!toShow.length) {
-    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
-    return;
-  }
-
-  toShow.forEach(r => {
-    const item = document.createElement('div');
-    item.className = 'rappel-item';
-    item.innerHTML = `
-      <div class="rappel-cb"></div>
-      <div class="rappel-info">
-        <div class="rappel-text">${r.text}</div>
-        <div class="rappel-meta">${r.heure||''}${r.note?' · '+r.note:''}</div>
-      </div>
-      <span class="rappel-time-badge badge-today-r">Aujourd'hui</span>`;
-    el.appendChild(item);
-  });
+  // La liste du bas a ete supprimee — on met a jour les blocs rappels dans My Day
+  seedTodayRappelBlocks();
 }
 
 document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
