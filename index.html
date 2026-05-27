@@ -3146,10 +3146,25 @@ async function loadCartes() {
       if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
       if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
     } else {
-      // Nouveau mois — repartir des lignes fixes
-      cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
-      cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
-      cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
+      // Essayer l'ancienne cle sans mois pour migration
+      const oldSnap = await getDoc(doc(db, 'users', uid(), 'settings', 'cartes'));
+      if (oldSnap.exists()) {
+        const d = oldSnap.data();
+        cartesData.amex   = JSON.parse(d.amex   || '[]');
+        cartesData.capone = JSON.parse(d.capone || '[]');
+        cartesData.amazon = JSON.parse(d.amazon || '[]');
+        const amexLimEl   = document.getElementById('amex-limite');
+        const caponeLimEl = document.getElementById('capone-limite');
+        if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
+        if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
+        // Sauvegarder sous la nouvelle cle
+        await saveCartes();
+      } else {
+        // Nouveau mois — repartir des lignes fixes
+        cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
+        cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
+        cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
+      }
     }
   } catch(e) {
     cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
