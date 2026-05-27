@@ -1665,13 +1665,22 @@ function seedTodayRappelBlocks() {
     return isToday; // toujours afficher — meme si deja fait aujourd'hui
   });
 
+  // Dedoublonner par texte — garder un seul rappel par texte unique
+  const seen = new Set();
+  const todayRappelsUniq = todayRappels.filter(r => {
+    const key = r.text.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
   const blocks = ['rapp1','rapp2','rapp3'];
   blocks.forEach((block, i) => {
     const el = document.getElementById(`block-${block}-tasks`);
     if (!el) return;
     el.innerHTML = '';
-    if (todayRappels[i]) {
-      const r = todayRappels[i];
+    if (todayRappelsUniq[i]) {
+      const r = todayRappelsUniq[i];
       const isRecurrent = r.repeat && r.repeat !== 'none';
       const isDoneToday = isRecurrent ? r.lastDoneDate === todayStr : !!r.done;
 
@@ -3912,7 +3921,7 @@ function switchTab(tab) {
     t.classList.toggle('hidden', !isActive);
   });
   // Lazy render on first switch
-  if (tab === 'clean')   { renderCleanTasks(); renderCleanCalendar(); renderRappels(); }
+  if (tab === 'clean')   { renderCleanTasks(); renderCleanCalendar(); renderRappels(); setTimeout(renderRappelListAll, 300); }
   if (tab === 'project') renderProjects();
   if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
