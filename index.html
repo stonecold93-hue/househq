@@ -3146,11 +3146,10 @@ async function loadCartes() {
       if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
       if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
     } else {
-      // Nouveau mois — lignes fixes
+      // Nouveau mois — lignes fixes en memoire seulement
       cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
       cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
       cartesData.amazon = [];
-      await saveCartes();
     }
   } catch(e) {
     console.error('loadCartes error:', e);
