@@ -948,6 +948,17 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <div id="cartes-cat-summary"></div>
       </div>
 
+      <!-- Resume annuel par categorie -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Resume annuel</h2>
+          <button class="btn-ghost" id="load-annual-btn" onclick="loadAnnualSummary()">Charger 2026</button>
+        </div>
+        <div id="annual-summary-content">
+          <p style="font-size:11px;color:var(--text3);padding:8px 0;">Clique sur Charger pour voir le total de tous les mois.</p>
+        </div>
+      </div>
+
       <!-- Tracker Amazon -->
       <div class="section-card">
         <div class="section-top">
@@ -3159,6 +3170,85 @@ async function loadCartes() {
     cartesData.amazon = [];
   }
 }
+
+window.loadAnnualSummary = async function() {
+  const btn = document.getElementById('load-annual-btn');
+  const el  = document.getElementById('annual-summary-content');
+  if (!el) return;
+  if (btn) { btn.textContent = 'Chargement...'; btn.disabled = true; }
+  el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;">Lecture de tous les mois...</p>';
+
+  const year = new Date().getFullYear();
+  const MONTHS = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  const groups  = {}; // raison -> total annuel
+  const byMonth = {}; // mois -> total
+
+  for (let m = 0; m < 12; m++) {
+    const key = `cartes_${year}_${String(m+1).padStart(2,'0')}`;
+    try {
+      const snap = await getDoc(doc(db, 'users', uid(), 'settings', key));
+      if (!snap.exists()) continue;
+      const d = snap.data();
+      let monthTotal = 0;
+      const allRows = [
+        ...JSON.parse(d.amex   || '[]'),
+        ...JSON.parse(d.capone || '[]'),
+        ...JSON.parse(d.amazon || '[]'),
+      ];
+      allRows.forEach(r => {
+        const dep = parseFloat(r.dep) || 0;
+        if (dep <= 0) return;
+        const raison = r.raison || 'Autre';
+        if (!groups[raison]) groups[raison] = 0;
+        groups[raison] += dep;
+        monthTotal += dep;
+      });
+      if (monthTotal > 0) byMonth[m] = monthTotal;
+    } catch(e) { /* mois non trouve — skip */ }
+  }
+
+  const entries = Object.entries(groups).sort((a,b) => b[1]-a[1]);
+  const total   = entries.reduce((s,[,v]) => s+v, 0);
+
+  if (!entries.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;">Aucune donnee trouvee pour 2026.</p>';
+    if (btn) { btn.textContent = 'Charger 2026'; btn.disabled = false; }
+    return;
+  }
+
+  // Tableau par raison
+  let html = `<div style="display:grid;grid-template-columns:1fr 90px 60px;gap:4px;padding:0 0 6px;border-bottom:2px solid var(--border2);margin-bottom:4px;font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">
+    <span>Raison</span><span style="text-align:right;">Total</span><span style="text-align:right;">%</span></div>`;
+
+  entries.forEach(([raison, amt]) => {
+    const pct = total > 0 ? Math.round(amt/total*100) : 0;
+    html += `<div style="display:grid;grid-template-columns:1fr 90px 60px;gap:4px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+      <span style="color:var(--text2);">${raison}</span>
+      <span style="text-align:right;color:#F06060;font-family:DM Mono,monospace;">${amt.toFixed(2)}$</span>
+      <span style="text-align:right;color:var(--text3);font-family:DM Mono,monospace;">${pct}%</span></div>`;
+  });
+
+  html += `<div style="display:grid;grid-template-columns:1fr 90px 60px;gap:4px;padding:8px 0 0;font-size:12px;font-weight:600;border-top:2px solid var(--border2);margin-top:4px;">
+    <span style="color:var(--text);">Total annuel</span>
+    <span style="text-align:right;color:#F06060;font-family:DM Mono,monospace;">${total.toFixed(2)}$</span>
+    <span></span></div>`;
+
+  // Par mois
+  const moisLoaded = Object.keys(byMonth);
+  if (moisLoaded.length > 0) {
+    html += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Par mois</div>`;
+    moisLoaded.forEach(m => {
+      html += `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;">
+        <span style="color:var(--text2);">${MONTHS[m]}</span>
+        <span style="color:#F06060;font-family:DM Mono,monospace;">${byMonth[m].toFixed(2)}$</span></div>`;
+    });
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+  if (btn) { btn.textContent = 'Actualiser'; btn.disabled = false; }
+};
 
 function renderCartesCatSummary() {
   const el = document.getElementById('cartes-cat-summary');
