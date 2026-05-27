@@ -670,8 +670,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           <div class="budget-cal-grid" id="rappel-cal-grid"></div>
 
           <!-- Liste rappels sous le calendrier -->
-          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
-            <div style="font-size:10px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">Tous les rappels</div>
+          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;max-height:300px;overflow-y:auto;">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">Tous les rappels — cliquer ✕ pour supprimer</div>
             <div id="rappel-list-all"></div>
           </div>
         </div>
@@ -2618,11 +2618,39 @@ async function loadRappels() {
   ];
 
   for (const ar of autoRappels) {
-    const exists = rappels.find(r => r.autoKey === ar.key);
+    // Chercher par autoKey OU par texte pour eviter les doublons
+    const exists = rappels.find(r => r.autoKey === ar.key || r.text === ar.text);
     if (!exists) {
       const ref = await addItem('rappels', { ...ar, autoKey: ar.key, done: false });
       rappels.push({ id: ref.id, ...ar, autoKey: ar.key, done: false });
+    } else if (!exists.autoKey) {
+      // Mettre a jour l'autoKey si manquant
+      exists.autoKey = ar.key;
+      await updateItem('rappels', exists.id, { autoKey: ar.key });
     }
+  }
+
+  // Supprimer les doublons par texte — garder le plus recent
+  const seen = {};
+  const toDelete = [];
+  rappels.forEach(r => {
+    const key = (r.text||'').trim().toLowerCase();
+    if (!key) { toDelete.push(r.id); return; }
+    if (seen[key]) {
+      // Garder celui avec autoKey, sinon le plus recent
+      if (r.autoKey && !seen[key].autoKey) {
+        toDelete.push(seen[key].id);
+        seen[key] = r;
+      } else {
+        toDelete.push(r.id);
+      }
+    } else {
+      seen[key] = r;
+    }
+  });
+  for (const id of toDelete) {
+    await deleteItem('rappels', id);
+    rappels = rappels.filter(x => x.id !== id);
   }
 }
 
