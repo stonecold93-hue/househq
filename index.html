@@ -1634,32 +1634,37 @@ function seedTodayRappelBlocks() {
   const dow = new Date().getDay();
 
   const todayRappels = rappels.filter(r => {
+    // Rappel non recurrent — doit etre aujourd'hui et pas fait
     if (!r.repeat || r.repeat === 'none') return r.dueDate === todayStr;
-    if (r.repeat === 'daily') return true;
-    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
-    if (r.repeat === 'weekly') {
-      if (!r.dueDate) return true;
-      return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
+
+    // Rappels recurrents — verifier si c'est le bon jour
+    let isToday = false;
+    if (r.repeat === 'daily') isToday = true;
+    else if (r.repeat === 'weekdays') isToday = dow >= 1 && dow <= 5;
+    else if (r.repeat === 'weekly') {
+      isToday = r.dueDate ? new Date(r.dueDate + 'T12:00:00').getDay() === dow : true;
     }
-    if (r.repeat === 'monthly') {
-      if (!r.dueDate) return true;
-      return new Date().getDate() === parseInt(r.dueDate.split('-')[2]);
+    else if (r.repeat === 'monthly') {
+      isToday = r.dueDate ? new Date().getDate() === parseInt(r.dueDate.split('-')[2]) : true;
     }
-    if (r.repeat?.startsWith('xdays:')) {
+    else if (r.repeat?.startsWith('xdays:')) {
       if (!r.dueDate) return false;
       const start = new Date(r.dueDate + 'T12:00:00');
       const n = parseInt(r.repeat.split(':')[1]) || 1;
       const diff = Math.floor((new Date() - start) / 86400000);
-      return diff >= 0 && diff % n === 0;
+      isToday = diff >= 0 && diff % n === 0;
     }
-    if (r.repeat?.startsWith('xweeks:')) {
+    else if (r.repeat?.startsWith('xweeks:')) {
       if (!r.dueDate) return false;
       const start = new Date(r.dueDate + 'T12:00:00');
       const n = parseInt(r.repeat.split(':')[1]) || 1;
       const diff = Math.floor((new Date() - start) / 86400000);
-      return diff >= 0 && diff % (n * 7) === 0;
+      isToday = diff >= 0 && diff % (n * 7) === 0;
     }
-    return false;
+
+    if (!isToday) return false;
+    // Recurrent : afficher sauf si deja coche AUJOURD'HUI
+    return r.lastDoneDate !== todayStr;
   });
 
   const blocks = ['rapp1','rapp2','rapp3'];
@@ -1672,15 +1677,22 @@ function seedTodayRappelBlocks() {
       const row = document.createElement('div');
       row.className = 'block-task-item';
       const cb = document.createElement('div');
-      cb.className = `block-task-cb${r.done ? ' checked' : ''}`;
+      cb.className = 'block-task-cb';
       cb.onclick = async () => {
-        r.done = !r.done;
-        await updateItem('rappels', r.id, { done: r.done });
+        const isRecurrent = r.repeat && r.repeat !== 'none';
+        if (isRecurrent) {
+          // Recurrent : noter la date de la derniere completion, pas done permanent
+          r.lastDoneDate = todayStr;
+          await updateItem('rappels', r.id, { lastDoneDate: todayStr });
+        } else {
+          r.done = true;
+          await updateItem('rappels', r.id, { done: true });
+        }
         renderHome();
         renderRappels();
       };
       const txt = document.createElement('span');
-      txt.className = `block-task-text${r.done ? ' done' : ''}`;
+      txt.className = 'block-task-text';
       txt.style.color = 'var(--c2)';
       txt.textContent = r.text;
       row.append(cb, txt);
