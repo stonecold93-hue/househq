@@ -2599,59 +2599,6 @@ function getRepLabel(r) {
 
 async function loadRappels() {
   rappels = await getAll('rappels');
-
-  // Reset done pour rappels recurrents si pas coché aujourd'hui
-  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
-  for (const r of rappels) {
-    if (r.done && r.repeat && r.repeat !== 'none' && r.lastDone !== todayStr) {
-      r.done = false;
-      await updateItem('rappels', r.id, { done: false });
-    }
-  }
-
-  // Auto-rappels fixes — ajouter si pas encore dans Firestore
-  const autoRappels = [
-    { key:'arrose-plantes-sem',      text:'Arrose plantes sem',       repeat:'weekly',   dueDate:'2026-05-27', heure:'08:00', note:'' },
-    { key:'arrose-plantes-3j',       text:'Arrose plantes 3 jours',   repeat:'xdays:3',  dueDate:'2026-05-23', heure:'08:00', note:'' },
-    { key:'bouffe-perruches',        text:'Bouffe perruches',         repeat:'xdays:2',  dueDate:'2026-05-24', heure:'08:00', note:'' },
-    { key:'nettoyage-cage-perruches',text:'Nettoyer cage perruches',  repeat:'xweeks:3', dueDate:'2026-05-22', heure:'08:00', note:'' },
-  ];
-
-  for (const ar of autoRappels) {
-    // Chercher par autoKey OU par texte pour eviter les doublons
-    const exists = rappels.find(r => r.autoKey === ar.key || r.text === ar.text);
-    if (!exists) {
-      const ref = await addItem('rappels', { ...ar, autoKey: ar.key, done: false });
-      rappels.push({ id: ref.id, ...ar, autoKey: ar.key, done: false });
-    } else if (!exists.autoKey) {
-      // Mettre a jour l'autoKey si manquant
-      exists.autoKey = ar.key;
-      await updateItem('rappels', exists.id, { autoKey: ar.key });
-    }
-  }
-
-  // Supprimer les doublons par texte — garder le plus recent
-  const seen = {};
-  const toDelete = [];
-  rappels.forEach(r => {
-    const key = (r.text||'').trim().toLowerCase();
-    if (!key) { toDelete.push(r.id); return; }
-    if (seen[key]) {
-      // Garder celui avec autoKey, sinon le plus recent
-      if (r.autoKey && !seen[key].autoKey) {
-        toDelete.push(seen[key].id);
-        seen[key] = r;
-      } else {
-        toDelete.push(r.id);
-      }
-    } else {
-      seen[key] = r;
-    }
-  });
-  for (const id of toDelete) {
-    await deleteItem('rappels', id);
-    rappels = rappels.filter(x => x.id !== id);
-  }
 }
 
 function renderRappels() {
