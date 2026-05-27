@@ -1634,10 +1634,10 @@ function seedTodayRappelBlocks() {
   const dow = new Date().getDay();
 
   const todayRappels = rappels.filter(r => {
-    // Rappel non recurrent — doit etre aujourd'hui et pas fait
+    if (!r.text || !r.text.trim()) return false; // ignorer rappels vides/corrompus
+
     if (!r.repeat || r.repeat === 'none') return r.dueDate === todayStr;
 
-    // Rappels recurrents — verifier si c'est le bon jour
     let isToday = false;
     if (r.repeat === 'daily') isToday = true;
     else if (r.repeat === 'weekdays') isToday = dow >= 1 && dow <= 5;
@@ -1662,9 +1662,7 @@ function seedTodayRappelBlocks() {
       isToday = diff >= 0 && diff % (n * 7) === 0;
     }
 
-    if (!isToday) return false;
-    // Recurrent : afficher sauf si deja coche AUJOURD'HUI
-    return r.lastDoneDate !== todayStr;
+    return isToday; // toujours afficher — meme si deja fait aujourd'hui
   });
 
   const blocks = ['rapp1','rapp2','rapp3'];
@@ -1674,25 +1672,27 @@ function seedTodayRappelBlocks() {
     el.innerHTML = '';
     if (todayRappels[i]) {
       const r = todayRappels[i];
+      const isRecurrent = r.repeat && r.repeat !== 'none';
+      const isDoneToday = isRecurrent ? r.lastDoneDate === todayStr : !!r.done;
+
       const row = document.createElement('div');
       row.className = 'block-task-item';
       const cb = document.createElement('div');
-      cb.className = 'block-task-cb';
+      cb.className = `block-task-cb${isDoneToday ? ' checked' : ''}`;
       cb.onclick = async () => {
-        const isRecurrent = r.repeat && r.repeat !== 'none';
         if (isRecurrent) {
-          // Recurrent : noter la date de la derniere completion, pas done permanent
-          r.lastDoneDate = todayStr;
-          await updateItem('rappels', r.id, { lastDoneDate: todayStr });
+          const nowDone = r.lastDoneDate !== todayStr;
+          r.lastDoneDate = nowDone ? todayStr : '';
+          await updateItem('rappels', r.id, { lastDoneDate: r.lastDoneDate });
         } else {
-          r.done = true;
-          await updateItem('rappels', r.id, { done: true });
+          r.done = !r.done;
+          await updateItem('rappels', r.id, { done: r.done });
         }
         renderHome();
         renderRappels();
       };
       const txt = document.createElement('span');
-      txt.className = 'block-task-text';
+      txt.className = `block-task-text${isDoneToday ? ' done' : ''}`;
       txt.style.color = 'var(--c2)';
       txt.textContent = r.text;
       row.append(cb, txt);
