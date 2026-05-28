@@ -79,14 +79,10 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 /* ─── TOP NAV ────────────────────────────────────────── */
 .topnav{display:flex;align-items:center;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:52px;flex-shrink:0;overflow-x:auto;}
 .topnav::-webkit-scrollbar{display:none;}
-.topnav-logo{display:flex;align-items:center;gap:10px;margin-right:24px;flex-shrink:0;}
-.orn-sm{display:flex;align-items:center;gap:6px;}
-.ol-sm{width:20px;height:.5px;background:var(--c4);}
-.og-sm{width:4px;height:4px;transform:rotate(45deg);flex-shrink:0;background:var(--c2);}
-.logo-title-sm{display:flex;align-items:baseline;}
-.wn-sm{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:22px;background:linear-gradient(160deg,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.vs-sm{width:.5px;height:16px;margin:0 6px;align-self:center;background:linear-gradient(180deg,transparent,var(--c4),transparent);}
-.hq-sm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;letter-spacing:.08em;background:linear-gradient(160deg,#FAF0FF,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.topnav-logo{display:flex;align-items:center;gap:0;margin-right:24px;flex-shrink:0;}
+.nav-golden{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:18px;background:linear-gradient(160deg,#FFFBF0,#F9E07F,#F4A623,#C47D0E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.12em;}
+.nav-sep{width:1px;height:16px;background:linear-gradient(180deg,transparent,#8A5600,transparent);margin:0 10px;align-self:center;}
+.nav-site{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:18px;letter-spacing:.15em;background:linear-gradient(160deg,#FAF0FF,#DDB8FF,#A855F7,#7C22C8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
 .topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;}
 .topnav-links::-webkit-scrollbar{display:none;}
@@ -516,8 +512,9 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
   <!-- TOP NAV -->
   <nav class="topnav">
     <div class="topnav-logo">
-      <div class="orn-sm"><div class="ol-sm"></div><div class="og-sm"></div><div class="ol-sm"></div></div>
-      <div class="logo-title-sm"><span class="wn-sm">House</span><div class="vs-sm"></div><span class="hq-sm">HQ</span></div>
+      <span class="nav-golden">Golden</span>
+      <div class="nav-sep"></div>
+      <span class="nav-site">HouseHQ</span>
     </div>
     <div class="topnav-links">
       <button class="nav-btn active" data-tab="home">
