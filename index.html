@@ -3715,17 +3715,7 @@ const AMAZON_COLORS = {
   'Quincaillerie':'#BA7517','Maison':'#C2714F','Cadeaux':'#D4537E',
   'Activites':'#F4A623','Menager':'#888780','Autre':'#555'
 };
-const AMAZON_INIT = [
-  {desc:'Pharmacie',cat:'Pharmacie',amt:7.78},{desc:'Menager',cat:'Menager',amt:7.78},
-  {desc:'Aliments',cat:'Aliments',amt:7.28},{desc:'Aliments',cat:'Aliments',amt:11.47},
-  {desc:'Pharmacie',cat:'Pharmacie',amt:9.16},{desc:'Chat',cat:'Chat',amt:24.00},
-  {desc:'Pharmacie',cat:'Pharmacie',amt:8.78},{desc:'Aliments',cat:'Aliments',amt:20.39},
-  {desc:'Chat',cat:'Chat',amt:20.47},{desc:'Aliments',cat:'Aliments',amt:11.27},
-  {desc:'Cadeaux',cat:'Cadeaux',amt:27.57},{desc:'Activites',cat:'Activites',amt:25.28},
-  {desc:'Activites',cat:'Activites',amt:26.43},{desc:'Quincaillerie',cat:'Quincaillerie',amt:67.44},
-  {desc:'Maison',cat:'Maison',amt:28.73},{desc:'Chat',cat:'Chat',amt:24.00},
-  {desc:'Cadeaux',cat:'Cadeaux',amt:14.69},{desc:'Quincaillerie',cat:'Quincaillerie',amt:57.44},
-];
+const AMAZON_INIT = [];
 let amazonTrackerData = [];
 
 function makeAmazonRow(desc='', cat='Autre', amt='', idx=0) {
