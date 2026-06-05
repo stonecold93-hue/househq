@@ -718,12 +718,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       </div>
 
     </section>
-        <div id="budget-existing-entries"></div>
-        <div id="budget-new-entries"></div>
-        <button class="btn-ghost" style="width:100%;margin-top:6px;" onclick="addBudgetEntryRow()">+ Ajouter une depense</button>
-        <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveBudgetDay()">Sauvegarder</button>
-      </div>
-    </div>
 
   </main>
 </div>
@@ -818,7 +812,7 @@ onAuthStateChanged(auth, async user => {
 async function loadAll() {
   setDates();
   await loadCleanSchedule();
-  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels(), loadAmazonTracker()]);
+  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels()]);
   await seedTodayCleanTasks();
   await loadTodayTasks();
   renderHome();
