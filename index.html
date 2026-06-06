@@ -2188,7 +2188,7 @@ function renderYearTable(monthCounts) {
       });
     }
     const useMins  = exactMins + extraMins || firestoreData?.mins  || 0;
-    const useDays  = exactDays  || firestoreData?.days  || 0;
+    const useDays  = exactDays > 0 ? exactDays : (firestoreData?.days || 0);
     const useTasks = firestoreData?.tasks || exactTasks || 0;
 
     if (!useMins && !useTasks) continue;
