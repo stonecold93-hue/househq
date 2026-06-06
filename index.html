@@ -693,6 +693,17 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
+      <!-- Resume par tache -->
+      <div class="section-card">
+        <h2 class="section-title" style="margin-bottom:12px;">Heures par tache</h2>
+        <div style="overflow-x:auto;">
+          <table class="year-table" id="task-hours-table">
+            <thead><tr><th>Tache</th><th style="text-align:right;">Occurrences</th><th style="text-align:right;">Heures totales</th></tr></thead>
+            <tbody id="task-hours-body"></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Historique taches cochees -->
       <div class="section-card">
         <div class="section-top">
@@ -2005,6 +2016,7 @@ function renderYearStats() {
   renderHeatmap();
   renderMonthlyChartNew(monthCounts);
   renderYearTable(monthCounts);
+  renderTaskHoursTable();
 }
 
 let _chartMonth = null, _chartOcc = null, _chartMin = null, _chartDonut = null;
@@ -2219,7 +2231,55 @@ function renderYearTable(monthCounts) {
   tbody.appendChild(trTotal);
 }
 
-// Show month detail modal
+function renderTaskHoursTable() {
+  const tbody = document.getElementById('task-hours-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const stats = {}; // text -> { count, mins }
+
+  // 1. CLEAN_HISTORY (jan-mai hardcode)
+  Object.entries(CLEAN_HISTORY).forEach(([dateKey, tasks]) => {
+    tasks.forEach(t => {
+      const key = t.t;
+      if (!stats[key]) stats[key] = { count: 0, mins: 0 };
+      stats[key].count++;
+      stats[key].mins += ([3,4].includes(t.b) ? 30 : 15);
+    });
+  });
+
+  // 2. allTasks (Firestore — juin et apres)
+  (typeof allTasks !== 'undefined' ? allTasks : []).forEach(t => {
+    if (!t.done || !t.text || !t.date) return;
+    // Ne pas compter les taches deja dans CLEAN_HISTORY
+    const inHistory = CLEAN_HISTORY[t.date]?.some(h => h.t === t.text);
+    if (inHistory) return;
+    const key = t.text;
+    if (!stats[key]) stats[key] = { count: 0, mins: 0 };
+    stats[key].count++;
+    const block = t.block || '';
+    const mins = (block === 'proj1' || block === 'proj2') ? 30 : 15;
+    stats[key].mins += mins;
+  });
+
+  const entries = Object.entries(stats).sort((a,b) => b[1].mins - a[1].mins);
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text3);font-size:11px;padding:12px 0;">Aucune donnee</td></tr>';
+    return;
+  }
+
+  entries.forEach(([text, s]) => {
+    const h = Math.floor(s.mins / 60);
+    const m = s.mins % 60;
+    const duree = h > 0 ? `${h}h${m ? m+'m' : ''}` : `${m}m`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:11px;color:var(--text2);">${text}</td>
+      <td style="text-align:right;font-size:11px;color:var(--text3);">${s.count}x</td>
+      <td style="text-align:right;font-size:11px;color:var(--teal);">${duree}</td>`;
+    tbody.appendChild(tr);
+  });
+}
 function showMonthDetail(monthIdx, year, monthName) {
   const monthKey = `${year}-${String(monthIdx+1).padStart(2,'0')}`;
   const daysInMonth = new Date(year, monthIdx+1, 0).getDate();
@@ -2762,6 +2822,7 @@ async function loadHistorique() {
       });
     });
     renderHistorique();
+    renderTaskHoursTable();
   } catch(e) { console.error('loadHistorique:', e); }
 }
 
