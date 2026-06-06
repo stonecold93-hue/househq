@@ -2243,9 +2243,16 @@ function showMonthDetail(monthIdx, year, monthName) {
     const dow = DAYS_FR2[date.getDay()];
     const h = Math.floor(mins/60), m = mins%60;
     const duree = h > 0 ? `${h}h${m?m+'m':''}` : `${m}m`;
+
     let taskList = cleanTasksList.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
-    if (!taskList && firestoreTaskCount > 0) {
-      taskList = `<div style="font-size:9px;color:var(--text3);padding:1px 0;">${firestoreTaskCount} taches</div>`;
+    if (!taskList) {
+      // Chercher dans allTasks les taches de ce jour
+      const dayTasks = (typeof allTasks !== 'undefined' ? allTasks : []).filter(t => t.date === dateKey && t.done);
+      if (dayTasks.length > 0) {
+        taskList = dayTasks.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.text}</div>`).join('');
+      } else if (firestoreTaskCount > 0) {
+        taskList = `<div style="font-size:9px;color:var(--text3);padding:1px 0;">${firestoreTaskCount} taches</div>`;
+      }
     }
 
     html += `<tr>
@@ -2730,7 +2737,7 @@ document.querySelectorAll('.link-btn').forEach(btn => {
 
 
 // ─── HISTORIQUE TACHES ───────────────────────────────
-let allTasks = [];
+let allTasks = []; // declare globalement pour showMonthDetail
 
 async function loadHistorique() {
   try {
