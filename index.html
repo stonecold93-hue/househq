@@ -3054,14 +3054,34 @@ function renderRappelCalendar() {
     grid.appendChild(Object.assign(document.createElement('div'), {className:'budget-cal-empty'}));
 
   for (let d=1; d<=daysInMonth; d++) {
-    const ds = `${rappelYear}-${String(rappelMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dayR = rappels.filter(r => r.dueDate === ds);
+    const ds  = `${rappelYear}-${String(rappelMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(rappelYear, rappelMonth, d).getDay();
+
+    // Filtrer les rappels qui tombent ce jour
+    const dayR = rappels.filter(r => {
+      if (!r.repeat || r.repeat === 'none') return r.dueDate === ds;
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T12:00:00');
+      const target = new Date(rappelYear, rappelMonth, d, 12, 0, 0);
+      const diff = Math.floor((target - start) / 86400000);
+      if (diff < 0) return false;
+      if (r.repeat === 'daily') return true;
+      if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+      if (r.repeat === 'weekly') return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
+      if (r.repeat === 'monthly') return new Date(r.dueDate + 'T12:00:00').getDate() === d;
+      if (r.repeat.startsWith('xdays:')) { const n=parseInt(r.repeat.split(':')[1])||1; return diff%n===0; }
+      if (r.repeat.startsWith('xweeks:')) { const n=parseInt(r.repeat.split(':')[1])||1; return diff%(n*7)===0; }
+      return false;
+    });
+
     const cell = document.createElement('div');
-    cell.className = 'budget-cal-cell' + (ds === todayStr ? ' today' : '');
-    cell.innerHTML = `<div class="budget-cal-day">${d}</div>`;
+    cell.className = 'budget-cal-day' + (ds === todayStr ? ' today' : '');
+    cell.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px;min-height:60px;cursor:pointer;transition:border-color .2s;';
+    if (ds === todayStr) cell.style.borderColor = 'var(--c3)';
+    cell.innerHTML = `<div class="budget-day-num">${d}</div>`;
     dayR.forEach(r => {
       const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:9px;padding:2px 4px;border-radius:3px;margin-top:2px;background:rgba(168,85,247,.2);color:var(--c2);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (r.done ? 'opacity:.4;' : '');
+      tag.style.cssText = 'font-size:8px;padding:2px 4px;border-radius:3px;margin-top:2px;background:rgba(168,85,247,.2);color:var(--c2);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (r.done||r.lastDoneDate===todayStr?'opacity:.4;text-decoration:line-through;':'');
       tag.textContent = r.text;
       tag.onclick = e => { e.stopPropagation(); rappelEdit(r); };
       cell.appendChild(tag);
