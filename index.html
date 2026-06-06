@@ -2235,15 +2235,18 @@ function showMonthDetail(monthIdx, year, monthName) {
     const exactMins = EXACT_MINS[dateKey] || 0;
     const firestoreMins = yearData[dateKey]?.minutes || 0;
     const mins = exactMins > 0 ? exactMins + Math.max(0, firestoreMins - exactMins) : firestoreMins;
-    const cleanTasks = CLEAN_HISTORY[dateKey] || [];
-    const firestoreTasks = yearData[dateKey]?.count || 0;
-    if (!mins && !cleanTasks.length && !firestoreTasks) continue;
+    const cleanTasksList = CLEAN_HISTORY[dateKey] || [];
+    const firestoreTaskCount = yearData[dateKey]?.count || 0;
+    if (!mins && !cleanTasksList.length && !firestoreTaskCount) continue;
 
     const date = new Date(year, monthIdx, d);
     const dow = DAYS_FR2[date.getDay()];
     const h = Math.floor(mins/60), m = mins%60;
     const duree = h > 0 ? `${h}h${m?m+'m':''}` : `${m}m`;
-    const taskList = cleanTasks.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
+    let taskList = cleanTasksList.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
+    if (!taskList && firestoreTaskCount > 0) {
+      taskList = `<div style="font-size:9px;color:var(--text3);padding:1px 0;">${firestoreTaskCount} taches</div>`;
+    }
 
     html += `<tr>
       <td style="font-size:11px;">${monthIdx+1}/${d}</td>
