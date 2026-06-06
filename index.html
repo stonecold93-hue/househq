@@ -128,7 +128,10 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .clean-block:hover{border-top-color:var(--teal);}
 .project-block{border-top:2px solid var(--coral-dim);}
 .project-block:hover{border-top-color:var(--coral);}
-.block-header{display:flex;justify-content:space-between;align-items:center;}
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
+.budget-cal-empty{min-height:60px;}
+.budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
 .block-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);}
 .clean-block .block-label{color:var(--teal);}
 .project-block .block-label{color:var(--coral);}
