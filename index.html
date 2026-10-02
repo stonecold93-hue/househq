@@ -79,10 +79,14 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 /* ─── TOP NAV ────────────────────────────────────────── */
 .topnav{display:flex;align-items:center;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:52px;flex-shrink:0;overflow-x:auto;}
 .topnav::-webkit-scrollbar{display:none;}
-.topnav-logo{display:flex;align-items:center;gap:0;margin-right:24px;flex-shrink:0;}
-.nav-golden{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:15px;letter-spacing:.2em;background:linear-gradient(170deg,#FFFBF0,#F9E07F,#F4A623,#C47D0E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.nav-sep{width:.5px;height:18px;background:rgba(138,86,0,0.35);margin:0 10px;align-self:center;}
-.nav-site{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:15px;letter-spacing:.15em;color:#A855F7;}
+.topnav-logo{display:flex;align-items:center;gap:10px;margin-right:24px;flex-shrink:0;}
+.orn-sm{display:flex;align-items:center;gap:6px;}
+.ol-sm{width:20px;height:.5px;background:var(--c4);}
+.og-sm{width:4px;height:4px;transform:rotate(45deg);flex-shrink:0;background:var(--c2);}
+.logo-title-sm{display:flex;align-items:baseline;}
+.wn-sm{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:22px;background:linear-gradient(160deg,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.vs-sm{width:.5px;height:16px;margin:0 6px;align-self:center;background:linear-gradient(180deg,transparent,var(--c4),transparent);}
+.hq-sm{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;letter-spacing:.08em;background:linear-gradient(160deg,#FAF0FF,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
 .topnav-links{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;}
 .topnav-links::-webkit-scrollbar{display:none;}
@@ -118,20 +122,14 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .stat-pill{font-size:10px;letter-spacing:.15em;padding:5px 12px;border:1px solid var(--border2);border-radius:20px;color:var(--text2);}
 
 /* ─── BLOCKS GRID ────────────────────────────────────── */
-.blocks-grid{display:flex;flex-direction:column;gap:12px;}
-.blocks-row{display:grid;gap:12px;}
-.blocks-row-1{grid-template-columns:repeat(5,1fr);}
-.blocks-row-2{grid-template-columns:repeat(4,1fr);}
+.blocks-grid{display:grid;grid-template-columns:1fr 1fr 2fr 2fr 1fr 1fr;gap:12px;}
 .time-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;min-height:120px;transition:border-color var(--transition);}
 .time-block:hover{border-color:var(--border2);}
 .clean-block{border-top:2px solid var(--teal-dim);}
 .clean-block:hover{border-top-color:var(--teal);}
 .project-block{border-top:2px solid var(--coral-dim);}
 .project-block:hover{border-top-color:var(--coral);}
-.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
-.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
-.budget-cal-empty{min-height:60px;}
-.budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
+.block-header{display:flex;justify-content:space-between;align-items:center;}
 .block-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--text2);}
 .clean-block .block-label{color:var(--teal);}
 .project-block .block-label{color:var(--coral);}
@@ -272,8 +270,57 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .rappel-item:hover .rappel-delete{opacity:1;}
 
 /* ─── BUDGET ─────────────────────────────────────────── */
+.budget-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.budget-filter-btn{background:none;border:1px solid var(--border);border-radius:20px;color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;padding:4px 12px;cursor:pointer;transition:all var(--transition);}
+.budget-filter-btn:hover,.budget-filter-btn.active{border-color:var(--border2);color:var(--text);}
+.budget-list{display:flex;flex-direction:column;gap:6px;}
+.budget-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition);}
+.budget-item:hover{border-color:var(--border2);}
+.budget-item-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.budget-item-info{flex:1;}
+.budget-item-desc{font-size:11px;color:var(--text);letter-spacing:.05em;margin-bottom:2px;}
+.budget-item-meta{font-size:9px;color:var(--text3);letter-spacing:.1em;}
+.budget-item-amount{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;}
+.budget-item-amount.revenu{color:#34C472;}
+.budget-item-amount.depense{color:#F06060;}
+.budget-item-delete{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:4px;opacity:0;transition:opacity var(--transition);}
+.budget-item:hover .budget-item-delete{opacity:1;}
 
 /* ─── BUDGET CALENDAR ────────────────────────────────── */
+.budget-salary-input{background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;width:100px;text-align:right;}
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
+.budget-cal-empty{min-height:60px;}
+.budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px;min-height:70px;cursor:pointer;transition:border-color var(--transition);}
+.budget-cal-day:hover{border-color:var(--border2);}
+.budget-cal-day.today{border-color:var(--c3);}
+.budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
+.budget-cal-day.today .budget-day-num{color:var(--c2);font-weight:500;}
+.budget-dep-tag{font-size:8px;padding:1px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.budget-dep-tag.fixe{background:rgba(24,95,165,.2);color:#5AB4F0;}
+.budget-dep-tag.carte{background:rgba(186,117,23,.2);color:var(--amber);}
+.budget-dep-tag.autre{background:rgba(255,255,255,.06);color:var(--text3);}
+.budget-day-total{font-size:9px;color:#F06060;font-weight:500;margin-top:2px;}
+.budget-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:300;}
+.budget-modal-overlay.hidden{display:none!important;}
+.budget-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:340px;max-height:80vh;overflow-y:auto;}
+.budget-existing-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid var(--border);}
+.budget-existing-row:last-child{border-bottom:none;}
+.budget-existing-cat{color:var(--text2);flex:1;}
+.budget-existing-amt{color:#F06060;font-weight:500;margin-right:8px;}
+.budget-del-entry{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;}
+.budget-del-entry:hover{color:#F06060;}
+.budget-entry-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.budget-entry-select{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;outline:none;}
+.budget-entry-amt{width:80px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:#F06060;font-family:'DM Mono',monospace;font-size:11px;padding:6px 8px;text-align:right;outline:none;}
+.budget-edit-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);}
+.budget-edit-row:last-child{border-bottom:none;}
+.budget-label-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;}
+.budget-label-input::placeholder{color:var(--text3);}
+.budget-amt-input{width:90px;background:none;border:none;outline:none;color:#F06060;font-family:'DM Mono',monospace;font-size:11px;text-align:right;}
+.budget-amt-input.pos{color:var(--teal);}
+.budget-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
+.budget-edit-row:hover .budget-del-btn{opacity:1;}
 
 /* ─── MY YEAR TABLES ────────────────────────────────── */
 .year-table{width:100%;border-collapse:collapse;font-size:11px;}
@@ -285,8 +332,31 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .year-bar{height:5px;border-radius:3px;}
 
 /* ─── CARTES DE CREDIT ──────────────────────────────── */
+.cartes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;overflow-x:auto;}
+.carte-col{display:flex;flex-direction:column;gap:0;min-width:200px;}
+.carte-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;margin-bottom:0;}
 .amex-header{background:rgba(83,74,183,.2);border:1px solid rgba(83,74,183,.4);}
 .capone-header{background:rgba(186,117,23,.2);border:1px solid rgba(186,117,23,.4);}
+.amazon-header{background:rgba(244,166,35,.2);border:1px solid rgba(244,166,35,.4);}
+.carte-name{font-size:11px;font-weight:500;color:var(--text);letter-spacing:.06em;}
+.carte-limit-label{font-size:9px;color:var(--text3);letter-spacing:.1em;}
+.carte-limit-input{width:60px;background:none;border:none;outline:none;color:var(--teal);font-family:'DM Mono',monospace;font-size:11px;text-align:right;}
+.carte-sub-header{display:grid;grid-template-columns:60px 70px 70px 1fr 20px;gap:4px;padding:5px 8px;background:var(--bg3);border-left:1px solid var(--border);border-right:1px solid var(--border);font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.carte-row{display:grid;grid-template-columns:60px 70px 70px 1fr 20px;gap:4px;padding:5px 8px;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);align-items:center;}
+.carte-row input{background:none;border:none;outline:none;font-family:'DM Mono',monospace;font-size:10px;width:100%;}
+.carte-row input[type=number]{color:#F06060;text-align:right;}
+.carte-row input[type=text]{color:var(--text2);}
+.carte-row input.pay{color:var(--teal);}
+.carte-row input:focus{background:var(--bg3);border-radius:3px;padding:1px 3px;}
+.carte-add-btn{background:none;border:1px dashed var(--border2);border-top:none;color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px;cursor:pointer;transition:all var(--transition);}
+.carte-add-btn:hover{color:var(--text2);background:var(--bg3);}
+.carte-total-row{display:grid;grid-template-columns:1fr 70px 70px 70px;gap:4px;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);font-size:10px;color:var(--text3);}
+.carte-total-pay{color:var(--teal);font-weight:500;}
+.carte-total-dep{color:#F06060;font-weight:500;}
+.carte-diff{color:var(--amber);font-weight:500;}
+.amazon-row{display:grid;grid-template-columns:60px 70px 1fr 20px;gap:4px;padding:5px 8px;border-left:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);align-items:center;}
+.carte-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;padding:2px 4px;}
+.carte-del-btn:hover{color:#F06060;}
 
 /* ─── RAPPELS GROUPS ────────────────────────────────── */
 .rappel-due-group{margin-bottom:16px;}
@@ -342,6 +412,19 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .todo-popup-sub{font-size:10px;color:var(--text3);}
 
 /* ─── AMAZON TRACKER ────────────────────────────────── */
+.amazon-col-heads{display:grid;grid-template-columns:1fr 130px 90px 28px;gap:8px;padding:0 0 6px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.amazon-col-head{font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;}
+.amazon-tracker-row{display:grid;grid-template-columns:1fr 130px 90px 28px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+.amazon-tracker-row input,.amazon-tracker-row select{background:none;border:none;outline:none;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);width:100%;}
+.amazon-tracker-row input[type=number]{color:#F06060;text-align:right;}
+.amazon-tracker-row select option{background:var(--bg2);}
+.amazon-tracker-row input:focus,.amazon-tracker-row select:focus{background:var(--bg3);border-radius:4px;padding:2px 6px;}
+.amazon-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;opacity:0;transition:opacity var(--transition);}
+.amazon-tracker-row:hover .amazon-del-btn{opacity:1;}
+.amazon-del-btn:hover{color:#F06060;}
+.amazon-sum-item{background:var(--bg3);border-radius:var(--radius-sm);padding:8px 12px;text-align:center;min-width:90px;}
+.amazon-sum-label{font-size:9px;color:var(--text3);letter-spacing:.1em;margin-bottom:3px;}
+.amazon-sum-val{font-size:13px;font-weight:500;}
 
 /* ─── PROJECT ───────────────────────────────────────── */
 .proj-container{display:grid;grid-template-columns:260px 1fr;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:560px;}
@@ -395,8 +478,7 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
   .nav-btn{padding:8px 10px;gap:0;}
   .user-name-sm{display:none;}
   .main-content{padding:16px 14px;gap:16px;}
-  .blocks-row-1{grid-template-columns:1fr 1fr;}
-  .blocks-row-2{grid-template-columns:1fr 1fr;}
+  .blocks-grid{grid-template-columns:1fr 1fr;gap:8px;}
   .stats-row{grid-template-columns:1fr 1fr;gap:8px;}
   .stat-value{font-size:26px;}
   .page-title{font-size:28px;}
@@ -430,9 +512,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
   <!-- TOP NAV -->
   <nav class="topnav">
     <div class="topnav-logo">
-      <span class="nav-golden">Golden</span>
-      <div class="nav-sep"></div>
-      <span class="nav-site">HouseHQ</span>
+      <div class="orn-sm"><div class="ol-sm"></div><div class="og-sm"></div><div class="ol-sm"></div></div>
+      <div class="logo-title-sm"><span class="wn-sm">House</span><div class="vs-sm"></div><span class="hq-sm">HQ</span></div>
     </div>
     <div class="topnav-links">
       <button class="nav-btn active" data-tab="home">
@@ -440,8 +521,8 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <span>Accueil</span>
       </button>
       <button class="nav-btn" data-tab="clean">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-        <span>Taches</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <span>Clean</span>
       </button>
       <button class="nav-btn" data-tab="project">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -451,7 +532,15 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span>My Year</span>
       </button>
-</div>
+      <button class="nav-btn" data-tab="rappels">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span>Rappels</span>
+      </button>
+      <button class="nav-btn" data-tab="budget">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Budget</span>
+      </button>
+    </div>
     <div class="topnav-user">
       <img id="user-avatar" src="" alt="" class="avatar">
       <span id="user-name" class="user-name-sm"></span>
@@ -473,132 +562,98 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
           <span class="stat-pill" id="total-count">0 taches</span>
         </div>
       </div>
-        <div class="blocks-row blocks-row-1">
-          <div class="time-block clean-block" data-block="clean1">
-            <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
-            <div class="block-tasks" id="block-clean1-tasks"></div>
-            <button class="add-task-to-block" data-block="clean1">+ Tache</button>
-          </div>
-          <div class="time-block clean-block" data-block="clean2">
-            <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
-            <div class="block-tasks" id="block-clean2-tasks"></div>
-            <button class="add-task-to-block" data-block="clean2">+ Tache</button>
-          </div>
-          <div class="time-block rappel-block" data-block="rapp1">
-            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-            <div class="block-tasks" id="block-rapp1-tasks"></div>
-            <button class="add-task-to-block" data-block="rapp1">+ Tache</button>
-          </div>
-          <div class="time-block rappel-block" data-block="rapp2">
-            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-            <div class="block-tasks" id="block-rapp2-tasks"></div>
-            <button class="add-task-to-block" data-block="rapp2">+ Tache</button>
-          </div>
-          <div class="time-block rappel-block" data-block="rapp3">
-            <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
-            <div class="block-tasks" id="block-rapp3-tasks"></div>
-            <button class="add-task-to-block" data-block="rapp3">+ Tache</button>
-          </div>
+      <div class="blocks-grid">
+        <div class="time-block clean-block" data-block="clean1">
+          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-clean1-tasks"></div>
+          <button class="add-task-to-block" data-block="clean1">+ Tache</button>
         </div>
-        <div class="blocks-row blocks-row-2">
-          <div class="time-block project-block" data-block="proj1">
-            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
-            <div class="block-tasks" id="block-proj1-tasks"></div>
-            <button class="add-task-to-block" data-block="proj1">+ Tache</button>
-          </div>
-          <div class="time-block project-block" data-block="proj2">
-            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
-            <div class="block-tasks" id="block-proj2-tasks"></div>
-            <button class="add-task-to-block" data-block="proj2">+ Tache</button>
-          </div>
-          <div class="time-block project-block" data-block="proj3">
-            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
-            <div class="block-tasks" id="block-proj3-tasks"></div>
-            <button class="add-task-to-block" data-block="proj3">+ Tache</button>
-          </div>
-          <div class="time-block project-block" data-block="proj4">
-            <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
-            <div class="block-tasks" id="block-proj4-tasks"></div>
-            <button class="add-task-to-block" data-block="proj4">+ Tache</button>
-          </div>
+        <div class="time-block clean-block" data-block="clean2">
+          <div class="block-header"><span class="block-label">Clean</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-clean2-tasks"></div>
+          <button class="add-task-to-block" data-block="clean2">+ Tache</button>
         </div>
+        <div class="time-block rappel-block" data-block="rapp1">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp1-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp1">+ Tache</button>
+        </div>
+        <div class="time-block rappel-block" data-block="rapp2">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp2-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp2">+ Tache</button>
+        </div>
+        <div class="time-block rappel-block" data-block="rapp3">
+          <div class="block-header"><span class="block-label">Rappel</span><span class="block-duration">0 min</span></div>
+          <div class="block-tasks" id="block-rapp3-tasks"></div>
+          <button class="add-task-to-block" data-block="rapp3">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj1">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+          <div class="block-tasks" id="block-proj1-tasks"></div>
+          <button class="add-task-to-block" data-block="proj1">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj2">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">30 min</span></div>
+          <div class="block-tasks" id="block-proj2-tasks"></div>
+          <button class="add-task-to-block" data-block="proj2">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj3">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-proj3-tasks"></div>
+          <button class="add-task-to-block" data-block="proj3">+ Tache</button>
+        </div>
+        <div class="time-block project-block" data-block="proj4">
+          <div class="block-header"><span class="block-label">Projet</span><span class="block-duration">15 min</span></div>
+          <div class="block-tasks" id="block-proj4-tasks"></div>
+          <button class="add-task-to-block" data-block="proj4">+ Tache</button>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-top"><h2 class="section-title">Taches du jour</h2><button class="btn-ghost" id="add-today-task">+ Ajouter</button></div>
+        <div id="today-tasks-list" class="task-list"></div>
+      </div>
 
-
+      <!-- Rappels du jour sur l'accueil -->
+      <div class="section-card" id="home-rappels-card">
+        <div class="section-top">
+          <h2 class="section-title">Rappels</h2>
+          <button class="btn-ghost" onclick="switchTab('rappels')">Voir tout →</button>
+        </div>
+        <div id="home-rappels-list" class="rappel-list"></div>
+      </div>
     </section>
 
-    <!-- TACHES (ancien Clean + Rappels fusionnes) -->
+    <!-- CLEAN -->
     <section id="tab-clean" class="tab hidden">
       <div class="page-header">
-        <h1 class="page-title">Taches</h1>
+        <h1 class="page-title">Clean</h1>
       </div>
-
-      <!-- Deux calendriers cote a cote -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-        <!-- CALENDRIER CLEAN -->
+      <div class="sub-tabs">
+        <button class="sub-tab active" data-subtab="clean-calendar">Calendrier</button>
+        <button class="sub-tab" data-subtab="clean-tasks">Liste de taches</button>
+      </div>
+      <div id="clean-calendar" class="sub-content active">
         <div class="section-card">
-          <div class="section-top">
-            <h2 class="section-title">Clean</h2>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <span class="badge-fixed">2x 15 min</span>
-              <button class="btn-ghost" id="toggle-clean-edit-btn" onclick="toggleCleanEditInline()">Modifier</button>
-            </div>
-          </div>
-
-          <!-- Editeur taches (cache par defaut) -->
-          <div id="clean-edit-inline" style="display:none;margin-bottom:12px;">
-            <div id="clean-schedule-editor"></div>
-            <div style="display:flex;gap:8px;margin-top:10px;">
-              <button class="btn-primary" onclick="saveCleanScheduleEdit()">Sauvegarder</button>
-              <button class="btn-ghost" onclick="toggleCleanEditInline()">Fermer</button>
-            </div>
-          </div>
-
-          <!-- Navigation mois clean -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <button class="btn-ghost" style="padding:4px 10px;" onclick="cleanCalPrev()">&#8592;</button>
-            <span id="clean-cal-month-title" style="font-size:11px;color:var(--text2);letter-spacing:.1em;"></span>
-            <button class="btn-ghost" style="padding:4px 10px;" onclick="cleanCalNext()">&#8594;</button>
-          </div>
-
+          <div class="section-top"><h2 class="section-title">Calendrier menage</h2><span class="badge-fixed">Fixe - 2x 15 min/jour</span></div>
           <div class="calendar-grid" id="clean-calendar-grid"></div>
         </div>
-
-        <!-- CALENDRIER RAPPELS -->
+      </div>
+      <div id="clean-tasks" class="sub-content hidden">
         <div class="section-card">
           <div class="section-top">
-            <h2 class="section-title">Rappels</h2>
-            <button class="btn-primary" id="add-rappel-btn">+ Nouveau</button>
+            <h2 class="section-title">Taches par journee</h2>
+            <button class="btn-primary" onclick="saveCleanScheduleEdit()">💾 Sauvegarder</button>
           </div>
-
-          <!-- Navigation mois rappels -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <button class="btn-ghost" style="padding:4px 10px;" onclick="rappelPrev()">&#8592;</button>
-            <span id="rappel-month-title" style="font-size:11px;color:var(--text2);letter-spacing:.1em;"></span>
-            <button class="btn-ghost" style="padding:4px 10px;" onclick="rappelNext()">&#8594;</button>
-          </div>
-
-          <div class="budget-cal-grid" id="rappel-cal-grid"></div>
-
-          <!-- Liste rappels sous le calendrier -->
-          <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;max-height:300px;overflow-y:auto;">
-            <div style="font-size:10px;color:var(--text3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;">Tous les rappels — cliquer ✕ pour supprimer</div>
-            <div id="rappel-list-all"></div>
-          </div>
+          <p style="font-size:10px;color:var(--text3);margin-bottom:14px;letter-spacing:.05em;">Modifie les taches et leur journee — le calendrier se met a jour automatiquement</p>
+          <div id="clean-schedule-editor"></div>
         </div>
-
+        <div class="section-card" style="margin-top:12px;">
+          <div class="section-top"><h2 class="section-title">Taches ponctuelles</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
+          <div id="clean-task-list" class="task-list"></div>
+        </div>
       </div>
-
-      <!-- Section taches ponctuelles clean -->
-      <div class="section-card" style="margin-top:0;">
-        <div class="section-top"><h2 class="section-title">Taches ponctuelles</h2><button class="btn-primary" id="add-clean-task-btn">+ Nouvelle tache</button></div>
-        <div id="clean-task-list" class="task-list"></div>
-      </div>
-
     </section>
-
-    <!-- RAPPELS (section cachee — conservee pour compatibilite JS) -->
-    <section id="tab-rappels" class="tab hidden" style="display:none!important;"></section>
 
     <!-- PROJECT -->
     <section id="tab-project" class="tab hidden">
@@ -642,6 +697,19 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- SECTION 2 : Calendrier planification -->
+      <div class="section-card" style="margin-top:16px;">
+        <div class="section-top">
+          <h2 class="section-title">Calendrier planification</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-ghost" id="proj-cal-prev" onclick="projCalNav(-1)">&#8592;</button>
+            <span id="proj-cal-label" style="font-size:11px;color:var(--text2);letter-spacing:.08em;min-width:90px;text-align:center;"></span>
+            <button class="btn-ghost" id="proj-cal-next" onclick="projCalNav(1)">&#8594;</button>
+          </div>
+        </div>
+        <div id="proj-calendar-grid" class="budget-cal-grid" style="margin-top:8px;"></div>
       </div>
     </section>
 
@@ -696,17 +764,6 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
-      <!-- Resume par tache -->
-      <div class="section-card">
-        <h2 class="section-title" style="margin-bottom:12px;">Heures par tache</h2>
-        <div style="overflow-x:auto;">
-          <table class="year-table" id="task-hours-table">
-            <thead><tr><th>Tache</th><th style="text-align:right;">Occurrences</th><th style="text-align:right;">Heures totales</th></tr></thead>
-            <tbody id="task-hours-body"></tbody>
-          </table>
-        </div>
-      </div>
-
       <!-- Historique taches cochees -->
       <div class="section-card">
         <div class="section-top">
@@ -732,6 +789,225 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
       </div>
 
     </section>
+
+    <!-- RAPPELS -->
+    <section id="tab-rappels" class="tab hidden">
+      <div class="page-header">
+        <h1 class="page-title">Rappels</h1>
+        <button class="btn-primary" id="add-rappel-btn">+ Nouveau</button>
+      </div>
+      <div class="section-card">
+        <div class="section-top">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn-ghost" onclick="rappelPrev()">← Precedent</button>
+            <h2 class="section-title" id="rappel-month-title"></h2>
+            <button class="btn-ghost" onclick="rappelNext()">Suivant →</button>
+          </div>
+        </div>
+        <div class="budget-cal-grid" id="rappel-cal-grid"></div>
+      </div>
+      <div class="section-card">
+        <h2 class="section-title" style="margin-bottom:12px;">Tous les rappels</h2>
+        <div id="rappel-list-all"></div>
+      </div>
+    </section>
+
+        <!-- BUDGET -->
+    <section id="tab-budget" class="tab hidden">
+      <div class="page-header">
+        <h1 class="page-title">Budget</h1>
+        <button class="btn-primary" onclick="saveBudgetSettings()">💾 Sauvegarder</button>
+      </div>
+
+      <!-- Métriques principales -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <input type="number" id="b-solde-input" class="budget-salary-input" placeholder="0" value="0" oninput="_budgetSettings.solde=parseFloat(this.value)||0;calcBudgetSummary();calcArgentRestant()">
+          <span class="stat-label">Solde actuel (reel)</span>
+        </div>
+        <div class="stat-card"><span class="stat-value" id="b-depenses" style="color:#F06060">0$</span><span class="stat-label">Depenses payees</span></div>
+        <div class="stat-card"><span class="stat-value" id="b-reste" style="color:var(--amber)">0$</span><span class="stat-label">Depenses restantes</span></div>
+        <div class="stat-card" style="border:1px solid var(--teal-dim);">
+          <span class="stat-value" id="b-argent-restant" style="color:var(--teal)">0$</span>
+          <span class="stat-label">Argent restant</span>
+        </div>
+      </div>
+
+      <!-- Prochains paiements -->
+      <div class="section-card">
+        <h2 class="section-title">Prochains paiements prevus</h2>
+        <div id="next-payments-list" style="display:flex;flex-direction:column;gap:0;margin-top:10px;"></div>
+      </div>
+
+      <!-- Calendrier -->
+      <div class="section-card">
+        <div class="section-top">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn-ghost" id="budget-prev">← Precedent</button>
+            <h2 class="section-title" id="budget-month-title">Mai 2026</h2>
+            <button class="btn-ghost" id="budget-next">Suivant →</button>
+          </div>
+        </div>
+        <div class="budget-cal-grid" id="budget-cal-grid"></div>
+      </div>
+
+      <!-- Cartes de credit -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Cartes de credit</h2>
+          <button class="btn-primary" id="add-carte-btn">+ Ajouter transaction</button>
+        </div>
+        <div class="cartes-grid" id="cartes-grid">
+          <!-- Amex -->
+          <div class="carte-col">
+            <div class="carte-header amex-header">
+              <span class="carte-name">American Express</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="carte-limit-label">Limite</span>
+                <input type="number" class="carte-limit-input" id="amex-limite" value="1000" oninput="renderCartesSummary()">
+              </div>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Paiement</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="amex-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('amex')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total</span>
+              <span id="amex-total-pay" class="carte-total-pay">0$</span>
+              <span id="amex-total-dep" class="carte-total-dep">0$</span>
+              <span id="amex-diff" class="carte-diff">0$</span>
+            </div>
+          </div>
+          <!-- Capital One -->
+          <div class="carte-col">
+            <div class="carte-header capone-header">
+              <span class="carte-name">Capital One</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="carte-limit-label">Limite</span>
+                <input type="number" class="carte-limit-input" id="capone-limite" value="125" oninput="renderCartesSummary()">
+              </div>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Paiement</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="capone-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('capone')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total</span>
+              <span id="capone-total-pay" class="carte-total-pay">0$</span>
+              <span id="capone-total-dep" class="carte-total-dep">0$</span>
+              <span id="capone-diff" class="carte-diff">0$</span>
+            </div>
+          </div>
+          <!-- Amazon -->
+          <div class="carte-col">
+            <div class="carte-header amazon-header">
+              <span class="carte-name">Amazon</span>
+            </div>
+            <div class="carte-sub-header">
+              <span>Date</span><span>Depenses</span><span>Raisons</span><span></span>
+            </div>
+            <div id="amazon-rows"></div>
+            <button class="carte-add-btn" onclick="addCarteRow('amazon')">+ Ajouter</button>
+            <div class="carte-total-row">
+              <span>Total Amazon</span>
+              <span></span>
+              <span id="amazon-total-dep" class="carte-total-dep">0$</span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résumé Amazon -->
+      <div class="section-card">
+        <h2 class="section-title">Résumé Amazon par catégorie</h2>
+        <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:12px;">
+          <div style="flex:1;min-width:180px;">
+            <div style="position:relative;width:100%;height:220px;">
+              <canvas id="amazonDonut" role="img" aria-label="Dépenses Amazon par catégorie">Résumé des dépenses Amazon.</canvas>
+            </div>
+          </div>
+          <div style="flex:1;min-width:200px;overflow-x:auto;">
+            <table class="year-table" style="width:100%;">
+              <thead><tr><th>Raison</th><th style="text-align:right;">Montant</th><th style="text-align:right;">%</th></tr></thead>
+              <tbody id="amazon-summary-body"></tbody>
+              <tfoot><tr>
+                <td style="font-weight:500;color:var(--text);">Total</td>
+                <td style="text-align:right;font-weight:500;color:var(--text);" id="amazon-summary-total">0$</td>
+                <td style="text-align:right;color:var(--text3);">100%</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graphique depenses par categorie -->
+      <div class="section-card">
+        <h2 class="section-title" style="margin-bottom:4px;">Depenses par categorie</h2>
+        <p style="font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:.05em;">Base sur les transactions du calendrier</p>
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:center;">
+          <div style="position:relative;width:100%;height:180px;">
+            <canvas id="budget-donut" role="img" aria-label="Repartition des depenses par categorie"></canvas>
+          </div>
+          <div id="budget-donut-legend" style="display:flex;flex-direction:column;gap:5px;font-size:11px;"></div>
+        </div>
+      </div>
+
+      <!-- Tracker Amazon -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">🛒 Tracker Amazon</h2>
+          <span class="stat-value" id="amazon-grand-total" style="font-size:20px;color:#F06060;">0.00$</span>
+        </div>
+        <div class="amazon-col-heads">
+          <span class="amazon-col-head">Description</span>
+          <span class="amazon-col-head">Categorie</span>
+          <span class="amazon-col-head" style="text-align:right;">Montant</span>
+          <span></span>
+        </div>
+        <div id="amazon-tracker-rows"></div>
+        <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addAmazonRow()">+ Ajouter un achat</button>
+        <div id="amazon-tracker-summary" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);"></div>
+      </div>
+
+      <!-- Dettes et Actifs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:12px;">Dettes</h2>
+          <div id="budget-dettes"></div>
+          <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addBudgetRow('budget-dettes',false)">+ Ajouter</button>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;">
+            <span style="color:var(--text2)">Total dettes</span>
+            <span id="b-total-dettes" style="color:#F06060">0$</span>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title" style="margin-bottom:12px;">Actifs</h2>
+          <div id="budget-actifs"></div>
+          <button class="btn-ghost" style="width:100%;margin-top:8px;" onclick="addBudgetRow('budget-actifs',true)">+ Ajouter</button>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:11px;">
+            <span style="color:var(--text2)">Valeur nette</span>
+            <span id="b-valeur-nette" style="color:var(--teal)">0$</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BUDGET DAY MODAL -->
+    <div class="budget-modal-overlay hidden" id="budget-day-modal">
+      <div class="budget-modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 class="section-title" id="budget-modal-title">Journee</h3>
+          <button class="logout-btn" id="budget-modal-close">✕</button>
+        </div>
+        <div id="budget-existing-entries"></div>
+        <div id="budget-new-entries"></div>
+        <button class="btn-ghost" style="width:100%;margin-top:6px;" onclick="addBudgetEntryRow()">+ Ajouter une depense</button>
+        <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveBudgetDay()">Sauvegarder</button>
+      </div>
+    </div>
 
   </main>
 </div>
@@ -788,6 +1064,7 @@ let todayTasks  = [];
 let cleanTasks  = [];
 let projects    = [];
 let yearData    = {};
+let projCalData = {};
 
 // ─── DOM REFS ────────────────────────────────────────
 const loginScreen    = document.getElementById('login-screen');
@@ -826,8 +1103,9 @@ onAuthStateChanged(auth, async user => {
 async function loadAll() {
   setDates();
   await loadCleanSchedule();
-  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels()]);
+  await Promise.all([loadTodayTasks(), loadCleanTasks(), loadProjects(), loadYearData(), loadRappels(), loadBudget(), loadAmazonTracker(), loadProjCalendar()]);
   await seedTodayCleanTasks();
+  await seedTodayProjBlocks();
   await loadTodayTasks();
   renderHome();
   renderHomeRappels();
@@ -1309,24 +1587,29 @@ const EXACT_MINS = {
   "2026-05-06": 45,
   "2026-05-07": 75,
   "2026-05-08": 45,
-  "2026-05-09": 75,
+  "2026-05-09": 45,
   "2026-05-10": 45,
   "2026-05-11": 30,
   "2026-05-12": 30,
   "2026-05-13": 90,
   "2026-05-14": 30,
-  "2026-05-15": 90,
-  "2026-05-16": 75,
-  "2026-05-17": 90,
-  "2026-05-18": 105,
-  "2026-05-19": 60,
-  "2026-05-20": 105,
-  "2026-05-21": 90,
-  "2026-05-22": 90,
-  "2026-05-23": 90,
-  "2026-05-24": 90,
-  "2026-05-25": 60,
+  "2026-05-15": 30,
+  "2026-05-16": 30,
+  "2026-05-17": 30,
+  "2026-05-18": 30,
+  "2026-05-19": 30,
+  "2026-05-20": 30,
+  "2026-05-21": 30,
+  "2026-05-22": 30,
+  "2026-05-23": 30,
+  "2026-05-24": 30,
+  "2026-05-25": 30,
   "2026-05-26": 30,
+  "2026-05-27": 30,
+  "2026-05-28": 30,
+  "2026-05-29": 30,
+  "2026-05-30": 30,
+  "2026-05-31": 30,
 };
 
 // Importe historique dans Firestore activity (My Year)
@@ -1362,81 +1645,17 @@ function renderHome() {
 
 function seedTodayRappelBlocks() {
   const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
-  const dow = new Date().getDay();
-
-  const todayRappels = rappels.filter(r => {
-    if (!r.text || !r.text.trim()) return false; // ignorer rappels vides/corrompus
-
-    if (!r.repeat || r.repeat === 'none') return r.dueDate === todayStr;
-
-    let isToday = false;
-    if (r.repeat === 'daily') isToday = true;
-    else if (r.repeat === 'weekdays') isToday = dow >= 1 && dow <= 5;
-    else if (r.repeat === 'weekly') {
-      isToday = r.dueDate ? new Date(r.dueDate + 'T12:00:00').getDay() === dow : true;
-    }
-    else if (r.repeat === 'monthly') {
-      isToday = r.dueDate ? new Date().getDate() === parseInt(r.dueDate.split('-')[2]) : true;
-    }
-    else if (r.repeat?.startsWith('xdays:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((new Date() - start) / 86400000);
-      isToday = diff >= 0 && diff % n === 0;
-    }
-    else if (r.repeat?.startsWith('xweeks:')) {
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const n = parseInt(r.repeat.split(':')[1]) || 1;
-      const diff = Math.floor((new Date() - start) / 86400000);
-      isToday = diff >= 0 && diff % (n * 7) === 0;
-    }
-
-    return isToday; // toujours afficher — meme si deja fait aujourd'hui
-  });
-
-  // Dedoublonner par texte — garder un seul rappel par texte unique
-  const seen = new Set();
-  const todayRappelsUniq = todayRappels.filter(r => {
-    const key = r.text.trim().toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
+  const todayRappels = rappels.filter(r => r.dueDate === todayStr && !r.done);
   const blocks = ['rapp1','rapp2','rapp3'];
   blocks.forEach((block, i) => {
     const el = document.getElementById(`block-${block}-tasks`);
     if (!el) return;
     el.innerHTML = '';
-    if (todayRappelsUniq[i]) {
-      const r = todayRappelsUniq[i];
-      const isRecurrent = r.repeat && r.repeat !== 'none';
-      const isDoneToday = isRecurrent ? r.lastDoneDate === todayStr : !!r.done;
-
-      const row = document.createElement('div');
-      row.className = 'block-task-item';
-      const cb = document.createElement('div');
-      cb.className = `block-task-cb${isDoneToday ? ' checked' : ''}`;
-      cb.onclick = async () => {
-        if (isRecurrent) {
-          const nowDone = r.lastDoneDate !== todayStr;
-          r.lastDoneDate = nowDone ? todayStr : '';
-          await updateItem('rappels', r.id, { lastDoneDate: r.lastDoneDate });
-        } else {
-          r.done = !r.done;
-          await updateItem('rappels', r.id, { done: r.done });
-        }
-        renderHome();
-        renderRappels();
-      };
-      const txt = document.createElement('span');
-      txt.className = `block-task-text${isDoneToday ? ' done' : ''}`;
-      txt.style.color = 'var(--c2)';
-      txt.textContent = r.text;
-      row.append(cb, txt);
-      el.appendChild(row);
+    if (todayRappels[i]) {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:10px;color:var(--c2);padding:4px;letter-spacing:.05em;';
+      div.textContent = todayRappels[i].text;
+      el.appendChild(div);
     }
   });
 }
@@ -1445,13 +1664,11 @@ function renderTodayList() {
   const el = document.getElementById('today-tasks-list');
   if (!el) return;
   el.innerHTML = '';
-  // Afficher seulement les taches sans bloc (ajoutees manuellement) — les taches clean sont dans les blocs
-  const displayTasks = todayTasks.filter(t => !t.block || t.block === '');
-  if (!displayTasks.length) {
-    el.innerHTML = `<p style="font-size:11px;color:var(--text3);text-align:center;padding:16px;letter-spacing:.1em;">Aucune tache supplementaire</p>`;
+  if (!todayTasks.length) {
+    el.innerHTML = `<p style="font-size:11px;color:var(--text3);text-align:center;padding:24px;letter-spacing:.1em;">Aucune tâche pour aujourd'hui</p>`;
     return;
   }
-  displayTasks.forEach(t => el.appendChild(makeTaskItem(t, 'tasks')));
+  todayTasks.forEach(t => el.appendChild(makeTaskItem(t, 'tasks')));
 }
 
 function renderBlocks() {
@@ -1812,36 +2029,11 @@ document.getElementById('add-project-btn')?.addEventListener('click', async () =
   selectProject(ref.id);
 });
 
-// ─── CLEAN CALENDAR NAV ──────────────────────────────
-let cleanCalYear  = new Date().getFullYear();
-let cleanCalMonth = new Date().getMonth();
-
-window.cleanCalPrev = function() {
-  cleanCalMonth--; if (cleanCalMonth < 0) { cleanCalMonth = 11; cleanCalYear--; }
-  renderCleanCalendar();
-};
-window.cleanCalNext = function() {
-  cleanCalMonth++; if (cleanCalMonth > 11) { cleanCalMonth = 0; cleanCalYear++; }
-  renderCleanCalendar();
-};
-
-window.toggleCleanEditInline = function() {
-  const panel = document.getElementById('clean-edit-inline');
-  const btn   = document.getElementById('toggle-clean-edit-btn');
-  if (!panel) return;
-  const isHidden = panel.style.display === 'none';
-  panel.style.display = isHidden ? 'block' : 'none';
-  if (btn) btn.textContent = isHidden ? 'Fermer' : 'Modifier';
-  if (isHidden) renderCleanScheduleEditor();
-};
-
+// ─── CALENDARS ───────────────────────────────────────
 function renderCleanCalendar() {
   const el = document.getElementById('clean-calendar-grid');
-  const titleEl = document.getElementById('clean-cal-month-title');
   if (!el) return;
   el.innerHTML = '';
-  const MONTHS_LABEL = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
-  if (titleEl) titleEl.textContent = MONTHS_LABEL[cleanCalMonth] + ' ' + cleanCalYear;
   const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   days.forEach(d => {
     const h = document.createElement('div');
@@ -1849,22 +2041,23 @@ function renderCleanCalendar() {
     h.textContent = d;
     el.appendChild(h);
   });
-  const start = new Date(cleanCalYear, cleanCalMonth, 1);
-  const firstDay = (start.getDay() + 6) % 7;
-  const daysInMonth = new Date(cleanCalYear, cleanCalMonth + 1, 0).getDate();
   const today = new Date();
+  const year  = today.getFullYear();
+  const month = today.getMonth();
+  const start = new Date(year, month, 1);
+  const firstDay = (start.getDay() + 6) % 7; // 0=Lun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   for (let i = 0; i < firstDay; i++) {
     el.appendChild(document.createElement('div'));
   }
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const date  = new Date(cleanCalYear, cleanCalMonth, d);
+    const date  = new Date(year, month, d);
     const tasks = getCleanTasksForDate(date);
     const cell  = document.createElement('div');
     cell.className = 'cal-day';
-    const isToday = d === today.getDate() && cleanCalMonth === today.getMonth() && cleanCalYear === today.getFullYear();
-    if (isToday) cell.classList.add('today');
+    if (d === today.getDate()) cell.classList.add('today');
     cell.classList.add('has-task');
 
     const num = document.createElement('div');
@@ -1884,45 +2077,174 @@ function renderCleanCalendar() {
   }
 }
 
+let projCalYear  = new Date().getFullYear();
+let projCalMonth = new Date().getMonth();
+
+function projCalNav(dir) {
+  projCalMonth += dir;
+  if (projCalMonth < 0) { projCalMonth = 11; projCalYear--; }
+  if (projCalMonth > 11) { projCalMonth = 0; projCalYear++; }
+  renderProjectCalendar();
+}
+
+async function loadProjCalendar() {
+  try {
+    const snap = await getDocs(userRef('proj_calendar'));
+    projCalData = {};
+    snap.docs.forEach(d => { projCalData[d.id] = d.data(); });
+  } catch(e) { projCalData = {}; }
+}
+
+async function saveProjCalendarDay(dateKey, tasks) {
+  projCalData[dateKey] = { tasks };
+  await setDoc(userRef('proj_calendar', dateKey), { tasks });
+}
+
 function renderProjectCalendar() {
   const el = document.getElementById('proj-calendar-grid');
   if (!el) return;
   el.innerHTML = '';
+
+  const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  const lbl = document.getElementById('proj-cal-label');
+  if (lbl) lbl.textContent = MONTHS_FR[projCalMonth] + ' ' + projCalYear;
+
   const days = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
   days.forEach(d => {
     const h = document.createElement('div');
-    h.className = 'cal-header';
+    h.style.cssText = 'font-size:9px;color:var(--text3);letter-spacing:.1em;text-align:center;padding:4px 0;';
     h.textContent = d;
     el.appendChild(h);
   });
-  const today   = new Date();
-  const start   = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const today    = new Date();
+  const start    = new Date(projCalYear, projCalMonth, 1);
   const firstDay = (start.getDay() + 6) % 7;
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysInMonth = new Date(projCalYear, projCalMonth + 1, 0).getDate();
 
   for (let i = 0; i < firstDay; i++) {
-    const blank = document.createElement('div');
-    el.appendChild(blank);
+    el.appendChild(document.createElement('div'));
   }
+
   for (let d = 1; d <= daysInMonth; d++) {
+    const dateKey = projCalYear + '-' + String(projCalMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const dayData = projCalData[dateKey] || { tasks: [] };
+    const tasks   = dayData.tasks || [];
+    const isToday = (d === today.getDate() && projCalMonth === today.getMonth() && projCalYear === today.getFullYear());
+
     const cell = document.createElement('div');
-    cell.className = 'cal-day';
-    if (d === today.getDate()) cell.classList.add('today');
+    cell.style.cssText = 'background:var(--bg3);border:1px solid ' + (isToday ? 'var(--coral)' : 'var(--border)') + ';border-radius:6px;padding:4px;min-height:60px;cursor:pointer;transition:border-color .15s;';
+    cell.onmouseenter = () => { if (!isToday) cell.style.borderColor = 'var(--border2)'; };
+    cell.onmouseleave = () => { cell.style.borderColor = isToday ? 'var(--coral)' : 'var(--border)'; };
+    cell.onclick = () => openProjCalDay(dateKey, d);
+
     const num = document.createElement('div');
-    num.className = 'cal-day-num';
+    num.style.cssText = 'font-size:10px;color:' + (isToday ? 'var(--coral)' : 'var(--text3)') + ';letter-spacing:.05em;margin-bottom:3px;font-weight:' + (isToday ? '700' : '400') + ';';
     num.textContent = d;
     cell.appendChild(num);
-    // Show project dots based on projects list (distribute dynamically)
-    if (projects.length) {
-      const projIdx = (d - 1) % projects.length;
-      const dot = document.createElement('div');
-      dot.className = 'cal-dot';
-      dot.style.background = 'var(--coral)';
-      dot.title = projects[projIdx]?.name || '';
-      cell.appendChild(dot);
-      cell.classList.add('has-task');
-    }
+
+    tasks.forEach(t => {
+      const tag = document.createElement('div');
+      tag.style.cssText = 'font-size:8px;background:rgba(194,113,79,.15);color:var(--coral);border-radius:3px;padding:2px 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      tag.textContent = (t.duration === 30 ? '30m ' : '15m ') + t.text;
+      tag.title = t.text;
+      cell.appendChild(tag);
+    });
+
     el.appendChild(cell);
+  }
+}
+
+function openProjCalDay(dateKey, dayNum) {
+  const dayData = projCalData[dateKey] || { tasks: [] };
+  const tasks   = JSON.parse(JSON.stringify(dayData.tasks || []));
+
+  function renderTaskList() {
+    const ul = document.getElementById('proj-cal-task-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    if (!tasks.length) {
+      ul.innerHTML = '<p style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0;">Aucune tache planifiee</p>';
+      return;
+    }
+    tasks.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);';
+      row.innerHTML = '<span style="font-size:9px;background:rgba(194,113,79,.15);color:var(--coral);border-radius:3px;padding:2px 5px;">' + t.duration + 'min</span>' +
+        '<span style="flex:1;font-size:11px;color:var(--text);">' + t.text + '</span>' +
+        '<button onclick="projCalRemoveTask(' + i + ')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:0 4px;">x</button>';
+      ul.appendChild(row);
+    });
+  }
+
+  window._projCalTasks  = tasks;
+  window._projCalDateKey = dateKey;
+  window._projCalRenderFn = renderTaskList;
+
+  const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
+  const [y, m] = dateKey.split('-');
+  const titre = dayNum + ' ' + MONTHS_FR[parseInt(m)-1] + ' ' + y;
+
+  const body = '<div id="proj-cal-task-list"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:12px;">' +
+    '<input id="proj-cal-input" type="text" class="form-input" placeholder="Nom de la tache" style="flex:1;">' +
+    '<select id="proj-cal-dur" class="form-input" style="width:80px;">' +
+    '<option value="15">15 min</option>' +
+    '<option value="30">30 min</option>' +
+    '</select>' +
+    '<button class="btn-primary" onclick="projCalAddTask()" style="padding:6px 12px;">+ Ajouter</button>' +
+    '</div>';
+
+  openModal(titre, body, async () => {
+    await saveProjCalendarDay(dateKey, window._projCalTasks);
+    renderProjectCalendar();
+    await seedTodayProjBlocks();
+    renderHome();
+  });
+
+  setTimeout(() => { renderTaskList(); }, 50);
+}
+
+function projCalAddTask() {
+  const input = document.getElementById('proj-cal-input');
+  const dur   = parseInt(document.getElementById('proj-cal-dur')?.value || '15');
+  const text  = input ? input.value.trim() : '';
+  if (!text) return;
+  window._projCalTasks.push({ text, duration: dur });
+  if (window._projCalRenderFn) window._projCalRenderFn();
+  if (input) input.value = '';
+}
+
+function projCalRemoveTask(idx) {
+  window._projCalTasks.splice(idx, 1);
+  if (window._projCalRenderFn) window._projCalRenderFn();
+}
+
+async function seedTodayProjBlocks() {
+  const key  = todayKey();
+  const data = projCalData[key] || { tasks: [] };
+  const calTasks = data.tasks || [];
+  if (!calTasks.length) return;
+
+  const existing = todayTasks.filter(t => t.date === key && t.type === 'project' && t.seeded === true);
+  if (existing.length > 0) return;
+
+  const projBlocks = ['proj1','proj2','proj3','proj4'];
+  let blockIdx = 0;
+  for (const t of calTasks) {
+    if (blockIdx >= projBlocks.length) break;
+    const block = projBlocks[blockIdx];
+    const newTask = {
+      text:   t.text,
+      type:   'project',
+      block,
+      date:   key,
+      done:   false,
+      seeded: true
+    };
+    const ref = await addDoc(userRef('tasks'), newTask);
+    todayTasks.push({ id: ref.id, ...newTask });
+    blockIdx++;
   }
 }
 
@@ -1949,9 +2271,7 @@ function renderYearStats() {
   let totalMins = 0, totalTasks = 0, activeDays = 0;
 
   // 1. EXACT_MINS = source de verite pour jan-mai (minutes depuis Excel)
-  const todayKeyY = new Date().toISOString().slice(0,10);
   Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
-    if (dateKey > todayKeyY) return; // ignorer les jours futurs
     const m = dateKey.substring(0,7);
     if (!monthCounts[m]) monthCounts[m] = {tasks:0, mins:0, days:0};
     monthCounts[m].mins += mins;
@@ -2019,7 +2339,6 @@ function renderYearStats() {
   renderHeatmap();
   renderMonthlyChartNew(monthCounts);
   renderYearTable(monthCounts);
-  renderTaskHoursTable();
 }
 
 let _chartMonth = null, _chartOcc = null, _chartMin = null, _chartDonut = null;
@@ -2180,9 +2499,8 @@ function renderYearTable(monthCounts) {
 
     // Use EXACT_MINS for correct minutes per month
     let exactMins = 0, exactDays = 0, exactTasks = 0;
-    const todayKey2 = `${year}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
     Object.entries(EXACT_MINS).forEach(([dateKey, mins]) => {
-      if (dateKey.startsWith(monthKey) && dateKey <= todayKey2) {
+      if (dateKey.startsWith(monthKey)) {
         exactMins += mins;
         exactDays++;
         const tasks = CLEAN_HISTORY[dateKey] || [];
@@ -2203,7 +2521,7 @@ function renderYearTable(monthCounts) {
       });
     }
     const useMins  = exactMins + extraMins || firestoreData?.mins  || 0;
-    const useDays  = exactDays > 0 ? exactDays : (firestoreData?.days || 0);
+    const useDays  = exactDays  || firestoreData?.days  || 0;
     const useTasks = firestoreData?.tasks || exactTasks || 0;
 
     if (!useMins && !useTasks) continue;
@@ -2234,55 +2552,7 @@ function renderYearTable(monthCounts) {
   tbody.appendChild(trTotal);
 }
 
-function renderTaskHoursTable() {
-  const tbody = document.getElementById('task-hours-body');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-
-  const stats = {}; // text -> { count, mins }
-
-  // 1. CLEAN_HISTORY (jan-mai hardcode)
-  Object.entries(CLEAN_HISTORY).forEach(([dateKey, tasks]) => {
-    tasks.forEach(t => {
-      const key = t.t;
-      if (!stats[key]) stats[key] = { count: 0, mins: 0 };
-      stats[key].count++;
-      stats[key].mins += ([3,4].includes(t.b) ? 30 : 15);
-    });
-  });
-
-  // 2. allTasks (Firestore — juin et apres)
-  (typeof allTasks !== 'undefined' ? allTasks : []).forEach(t => {
-    if (!t.done || !t.text || !t.date) return;
-    // Ne pas compter les taches deja dans CLEAN_HISTORY
-    const inHistory = CLEAN_HISTORY[t.date]?.some(h => h.t === t.text);
-    if (inHistory) return;
-    const key = t.text;
-    if (!stats[key]) stats[key] = { count: 0, mins: 0 };
-    stats[key].count++;
-    const block = t.block || '';
-    const mins = (block === 'proj1' || block === 'proj2') ? 30 : 15;
-    stats[key].mins += mins;
-  });
-
-  const entries = Object.entries(stats).sort((a,b) => b[1].mins - a[1].mins);
-  if (!entries.length) {
-    tbody.innerHTML = '<tr><td colspan="3" style="color:var(--text3);font-size:11px;padding:12px 0;">Aucune donnee</td></tr>';
-    return;
-  }
-
-  entries.forEach(([text, s]) => {
-    const h = Math.floor(s.mins / 60);
-    const m = s.mins % 60;
-    const duree = h > 0 ? `${h}h${m ? m+'m' : ''}` : `${m}m`;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-size:11px;color:var(--text2);">${text}</td>
-      <td style="text-align:right;font-size:11px;color:var(--text3);">${s.count}x</td>
-      <td style="text-align:right;font-size:11px;color:var(--teal);">${duree}</td>`;
-    tbody.appendChild(tr);
-  });
-}
+// Show month detail modal
 function showMonthDetail(monthIdx, year, monthName) {
   const monthKey = `${year}-${String(monthIdx+1).padStart(2,'0')}`;
   const daysInMonth = new Date(year, monthIdx+1, 0).getDate();
@@ -2298,25 +2568,15 @@ function showMonthDetail(monthIdx, year, monthName) {
     const exactMins = EXACT_MINS[dateKey] || 0;
     const firestoreMins = yearData[dateKey]?.minutes || 0;
     const mins = exactMins > 0 ? exactMins + Math.max(0, firestoreMins - exactMins) : firestoreMins;
-    const cleanTasksList = CLEAN_HISTORY[dateKey] || [];
-    const firestoreTaskCount = yearData[dateKey]?.count || 0;
-    if (!mins && !cleanTasksList.length && !firestoreTaskCount) continue;
+    const cleanTasks = CLEAN_HISTORY[dateKey] || [];
+    const firestoreTasks = yearData[dateKey]?.count || 0;
+    if (!mins && !cleanTasks.length && !firestoreTasks) continue;
 
     const date = new Date(year, monthIdx, d);
     const dow = DAYS_FR2[date.getDay()];
     const h = Math.floor(mins/60), m = mins%60;
     const duree = h > 0 ? `${h}h${m?m+'m':''}` : `${m}m`;
-
-    let taskList = cleanTasksList.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
-    if (!taskList) {
-      // Chercher dans allTasks les taches de ce jour
-      const dayTasks = (typeof allTasks !== 'undefined' ? allTasks : []).filter(t => t.date === dateKey && t.done);
-      if (dayTasks.length > 0) {
-        taskList = dayTasks.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.text}</div>`).join('');
-      } else if (firestoreTaskCount > 0) {
-        taskList = `<div style="font-size:9px;color:var(--text3);padding:1px 0;">${firestoreTaskCount} taches</div>`;
-      }
-    }
+    const taskList = cleanTasks.map(t => `<div style="font-size:9px;color:var(--text3);padding:1px 0;">• ${t.t}</div>`).join('');
 
     html += `<tr>
       <td style="font-size:11px;">${monthIdx+1}/${d}</td>
@@ -2329,6 +2589,8 @@ function showMonthDetail(monthIdx, year, monthName) {
   html += `</tbody></table></div>`;
 
   openModal(`${monthName} ${year} — Detail`, html, null);
+  document.getElementById('modal-confirm').style.display = 'none';
+  document.getElementById('modal-cancel').textContent = 'Fermer';
 }
 
 function calcStreak() {
@@ -2371,6 +2633,7 @@ let rappels = [];
 let selectedRappelId = null;
 
 const DAYS_FR_COURT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+const MONTHS_FR_COURT = ['jan','fev','mar','avr','mai','jun','jul','aou','sep','oct','nov','dec'];
 
 const REP_LABELS = {
   daily:'Quotidien', weekdays:'Jours de semaine', weekly:'Hebdomadaire',
@@ -2386,6 +2649,31 @@ function getRepLabel(r) {
 
 async function loadRappels() {
   rappels = await getAll('rappels');
+
+  // Reset done pour rappels recurrents si pas coché aujourd'hui
+  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+  for (const r of rappels) {
+    if (r.done && r.repeat && r.repeat !== 'none' && r.lastDone !== todayStr) {
+      r.done = false;
+      await updateItem('rappels', r.id, { done: false });
+    }
+  }
+
+  // Auto-rappels fixes — ajouter si pas encore dans Firestore
+  const autoRappels = [
+    { key:'arrose-plantes-sem',      text:'Arrose plantes sem',       repeat:'weekly',   dueDate:'2026-05-27', heure:'08:00', note:'' },
+    { key:'arrose-plantes-3j',       text:'Arrose plantes 3 jours',   repeat:'xdays:3',  dueDate:'2026-05-23', heure:'08:00', note:'' },
+    { key:'bouffe-perruches',        text:'Bouffe perruches',         repeat:'xdays:2',  dueDate:'2026-05-24', heure:'08:00', note:'' },
+    { key:'nettoyage-cage-perruches',text:'Nettoyer cage perruches',  repeat:'xweeks:3', dueDate:'2026-05-22', heure:'08:00', note:'' },
+  ];
+
+  for (const ar of autoRappels) {
+    const exists = rappels.find(r => r.autoKey === ar.key);
+    if (!exists) {
+      const ref = await addItem('rappels', { ...ar, autoKey: ar.key, done: false });
+      rappels.push({ id: ref.id, ...ar, autoKey: ar.key, done: false });
+    }
+  }
 }
 
 function renderRappels() {
@@ -2651,24 +2939,484 @@ function makeBudgetRow(containerId, label, amt, isPos) {
 
 // ─── BUDGET CALENDAR ─────────────────────────────────
 const BUDGET_CATS = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro','Ass. maison','Ass. Eric','Ass. Ryan','Pharmacie','Service de garde','Epicerie','American Express','Capital One','Internet','Cellulaire','Spotify','Amazon','Autre'];
+const MONTHS_FR = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
 const DAYS_FR = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+let budgetYear = new Date().getFullYear();
+let budgetMonth = new Date().getMonth();
+let budgetData = {};
+let budgetSelectedDay = null;
 
 function budgetKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 function fmtB(n){ return Math.round(n).toLocaleString('fr-CA')+'$'; }
 
 // Budget settings cached globally
+let _budgetSettings = { salary: 0, solde: 0 };
+
+async function loadBudget() {
+  // 1. Charger les settings Firestore EN PREMIER avant tout
+  try {
+    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'budget'));
+    if (snap.exists()) {
+      const d = snap.data();
+      _budgetSettings.salary = parseFloat(d.salary) || 0;
+      _budgetSettings.solde  = parseFloat(d.solde)  || 0;
+    }
+  } catch(e) { console.log('Firestore budget settings error:', e); }
+
+  // 2. Charger les transactions du calendrier
+  const items = await getAll('budget_cal');
+  budgetData = {};
+  items.forEach(item => {
+    if (!budgetData[item.day]) budgetData[item.day] = [];
+    budgetData[item.day].push({id:item.id, cat:item.cat, amt:item.amt, auto:item.auto||false});
+  });
+
+  // 3. Appliquer les settings dans le DOM
+  applyBudgetSettings();
+
+  // 4. Init les rangees dettes/actifs
+  const dettes = [['Hypotheque',0],['Marge a tout',0],['Marge vieille',0],['Marge perso',0],['American Express',0],['Capital One',0]];
+  const actifs = [['Maison (valeur)',0],['REER',0],['Pension 1',0],['Pension 2',0]];
+  dettes.forEach(([l,a]) => makeBudgetRow('budget-dettes',l,a,false));
+  actifs.forEach(([l,a]) => makeBudgetRow('budget-actifs',l,a,true));
+
+  // 5. Charger les cartes et auto-entries
+  await loadCartes();
+  checkAutoEntries();
+  await saveAutoEntriesToFirestore();
+
+  // 6. Render APRES que tout est chargé
+  renderBudget();
+  renderCartes();
+}
+
+function applyBudgetSettings() {
+  const salaryEl = document.getElementById('budget-salary');
+  if (salaryEl) { salaryEl.value = ''; salaryEl.value = String(_budgetSettings.salary || 0); }
+  const soldeEl = document.getElementById('b-solde-input');
+  if (soldeEl)  { soldeEl.value  = ''; soldeEl.value  = String(_budgetSettings.solde  || 0); }
+}
 
 // Save salary + solde to Firestore
+async function saveSalary() { await saveBudgetSettings(); }
+async function saveSolde()  { await saveBudgetSettings(); }
+
+window.saveBudgetSettings = async function() {
+  const salary = parseFloat(document.getElementById('budget-salary')?.value) || 0;
+  const solde  = parseFloat(document.getElementById('b-solde-input')?.value) || 0;
+  _budgetSettings.salary = salary;
+  _budgetSettings.solde  = solde;
+  try {
+    await setDoc(doc(db, 'users', uid(), 'settings', 'budget'), { salary, solde });
+    // Flash confirmation
+    const btn = document.querySelector('[onclick="saveBudgetSettings()"]');
+    if (btn) { btn.textContent = '✅ Sauvegarde!'; setTimeout(()=>btn.textContent='💾 Sauvegarder',2000); }
+  } catch(e) { console.error('Save error:', e); alert('Erreur sauvegarde: ' + e.message); }
+}
+
+function renderBudget() {
+  const titleEl = document.getElementById('budget-month-title');
+  if (titleEl) titleEl.textContent = MONTHS_FR[budgetMonth] + ' ' + budgetYear;
+  const grid = document.getElementById('budget-cal-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  DAYS_FR.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'budget-cal-head';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(budgetYear, budgetMonth, 1).getDay();
+  const daysInMonth = new Date(budgetYear, budgetMonth+1, 0).getDate();
+  const today = new Date();
+  let monthTotal = 0;
+  let activeDays = 0;
+
+  for (let i=0; i<firstDay; i++) {
+    const e = document.createElement('div');
+    e.className = 'budget-cal-empty';
+    grid.appendChild(e);
+  }
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const k = budgetKey(budgetYear, budgetMonth, d);
+    const entries = budgetData[k] || [];
+    const dayTotal = entries.reduce((s,e) => s+(parseFloat(e.amt)||0), 0);
+    monthTotal += dayTotal;
+    if (dayTotal > 0) activeDays++;
+    const isToday = today.getFullYear()===budgetYear && today.getMonth()===budgetMonth && today.getDate()===d;
+    const cell = document.createElement('div');
+    cell.className = 'budget-cal-day' + (isToday ? ' today' : '');
+    cell.innerHTML = `<div class="budget-day-num">${d}</div>`;
+    entries.slice(0,2).forEach(e => {
+      const tag = document.createElement('div');
+      const cls = ['Hypotheque','REER','Marge a tout','Marge vieille','Marge perso','Hydro'].includes(e.cat)?'fixe':['American Express','Capital One'].includes(e.cat)?'carte':'autre';
+      tag.className = `budget-dep-tag ${cls}`;
+      tag.textContent = e.cat;
+      cell.appendChild(tag);
+    });
+    if (entries.length > 2) {
+      const more = document.createElement('div');
+      more.className = 'budget-dep-tag autre';
+      more.textContent = `+${entries.length-2}`;
+      cell.appendChild(more);
+    }
+    if (dayTotal > 0) {
+      const tot = document.createElement('div');
+      tot.className = 'budget-day-total';
+      tot.textContent = '-'+Math.round(dayTotal)+'$';
+      cell.appendChild(tot);
+    }
+    cell.onclick = () => openBudgetDay(d, k);
+    grid.appendChild(cell);
+  }
+
+  calcBudgetSummary(monthTotal, activeDays);
+  calcBudgetBilan();
+  renderBudgetCharts();
+  renderNextPayments();
+}
+
 // ─── AUTO ENTRIES ─────────────────────────────────────
+function checkAutoEntries() {
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  // Entrees par jour de semaine (dow: 0=dim,1=lun,...,5=ven,4=jeu)
+  const dowEntries = [
+    { dow:4, cat:'Hypotheque',    amt:256.88 },
+    { dow:4, cat:'Marge vieille', amt:73.56  },
+    { dow:5, cat:'REER',          amt:35.00  },
+  ];
+
+  // Entrees par jour du mois (dom: jour fixe du mois)
+  const domEntries = [
+    { dom:1,  cat:'Ass. maison', amt:180.22 },
+    { dom:15, cat:'Ass. Eric',   amt:16.10  },
+    { dom:15, cat:'Ass. Ryan',   amt:27.77  },
+  ];
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const k = budgetKey(year, month, d);
+
+    // Par jour de semaine
+    dowEntries.forEach(entry => {
+      if (entry.dow !== date.getDay()) return;
+      const existing = budgetData[k] || [];
+      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
+        if (!budgetData[k]) budgetData[k] = [];
+        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
+      }
+    });
+
+    // Par jour du mois
+    domEntries.forEach(entry => {
+      if (entry.dom !== d) return;
+      const existing = budgetData[k] || [];
+      if (!existing.some(e => e.cat === entry.cat && e.auto === true)) {
+        if (!budgetData[k]) budgetData[k] = [];
+        budgetData[k].push({ cat: entry.cat, amt: entry.amt, auto: true });
+      }
+    });
+  }
+}
+
 // ─── CARTES DE CREDIT ────────────────────────────────
+let cartesData = { amex: [], capone: [], amazon: [] };
+
+function renderCartes() {
+  renderCarteRows('amex');
+  renderCarteRows('capone');
+  renderCarteRows('amazon');
+  renderCartesSummary();
+  renderAmazonChart();
+}
+
+function renderCarteRows(carte) {
+  const container = document.getElementById(carte + '-rows');
+  if (!container) return;
+  container.innerHTML = '';
+  (cartesData[carte] || []).forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = carte === 'amazon' ? 'carte-row amazon-row' : 'carte-row';
+    div.dataset.idx = i;
+    div.dataset.carte = carte;
+
+    if (carte === 'amazon') {
+      div.innerHTML = `
+        <input type="text" placeholder="MM/DD" value="${row.date||''}">
+        <input type="number" placeholder="0.00" value="${row.dep||''}">
+        <input type="text" placeholder="Raison" value="${row.raison||''}">
+        <button class="carte-del-btn">✕</button>`;
+      const [dateIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
+      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
+      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
+      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
+      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
+    } else {
+      div.innerHTML = `
+        <input type="text" placeholder="MM/DD" value="${row.date||''}">
+        <input type="number" class="pay" placeholder="0.00" value="${row.pay||''}">
+        <input type="number" placeholder="0.00" value="${row.dep||''}">
+        <input type="text" placeholder="Raison" value="${row.raison||''}">
+        <button class="carte-del-btn">✕</button>`;
+      const [dateIn, payIn, depIn, raisonIn, delBtn] = div.querySelectorAll('input, button');
+      dateIn.oninput   = () => { cartesData[carte][div.dataset.idx*1].date   = dateIn.value; saveCartes(); };
+      payIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].pay    = parseFloat(payIn.value)||0; renderCartesSummary(); };
+      depIn.oninput    = () => { cartesData[carte][div.dataset.idx*1].dep    = parseFloat(depIn.value)||0; renderCartesSummary(); };
+      raisonIn.oninput = () => { cartesData[carte][div.dataset.idx*1].raison = raisonIn.value; saveCartes(); };
+      delBtn.onclick   = () => { cartesData[carte].splice(div.dataset.idx*1, 1); renderCartes(); saveCartes(); };
+    }
+    container.appendChild(div);
+  });
+}
+
+window.addCarteRow = function(carte) {
+  cartesData[carte].push({ date:'', pay:0, dep:0, raison:'' });
+  renderCartes();
+  saveCartes();
+}
+
+async function saveCartes() {
+  try {
+    await setDoc(doc(db, 'users', uid(), 'settings', 'cartes'), {
+      amex:   JSON.stringify(cartesData.amex),
+      capone: JSON.stringify(cartesData.capone),
+      amazon: JSON.stringify(cartesData.amazon),
+      amexLimite:   document.getElementById('amex-limite')?.value || '1000',
+      caponeLimite: document.getElementById('capone-limite')?.value || '125',
+    });
+  } catch(e) { console.error('saveCartes error:', e); }
+}
 
 // Lignes fixes qui reviennent chaque mois
+const AMEX_FIXED = [
+  { date:'', pay:0, dep:120.67, raison:'Bell' },
+  { date:'', pay:0, dep:24.13,  raison:'Spotify' },
+  { date:'', pay:0, dep:399.96, raison:'Amazon' },
+  { date:'', pay:0, dep:17.25,  raison:'Blink' },
+];
+const CAPONE_FIXED = [
+  { date:'', pay:0, dep:38.58, raison:'Cellulaire' },
+  { date:'', pay:0, dep:9.20,  raison:'TSN+' },
+];
+const AMAZON_FIXED = [
+  { date:'', dep:7.78,  raison:'Pharmacie' },
+  { date:'', dep:7.78,  raison:'Menager' },
+  { date:'', dep:7.28,  raison:'Aliments' },
+  { date:'', dep:11.47, raison:'Aliments' },
+  { date:'', dep:9.16,  raison:'Pharmacie' },
+  { date:'', dep:24.00, raison:'Chat' },
+  { date:'', dep:8.78,  raison:'Pharmacie' },
+  { date:'', dep:20.39, raison:'Aliments' },
+  { date:'', dep:20.47, raison:'Chat' },
+  { date:'', dep:11.27, raison:'Aliments' },
+  { date:'', dep:27.57, raison:'Cadeaux' },
+  { date:'', dep:25.28, raison:'Activites' },
+  { date:'', dep:26.43, raison:'Activites' },
+  { date:'', dep:67.44, raison:'Quincaillerie' },
+  { date:'', dep:28.73, raison:'Maison' },
+  { date:'', dep:24.00, raison:'Chat' },
+  { date:'', dep:14.69, raison:'Cadeaux' },
+  { date:'', dep:57.44, raison:'Quincaillerie' },
+];
 
-;
+async function loadCartes() {
+  try {
+    const snap = await getDoc(doc(db, 'users', uid(), 'settings', 'cartes'));
+    if (snap.exists()) {
+      const d = snap.data();
+      cartesData.amex   = JSON.parse(d.amex   || '[]');
+      cartesData.capone = JSON.parse(d.capone || '[]');
+      cartesData.amazon = JSON.parse(d.amazon || '[]');
+      const amexLimEl   = document.getElementById('amex-limite');
+      const caponeLimEl = document.getElementById('capone-limite');
+      if (amexLimEl   && d.amexLimite)   amexLimEl.value   = d.amexLimite;
+      if (caponeLimEl && d.caponeLimite) caponeLimEl.value = d.caponeLimite;
+    } else {
+      // Premier chargement — pre-remplir avec les fixes
+      cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
+      cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
+      cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
+    }
+  } catch(e) {
+    // Erreur — utiliser les fixes par defaut
+    cartesData.amex   = AMEX_FIXED.map(r => ({...r}));
+    cartesData.capone = CAPONE_FIXED.map(r => ({...r}));
+    cartesData.amazon = AMAZON_FIXED.map(r => ({...r}));
+  }
+}
+
+window.renderCartesSummary = function() {
+  // Sync Amazon total into Amex 'Amazon' row silently (no re-render)
+  const amazonTotal = (cartesData.amazon||[]).reduce((s,r)=>s+(parseFloat(r.dep)||0),0);
+  const amexAmazonRow = (cartesData.amex||[]).find(r => r.raison === 'Amazon');
+  if (amexAmazonRow && amexAmazonRow.dep !== amazonTotal) {
+    amexAmazonRow.dep = amazonTotal;
+    // Update the input field directly without full re-render
+    const amexRows = document.querySelectorAll('#amex-rows .carte-row');
+    const amexIdx = cartesData.amex.indexOf(amexAmazonRow);
+    if (amexIdx >= 0 && amexRows[amexIdx]) {
+      const depInput = amexRows[amexIdx].querySelectorAll('input[type=number]')[1];
+      if (depInput) depInput.value = amazonTotal.toFixed(2);
+    }
+  }
+
+  // Totaux Amex + Capital One
+  ['amex','capone'].forEach(carte => {
+    const rows = cartesData[carte] || [];
+    const totalPay = rows.reduce((s,r) => s+(parseFloat(r.pay)||0), 0);
+    const totalDep = rows.reduce((s,r) => s+(parseFloat(r.dep)||0), 0);
+    const diff = totalPay - totalDep;
+    const s = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    s(`${carte}-total-pay`, totalPay.toFixed(2)+'$');
+    s(`${carte}-total-dep`, totalDep.toFixed(2)+'$');
+    const diffEl = document.getElementById(`${carte}-diff`);
+    if (diffEl) { diffEl.textContent=(diff>=0?'+':'')+diff.toFixed(2)+'$'; diffEl.style.color=diff>=0?'var(--teal)':'#F06060'; }
+  });
+
+  // Total Amazon
+  const el = document.getElementById('amazon-total-dep');
+  if (el) el.textContent = amazonTotal.toFixed(2)+'$';
+
+  saveCartes();
+  renderBudgetCharts();
+  renderAmazonChart();
+}
+
+function syncCarteToCal(carte, idx) {
+  const row = cartesData[carte][idx];
+  if (!row?.date || !row?.dep) return;
+  const parts = row.date.split('/');
+  if (parts.length < 2) return;
+  const m = parseInt(parts[0])-1, d = parseInt(parts[1]);
+  if (isNaN(m)||isNaN(d)) return;
+  const k = budgetKey(budgetYear, m, d);
+  if (!budgetData[k]) budgetData[k] = [];
+  const catName = carte==='amex'?'American Express':carte==='capone'?'Capital One':'Amazon';
+  const existing = budgetData[k].find(e=>e.fromCarte===true&&e.carteIdx===idx&&e.carte===carte);
+  if (existing) { existing.amt=row.dep; }
+  else { budgetData[k].push({cat:catName, amt:row.dep, fromCarte:true, carte, carteIdx:idx}); }
+}
 
 // ─── BUDGET CHARTS ────────────────────────────────────
+let _budgetDonut=null, _budgetWeekly=null;
 
 let _amazonDonutChart = null;
+
+function renderAmazonChart() {
+  const rows = cartesData.amazon || [];
+
+  // Grouper par raison
+  const groups = {};
+  rows.forEach(r => {
+    const key = r.raison || 'Autre';
+    groups[key] = (groups[key] || 0) + (parseFloat(r.dep) || 0);
+  });
+
+  const entries = Object.entries(groups).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const total   = entries.reduce((s,[,v]) => s+v, 0);
+  const colors  = ['#534AB7','#1D9E75','#378ADD','#BA7517','#E24B4A','#888780','#D4537E','#639922','#F4A623','#C2714F'];
+
+  // Table
+  const tbody = document.getElementById('amazon-summary-body');
+  if (tbody) {
+    tbody.innerHTML = '';
+    entries.forEach(([raison, amt], i) => {
+      const pct = total > 0 ? Math.round(amt/total*100) : 0;
+      const tr  = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="display:flex;align-items:center;gap:6px;">
+          <span style="width:10px;height:10px;border-radius:2px;background:${colors[i%colors.length]};flex-shrink:0;"></span>
+          ${raison}
+        </td>
+        <td style="text-align:right;">${amt.toFixed(2)}$</td>
+        <td style="text-align:right;">${pct}%</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  const totalEl = document.getElementById('amazon-summary-total');
+  if (totalEl) totalEl.textContent = total.toFixed(2)+'$';
+
+  // Donut
+  const ctx = document.getElementById('amazonDonut');
+  if (!ctx) return;
+  if (_amazonDonutChart) _amazonDonutChart.destroy();
+  _amazonDonutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: entries.map(([r]) => r),
+      datasets: [{
+        data: entries.map(([,v]) => parseFloat(v.toFixed(2))),
+        backgroundColor: colors.slice(0, entries.length),
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      cutout: '65%'
+    }
+  });
+}
+
+function renderBudgetCharts() {
+  const year=budgetYear, month=budgetMonth;
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const catTotals={}, weekTotals=[0,0,0,0,0];
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const k=budgetKey(year,month,d);
+    (budgetData[k]||[]).forEach(e=>{
+      const cat=e.cat||'Autre';
+      catTotals[cat]=(catTotals[cat]||0)+(e.amt||0);
+      const wi=Math.min(Math.floor((d-1)/7),4);
+      weekTotals[wi]+=(e.amt||0);
+    });
+  }
+  const cats=Object.keys(catTotals).filter(c=>catTotals[c]>0);
+  const vals=cats.map(c=>catTotals[c]);
+  const total=vals.reduce((s,v)=>s+v,0);
+  const colors=['#534AB7','#F06060','#1D9E75','#378ADD','#BA7517','#888780','#F4A623','#A855F7','#34C472','#C2714F'];
+
+  const donutCtx=document.getElementById('budget-donut');
+  if (donutCtx&&cats.length>0) {
+    if(_budgetDonut)_budgetDonut.destroy();
+    _budgetDonut=new Chart(donutCtx,{
+      type:'doughnut',
+      data:{labels:cats,datasets:[{data:vals,backgroundColor:colors.slice(0,cats.length),borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}
+    });
+    const legendEl=document.getElementById('budget-donut-legend');
+    if(legendEl){
+      legendEl.innerHTML='';
+      cats.forEach((cat,i)=>{
+        const pct=total>0?Math.round(vals[i]/total*100):0;
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:8px;';
+        row.innerHTML=`<span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span><span style="color:var(--text2);flex:1;font-size:10px;">${cat}</span><span style="color:var(--text3);font-size:10px;">${vals[i].toFixed(0)}$ (${pct}%)</span>`;
+        legendEl.appendChild(row);
+      });
+    }
+  }
+
+  const weekCtx=document.getElementById('budget-weekly-chart');
+  if(weekCtx){
+    if(_budgetWeekly)_budgetWeekly.destroy();
+    const wLabels=weekTotals.filter(v=>v>0).map((_,i)=>`Sem ${i+1}`);
+    const wData=weekTotals.filter(v=>v>0);
+    if(wData.length>0) _budgetWeekly=new Chart(weekCtx,{
+      type:'bar',
+      data:{labels:wLabels,datasets:[{label:'Depenses',data:wData,backgroundColor:'#F06060',borderRadius:4,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#888'}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{color:'#888',callback:v=>v+'$'}}}}
+    });
+  }
+}
 
 window.calcBudgetSummary = function(monthTotal, activeDays) {
   const today = new Date();
@@ -2764,21 +3512,194 @@ function renderNextPayments() {
   });
 }
 
+function openBudgetDay(d, k) {
+  budgetSelectedDay = k;
+  const date = new Date(budgetYear, budgetMonth, d);
+  const titleEl = document.getElementById('budget-modal-title');
+  if (titleEl) titleEl.textContent = DAYS_FR[date.getDay()] + ' ' + d + ' ' + MONTHS_FR[budgetMonth];
+  const entries = budgetData[k] || [];
+  const existEl = document.getElementById('budget-existing-entries');
+  if (existEl) {
+    existEl.innerHTML = '';
+    entries.forEach((e,i) => {
+      const row = document.createElement('div');
+      row.className = 'budget-existing-row';
+      row.innerHTML = `<span class="budget-existing-cat">${e.cat}</span><span class="budget-existing-amt">-${parseFloat(e.amt).toFixed(2)}$</span><button class="budget-del-entry" onclick="deleteBudgetEntry('${k}',${i})">✕</button>`;
+      existEl.appendChild(row);
+    });
+  }
+  const newEl = document.getElementById('budget-new-entries');
+  if (newEl) newEl.innerHTML = '';
+  if (!entries.length) addBudgetEntryRow();
+  document.getElementById('budget-day-modal')?.classList.remove('hidden');
+}
+
+window.deleteBudgetEntry = async function(k, i) {
+  const entry = budgetData[k]?.[i];
+  if (entry?.id) await deleteItem('budget_cal', entry.id);
+  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
+  renderBudget();
+  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
+}
+
+window.addBudgetEntryRow = function() {
+  const container = document.getElementById('budget-new-entries');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'budget-entry-row';
+  row.innerHTML = `
+    <select class="budget-entry-select">${BUDGET_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+    <input type="number" class="budget-entry-amt" placeholder="0.00" min="0" step="0.01">
+    <button class="budget-del-entry" onclick="this.parentElement.remove()">✕</button>
+  `;
+  container.appendChild(row);
+}
+
+window.saveBudgetDay = async function() {
+  if (!budgetSelectedDay) return;
+  const rows = document.getElementById('budget-new-entries')?.querySelectorAll('.budget-entry-row') || [];
+  for (const row of rows) {
+    const cat = row.querySelector('.budget-entry-select')?.value;
+    const amt = parseFloat(row.querySelector('.budget-entry-amt')?.value) || 0;
+    if (amt > 0) {
+      const ref = await addItem('budget_cal', { day: budgetSelectedDay, cat, amt, auto: false });
+      if (!budgetData[budgetSelectedDay]) budgetData[budgetSelectedDay] = [];
+      budgetData[budgetSelectedDay].push({ id: ref.id, cat, amt, auto: false });
+    }
+  }
+  document.getElementById('budget-day-modal')?.classList.add('hidden');
+  budgetSelectedDay = null;
+  renderBudget();
+}
 
 // Save auto entries to Firestore (called once per month load)
+async function saveAutoEntriesToFirestore() {
+  const year = budgetYear, month = budgetMonth;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  for (let d=1; d<=daysInMonth; d++) {
+    const k = budgetKey(year, month, d);
+    const entries = budgetData[k] || [];
+    for (const entry of entries) {
+      if (!entry.auto || entry.id) continue; // skip if already saved
+      const ref = await addItem('budget_cal', { day: k, cat: entry.cat, amt: entry.amt, auto: true });
+      entry.id = ref.id;
+    }
+  }
+}
+
 // Delete budget entry from Firestore
+window.deleteBudgetEntry = async function(k, i) {
+  const entry = budgetData[k]?.[i];
+  if (entry?.id) await deleteItem('budget_cal', entry.id);
+  if (budgetData[k]) { budgetData[k].splice(i,1); if (!budgetData[k].length) delete budgetData[k]; }
+  renderBudget();
+  if (budgetSelectedDay) openBudgetDay(parseInt(budgetSelectedDay.split('-')[2]), budgetSelectedDay);
+}
 
+function calcBudgetBilan() {
+  const dettes = getContainerTotal('budget-dettes');
+  const actifs = getContainerTotal('budget-actifs');
+  const setEl = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setEl('b-total-dettes', fmtB(dettes));
+  const vn = document.getElementById('b-valeur-nette');
+  if (vn) {
+    vn.textContent = fmtB(actifs-dettes);
+    vn.style.color = (actifs-dettes) >= 0 ? 'var(--teal)' : '#F06060';
+  }
+}
 
+function getContainerTotal(containerId) {
+  const rows = document.getElementById(containerId)?.querySelectorAll('.budget-amt-input') || [];
+  let total = 0;
+  rows.forEach(i => total += parseFloat(i.value)||0);
+  return total;
+}
 
-
+window.addBudgetRow = function(containerId, isPos) {
+  makeBudgetRow(containerId, '', 0, isPos);
+}
 
 
 
 // Nav buttons
+document.getElementById('budget-prev')?.addEventListener('click', () => {
+  budgetMonth--; if(budgetMonth<0){budgetMonth=11;budgetYear--;} renderBudget();
+});
+document.getElementById('budget-next')?.addEventListener('click', () => {
+  budgetMonth++; if(budgetMonth>11){budgetMonth=0;budgetYear++;} renderBudget();
+});
+document.getElementById('budget-modal-close')?.addEventListener('click', () => {
+  document.getElementById('budget-day-modal')?.classList.add('hidden');
+  budgetSelectedDay = null;
+});
+document.getElementById('budget-day-modal')?.addEventListener('click', e => {
+  if (e.target === e.currentTarget) { e.currentTarget.classList.add('hidden'); budgetSelectedDay=null; }
+});
 
 function renderHomeRappels() {
-  // La liste du bas a ete supprimee — on met a jour les blocs rappels dans My Day
-  seedTodayRappelBlocks();
+  const el = document.getElementById('home-rappels-list');
+  if (!el) return;
+  el.innerHTML = '';
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const dow = now.getDay();
+
+  const toShow = rappels.filter(r => {
+    if (r.done) return false; // Ne pas afficher les rappels coches
+    if (!r.repeat || r.repeat === 'none') {
+      return r.dueDate === todayStr;
+    }
+    if (r.repeat === 'daily') return true;
+    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+    if (r.repeat === 'weekly') {
+      if (!r.dueDate) return true;
+      const startDow = new Date(r.dueDate + 'T12:00:00').getDay();
+      return dow === startDow;
+    }
+    if (r.repeat === 'monthly') {
+      if (!r.dueDate) return true;
+      return now.getDate() === parseInt(r.dueDate.split('-')[2]);
+    }
+    if (r.repeat === 'yearly') {
+      if (!r.dueDate) return true;
+      const p = r.dueDate.split('-');
+      return now.getMonth()+1 === parseInt(p[1]) && now.getDate() === parseInt(p[2]);
+    }
+    if (r.repeat?.startsWith('xdays:')) {
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T12:00:00');
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((now - start) / 86400000);
+      return diff >= 0 && diff % n === 0;
+    }
+    if (r.repeat?.startsWith('xweeks:')) {
+      if (!r.dueDate) return false;
+      const start = new Date(r.dueDate + 'T12:00:00');
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((now - start) / 86400000);
+      return diff >= 0 && diff % (n * 7) === 0;
+    }
+    return false;
+  });
+
+  if (!toShow.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);padding:8px 0;letter-spacing:.05em;">Aucun rappel pour aujourd\'hui</p>';
+    return;
+  }
+
+  toShow.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'rappel-item';
+    item.innerHTML = `
+      <div class="rappel-cb"></div>
+      <div class="rappel-info">
+        <div class="rappel-text">${r.text}</div>
+        <div class="rappel-meta">${r.heure||''}${r.note?' · '+r.note:''}</div>
+      </div>
+      <span class="rappel-time-badge badge-today-r">Aujourd'hui</span>`;
+    el.appendChild(item);
+  });
 }
 
 document.getElementById('add-rappel-btn')?.addEventListener('click', () => {
@@ -2796,9 +3717,100 @@ document.querySelectorAll('.link-btn').forEach(btn => {
 });
 
 
+// ─── AMAZON TRACKER ──────────────────────────────────
+const AMAZON_CATS = ['Pharmacie','Aliments','Chat','Quincaillerie','Maison','Cadeaux','Activites','Menager','Autre'];
+const AMAZON_COLORS = {
+  'Pharmacie':'#534AB7','Aliments':'#1D9E75','Chat':'#378ADD',
+  'Quincaillerie':'#BA7517','Maison':'#C2714F','Cadeaux':'#D4537E',
+  'Activites':'#F4A623','Menager':'#888780','Autre':'#555'
+};
+const AMAZON_INIT = [
+  {desc:'Pharmacie',cat:'Pharmacie',amt:7.78},{desc:'Menager',cat:'Menager',amt:7.78},
+  {desc:'Aliments',cat:'Aliments',amt:7.28},{desc:'Aliments',cat:'Aliments',amt:11.47},
+  {desc:'Pharmacie',cat:'Pharmacie',amt:9.16},{desc:'Chat',cat:'Chat',amt:24.00},
+  {desc:'Pharmacie',cat:'Pharmacie',amt:8.78},{desc:'Aliments',cat:'Aliments',amt:20.39},
+  {desc:'Chat',cat:'Chat',amt:20.47},{desc:'Aliments',cat:'Aliments',amt:11.27},
+  {desc:'Cadeaux',cat:'Cadeaux',amt:27.57},{desc:'Activites',cat:'Activites',amt:25.28},
+  {desc:'Activites',cat:'Activites',amt:26.43},{desc:'Quincaillerie',cat:'Quincaillerie',amt:67.44},
+  {desc:'Maison',cat:'Maison',amt:28.73},{desc:'Chat',cat:'Chat',amt:24.00},
+  {desc:'Cadeaux',cat:'Cadeaux',amt:14.69},{desc:'Quincaillerie',cat:'Quincaillerie',amt:57.44},
+];
+let amazonTrackerData = [];
+
+function makeAmazonRow(desc='', cat='Autre', amt='', idx=0) {
+  const container = document.getElementById('amazon-tracker-rows');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'amazon-tracker-row';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <input type="text" placeholder="Description" value="${desc}">
+    <select>${AMAZON_CATS.map(c=>`<option${c===cat?' selected':''}>${c}</option>`).join('')}</select>
+    <input type="number" placeholder="0.00" value="${amt||''}">
+    <button class="amazon-del-btn">✕</button>`;
+  const [descIn,catSel,amtIn,delBtn] = div.querySelectorAll('input,select,button');
+  descIn.oninput  = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].desc=descIn.value; saveAmazonTracker(); };
+  catSel.onchange = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].cat=catSel.value; calcAmazonTotal(); saveAmazonTracker(); };
+  amtIn.oninput   = () => { if(amazonTrackerData[div.dataset.idx*1]) amazonTrackerData[div.dataset.idx*1].amt=parseFloat(amtIn.value)||0; calcAmazonTotal(); saveAmazonTracker(); };
+  delBtn.onclick  = () => {
+    amazonTrackerData.splice(div.dataset.idx*1, 1);
+    div.remove();
+    document.querySelectorAll('.amazon-tracker-row').forEach((r,i) => r.dataset.idx=i);
+    calcAmazonTotal(); saveAmazonTracker();
+  };
+  container.appendChild(div);
+}
+
+window.addAmazonRow = function() {
+  amazonTrackerData.push({desc:'',cat:'Autre',amt:0});
+  makeAmazonRow('','Autre','',amazonTrackerData.length-1);
+  calcAmazonTotal();
+}
+
+function calcAmazonTotal() {
+  let total = 0;
+  const catTotals = {};
+  amazonTrackerData.forEach(r => {
+    total += r.amt||0;
+    catTotals[r.cat] = (catTotals[r.cat]||0)+(r.amt||0);
+  });
+  const totalEl = document.getElementById('amazon-grand-total');
+  if (totalEl) totalEl.textContent = total.toFixed(2)+'$';
+  const sumEl = document.getElementById('amazon-tracker-summary');
+  if (sumEl) {
+    sumEl.innerHTML = '';
+    Object.entries(catTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).forEach(([cat,val]) => {
+      const d = document.createElement('div');
+      d.className = 'amazon-sum-item';
+      d.innerHTML = `<div class="amazon-sum-label">${cat}</div><div class="amazon-sum-val" style="color:${AMAZON_COLORS[cat]||'#888'}">${val.toFixed(2)}$</div>`;
+      sumEl.appendChild(d);
+    });
+  }
+  // Sync to Amex Amazon row
+  const amexRow = (cartesData.amex||[]).find(r=>r.raison==='Amazon');
+  if (amexRow) { amexRow.dep = total; renderCartesSummary(); }
+}
+
+async function saveAmazonTracker() {
+  try { await setDoc(doc(db,'users',uid(),'settings','amazon_tracker'),{data:JSON.stringify(amazonTrackerData)}); }
+  catch(e) { console.error('saveAmazonTracker:',e); }
+}
+
+async function loadAmazonTracker() {
+  try {
+    const snap = await getDoc(doc(db,'users',uid(),'settings','amazon_tracker'));
+    if (snap.exists()) { amazonTrackerData = JSON.parse(snap.data().data||'[]'); }
+    else { amazonTrackerData = AMAZON_INIT.map(r=>({...r})); await saveAmazonTracker(); }
+  } catch(e) { amazonTrackerData = AMAZON_INIT.map(r=>({...r})); }
+  const container = document.getElementById('amazon-tracker-rows');
+  if (container) container.innerHTML = '';
+  amazonTrackerData.forEach((r,i) => makeAmazonRow(r.desc,r.cat,r.amt,i));
+  calcAmazonTotal();
+}
+
 
 // ─── HISTORIQUE TACHES ───────────────────────────────
-let allTasks = []; // declare globalement pour showMonthDetail
+let allTasks = [];
 
 async function loadHistorique() {
   try {
@@ -2823,7 +3835,6 @@ async function loadHistorique() {
       });
     });
     renderHistorique();
-    renderTaskHoursTable();
   } catch(e) { console.error('loadHistorique:', e); }
 }
 
@@ -2899,6 +3910,15 @@ document.getElementById('historique-filter-month')?.addEventListener('change', r
 
 
 // ─── CLEAN SCHEDULE EDITOR ───────────────────────────
+function toggleCleanEdit() {
+  const panel = document.getElementById('clean-edit-panel');
+  const btn   = document.getElementById('toggle-clean-edit');
+  if (!panel) return;
+  const isHidden = panel.style.display === 'none';
+  panel.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? '✕ Fermer' : '✎ Modifier';
+  if (isHidden) renderCleanScheduleEditor();
+}
 
 function renderCleanScheduleEditor() {
   const el = document.getElementById('clean-schedule-editor');
@@ -2967,9 +3987,9 @@ window.saveCleanScheduleEdit = async function() {
 
   await saveCleanSchedule();
 
-  const btn = document.getElementById('toggle-clean-edit-btn');
-  if (btn) btn.textContent = 'Modifier';
-  setTimeout(() => { if (btn) btn.textContent = 'Modifier'; }, 2000);
+  const btn = document.getElementById('toggle-clean-edit');
+  btn.textContent = '✓ Sauvegarde!';
+  setTimeout(() => { btn.textContent = '✕ Fermer'; }, 2000);
 
   // Refresh calendar
   renderCleanCalendar();
@@ -2983,11 +4003,12 @@ function switchTab(tab) {
     t.classList.toggle('hidden', !isActive);
   });
   // Lazy render on first switch
-  if (tab === 'clean')   { renderCleanTasks(); renderCleanCalendar(); renderRappels(); setTimeout(()=>{ renderRappelCalendar(); renderRappelListAll(); }, 500); }
+  if (tab === 'clean')   renderCleanTasks();
   if (tab === 'project') renderProjects();
   if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
   if (tab === 'myyear')  { renderYearStats(); loadHistorique(); }
+  if (tab === 'budget')  { applyBudgetSettings(); renderBudget(); renderCartes(); calcAmazonTotal(); }
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
@@ -3013,10 +4034,6 @@ function openModal(title, bodyHTML, onConfirm) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML    = bodyHTML;
   document.getElementById('modal-overlay').classList.remove('hidden');
-  const confirmBtn = document.getElementById('modal-confirm');
-  const cancelBtn  = document.getElementById('modal-cancel');
-  if (confirmBtn) confirmBtn.style.display = onConfirm ? '' : 'none';
-  if (cancelBtn)  cancelBtn.textContent = onConfirm ? 'Annuler' : 'Fermer';
   modalConfirmFn = onConfirm;
   setTimeout(() => document.querySelector('#modal-body .form-input')?.focus(), 100);
 }
@@ -3041,12 +4058,10 @@ let rappelMonth = new Date().getMonth();
 function renderRappelCalendar() {
   const grid  = document.getElementById('rappel-cal-grid');
   const title = document.getElementById('rappel-month-title');
-  if (!grid) { console.log('rappel-cal-grid introuvable'); return; }
-  const JOURS = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  const MOIS  = ['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre'];
-  title && (title.textContent = MOIS[rappelMonth] + ' ' + rappelYear);
+  if (!grid) return;
+  title && (title.textContent = MONTHS_FR[rappelMonth] + ' ' + rappelYear);
   grid.innerHTML = '';
-  JOURS.forEach(d => {
+  DAYS_FR.forEach(d => {
     const h = document.createElement('div');
     h.className = 'budget-cal-head';
     h.textContent = d;
@@ -3061,34 +4076,14 @@ function renderRappelCalendar() {
     grid.appendChild(Object.assign(document.createElement('div'), {className:'budget-cal-empty'}));
 
   for (let d=1; d<=daysInMonth; d++) {
-    const ds  = `${rappelYear}-${String(rappelMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dow = new Date(rappelYear, rappelMonth, d).getDay();
-
-    // Filtrer les rappels qui tombent ce jour
-    const dayR = rappels.filter(r => {
-      if (!r.repeat || r.repeat === 'none') return r.dueDate === ds;
-      if (!r.dueDate) return false;
-      const start = new Date(r.dueDate + 'T12:00:00');
-      const target = new Date(rappelYear, rappelMonth, d, 12, 0, 0);
-      const diff = Math.floor((target - start) / 86400000);
-      if (diff < 0) return false;
-      if (r.repeat === 'daily') return true;
-      if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
-      if (r.repeat === 'weekly') return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
-      if (r.repeat === 'monthly') return new Date(r.dueDate + 'T12:00:00').getDate() === d;
-      if (r.repeat.startsWith('xdays:')) { const n=parseInt(r.repeat.split(':')[1])||1; return diff%n===0; }
-      if (r.repeat.startsWith('xweeks:')) { const n=parseInt(r.repeat.split(':')[1])||1; return diff%(n*7)===0; }
-      return false;
-    });
-
+    const ds = `${rappelYear}-${String(rappelMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayR = rappels.filter(r => r.dueDate === ds);
     const cell = document.createElement('div');
-    cell.className = 'budget-cal-day' + (ds === todayStr ? ' today' : '');
-    cell.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px;min-height:60px;cursor:pointer;transition:border-color .2s;';
-    if (ds === todayStr) cell.style.borderColor = 'var(--c3)';
-    cell.innerHTML = `<div class="budget-day-num">${d}</div>`;
+    cell.className = 'budget-cal-cell' + (ds === todayStr ? ' today' : '');
+    cell.innerHTML = `<div class="budget-cal-day">${d}</div>`;
     dayR.forEach(r => {
       const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:8px;padding:2px 4px;border-radius:3px;margin-top:2px;background:rgba(168,85,247,.2);color:var(--c2);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (r.done||r.lastDoneDate===todayStr?'opacity:.4;text-decoration:line-through;':'');
+      tag.style.cssText = 'font-size:9px;padding:2px 4px;border-radius:3px;margin-top:2px;background:rgba(168,85,247,.2);color:var(--c2);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (r.done ? 'opacity:.4;' : '');
       tag.textContent = r.text;
       tag.onclick = e => { e.stopPropagation(); rappelEdit(r); };
       cell.appendChild(tag);
