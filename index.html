@@ -1644,20 +1644,84 @@ function renderHome() {
 }
 
 function seedTodayRappelBlocks() {
-  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
-  const todayRappels = rappels.filter(r => r.dueDate === todayStr && !r.done);
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const dow = now.getDay();
+
+  const todayRappels = rappels.filter(r => {
+    if (!r.repeat || r.repeat === 'none') return r.dueDate === todayStr;
+    if (r.repeat === 'daily') return true;
+    if (r.repeat === 'weekdays') return dow >= 1 && dow <= 5;
+    if (r.repeat === 'weekly') {
+      if (!r.dueDate) return true;
+      return new Date(r.dueDate + 'T12:00:00').getDay() === dow;
+    }
+    if (r.repeat === 'monthly') {
+      if (!r.dueDate) return true;
+      return now.getDate() === parseInt(r.dueDate.split('-')[2]);
+    }
+    if (r.repeat?.startsWith('xdays:')) {
+      if (!r.dueDate) return false;
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((now - new Date(r.dueDate + 'T12:00:00')) / 86400000);
+      return diff >= 0 && diff % n === 0;
+    }
+    if (r.repeat?.startsWith('xweeks:')) {
+      if (!r.dueDate) return false;
+      const n = parseInt(r.repeat.split(':')[1]) || 1;
+      const diff = Math.floor((now - new Date(r.dueDate + 'T12:00:00')) / 86400000);
+      return diff >= 0 && diff % (n * 7) === 0;
+    }
+    return false;
+  });
+
+  // Dedup par texte
+  const seen = new Set();
+  const unique = todayRappels.filter(r => {
+    if (seen.has(r.text)) return false;
+    seen.add(r.text);
+    return true;
+  });
+
   const blocks = ['rapp1','rapp2','rapp3'];
   blocks.forEach((block, i) => {
     const el = document.getElementById(`block-${block}-tasks`);
     if (!el) return;
     el.innerHTML = '';
-    if (todayRappels[i]) {
-      const div = document.createElement('div');
-      div.style.cssText = 'font-size:10px;color:var(--c2);padding:4px;letter-spacing:.05em;';
-      div.textContent = todayRappels[i].text;
-      el.appendChild(div);
-    }
+    const r = unique[i];
+    if (!r) return;
+
+    const row = document.createElement('div');
+    row.className = 'block-task-item';
+
+    const cb = document.createElement('div');
+    cb.className = `block-task-cb${r.lastDoneDate === todayStr ? ' checked' : ''}`;
+    cb.onclick = () => toggleRappelDone(r, todayStr, cb, txt);
+
+    const txt = document.createElement('span');
+    txt.className = `block-task-text${r.lastDoneDate === todayStr ? ' done' : ''}`;
+    txt.textContent = r.text;
+
+    row.append(cb, txt);
+    el.appendChild(row);
   });
+}
+
+async function toggleRappelDone(r, todayStr, cbEl, txtEl) {
+  const alreadyDone = r.lastDoneDate === todayStr;
+  const newDate = alreadyDone ? null : todayStr;
+  r.lastDoneDate = newDate;
+  await updateDoc(doc(db, 'users', uid(), 'rappels', r.id), { lastDoneDate: newDate });
+  if (cbEl) cbEl.classList.toggle('checked', !alreadyDone);
+  if (txtEl) {
+    txtEl.style.textDecoration = !alreadyDone ? 'line-through' : '';
+    txtEl.style.opacity = !alreadyDone ? '.5' : '1';
+    if (txtEl.className) {
+      txtEl.className = `block-task-text${!alreadyDone ? ' done' : ''}`;
+    }
+  }
+  renderHomeRappels();
+  seedTodayRappelBlocks();
 }
 
 function renderTodayList() {
@@ -3691,13 +3755,29 @@ function renderHomeRappels() {
   toShow.forEach(r => {
     const item = document.createElement('div');
     item.className = 'rappel-item';
-    item.innerHTML = `
-      <div class="rappel-cb"></div>
-      <div class="rappel-info">
-        <div class="rappel-text">${r.text}</div>
-        <div class="rappel-meta">${r.heure||''}${r.note?' · '+r.note:''}</div>
-      </div>
-      <span class="rappel-time-badge badge-today-r">Aujourd'hui</span>`;
+
+    const cb = document.createElement('div');
+    cb.className = `rappel-cb${r.lastDoneDate === todayStr ? ' checked' : ''}`;
+
+    const info = document.createElement('div');
+    info.className = 'rappel-info';
+    const txtEl = document.createElement('div');
+    txtEl.className = 'rappel-text';
+    txtEl.textContent = r.text;
+    if (r.lastDoneDate === todayStr) txtEl.style.textDecoration = 'line-through';
+    txtEl.style.opacity = r.lastDoneDate === todayStr ? '.5' : '1';
+    const metaEl = document.createElement('div');
+    metaEl.className = 'rappel-meta';
+    metaEl.textContent = (r.heure || '') + (r.note ? ' · ' + r.note : '');
+    info.append(txtEl, metaEl);
+
+    const badge = document.createElement('span');
+    badge.className = 'rappel-time-badge badge-today-r';
+    badge.textContent = "Aujourd'hui";
+
+    cb.onclick = () => toggleRappelDone(r, todayStr, cb, txtEl);
+
+    item.append(cb, info, badge);
     el.appendChild(item);
   });
 }
