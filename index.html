@@ -269,6 +269,15 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
 .rappel-delete{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:4px;opacity:0;transition:opacity var(--transition);}
 .rappel-item:hover .rappel-delete{opacity:1;}
 
+
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
+.budget-cal-empty{min-height:60px;}
+.budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px;min-height:70px;cursor:pointer;transition:border-color var(--transition);}
+.budget-cal-day:hover{border-color:var(--border2);}
+.budget-cal-day.today{border-color:var(--c3);}
+.budget-cal-day.today .budget-day-num{color:var(--c2);font-weight:500;}
+
 /* ─── MY YEAR TABLES ────────────────────────────────── */
 .year-table{width:100%;border-collapse:collapse;font-size:11px;}
 .year-table th{text-align:left;font-size:10px;color:var(--text3);font-weight:400;padding:6px 8px;border-bottom:1px solid var(--border);letter-spacing:.1em;text-transform:uppercase;}
@@ -2995,7 +3004,6 @@ function switchTab(tab) {
   if (tab === 'project') renderProjSidebar();
   if (tab === 'rappels') { renderRappels(); }
   if (tab === 'myyear')  { renderYearStats(); loadHistorique(); }
-
 }
 
 // ─── SUB TABS ─────────────────────────────────────────
