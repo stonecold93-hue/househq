@@ -760,6 +760,19 @@ html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color
         </div>
       </div>
 
+      <!-- Classement taches -->
+      <div class="section-card">
+        <div class="section-top">
+          <h2 class="section-title">Classement des taches</h2>
+          <div style="display:flex;gap:6px;">
+            <button class="budget-filter-btn active" id="top-filter-all" onclick="setTopFilter('all')">Toutes</button>
+            <button class="budget-filter-btn" id="top-filter-clean" onclick="setTopFilter('clean')">Clean</button>
+            <button class="budget-filter-btn" id="top-filter-project" onclick="setTopFilter('project')">Projet</button>
+          </div>
+        </div>
+        <div id="top-tasks-list" style="margin-top:10px;display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+
       <!-- Historique taches cochees -->
       <div class="section-card">
         <div class="section-top">
@@ -3910,7 +3923,70 @@ async function loadHistorique() {
       });
     });
     renderHistorique();
+    renderTopTasks();
   } catch(e) { console.error('loadHistorique:', e); }
+}
+
+let _topFilter = 'all';
+
+function setTopFilter(f) {
+  _topFilter = f;
+  ['all','clean','project'].forEach(k => {
+    const btn = document.getElementById('top-filter-' + k);
+    if (btn) btn.classList.toggle('active', k === f);
+  });
+  renderTopTasks();
+}
+
+function renderTopTasks() {
+  const el = document.getElementById('top-tasks-list');
+  if (!el) return;
+
+  let tasks = (allTasks || []).filter(t => t.text && t.date);
+  if (_topFilter !== 'all') tasks = tasks.filter(t => t.type === _topFilter);
+
+  // Regrouper par texte normalise
+  const map = {};
+  tasks.forEach(t => {
+    const key = t.text.trim().toLowerCase();
+    if (!map[key]) map[key] = { text: t.text.trim(), count: 0, mins: 0, type: t.type };
+    map[key].count++;
+    const m = (t.block === 'proj1' || t.block === 'proj2') ? 30 : 15;
+    map[key].mins += m;
+  });
+
+  const sorted = Object.values(map).sort((a,b) => b.count - a.count).slice(0, 20);
+  const max = sorted[0]?.count || 1;
+
+  el.innerHTML = '';
+  sorted.forEach((item, i) => {
+    const pct = Math.round((item.count / max) * 100);
+    const h = Math.floor(item.mins / 60);
+    const m = item.mins % 60;
+    const timeStr = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${m}m`;
+    const isClean = item.type === 'clean';
+    const color = isClean ? 'var(--c2)' : 'var(--coral, #F08060)';
+    const rank = i + 1;
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 0;';
+    row.innerHTML = `
+      <span style="font-size:10px;color:var(--text3);min-width:20px;text-align:right;">${rank}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+          <span style="font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.text}</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:8px;white-space:nowrap;">${item.count}x &nbsp; ${timeStr}</span>
+        </div>
+        <div style="height:4px;background:var(--bg3);border-radius:2px;">
+          <div style="height:4px;background:${color};border-radius:2px;width:${pct}%;transition:width .3s;"></div>
+        </div>
+      </div>`;
+    el.appendChild(row);
+  });
+
+  if (!sorted.length) {
+    el.innerHTML = '<p style="font-size:11px;color:var(--text3);text-align:center;padding:16px 0;letter-spacing:.1em;">Aucune tache trouvee</p>';
+  }
 }
 
 function renderHistorique() {
