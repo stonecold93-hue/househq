@@ -222,15 +222,22 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .badge-dynamic{font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:rgba(35,137,212,.1);color:var(--c2);border:1px solid rgba(35,137,212,.2);}
 
 /* ─── CALENDAR GRID ──────────────────────────────────── */
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-.cal-header{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
-.cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 6px;text-align:center;min-height:60px;cursor:pointer;transition:all var(--transition);}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-header{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);text-align:center;padding:3px 0;}
+.cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 2px;text-align:center;min-height:40px;cursor:pointer;transition:all var(--transition);}
 .cal-day:hover{border-color:var(--border2);}
 .cal-day.today{border-color:rgba(255,255,255,0.5);}
 .cal-day.has-task{background:rgba(255,255,255,0.04);}
-.cal-day-num{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.cal-day-num{font-size:10px;color:var(--text2);margin-bottom:2px;}
 .cal-day.today .cal-day-num{color:#ffffff;font-weight:500;}
-.cal-dot{width:5px;height:5px;border-radius:50%;background:var(--c3);margin:2px auto;}
+.cal-dot{width:4px;height:4px;border-radius:50%;background:var(--c3);margin:1px auto;}
+@media(min-width:600px){
+  .calendar-grid{gap:6px;}
+  .cal-header{font-size:9px;letter-spacing:.15em;padding:4px 0;}
+  .cal-day{padding:8px 6px;min-height:60px;border-radius:6px;}
+  .cal-day-num{font-size:11px;margin-bottom:4px;}
+  .cal-dot{width:5px;height:5px;margin:2px auto;}
+}
 
 /* ─── PROJECTS ───────────────────────────────────────── */
 .project-list{display:flex;flex-direction:column;gap:10px;}
@@ -317,12 +324,18 @@ html[data-theme="light"] .ico-moon{display:flex;}
 
 /* ─── BUDGET CALENDAR ────────────────────────────────── */
 .budget-salary-input{background:none;border:none;outline:none;color:var(--c2);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;width:100px;text-align:right;}
-.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
-.budget-cal-head{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);text-align:center;padding:4px 0;}
-.budget-cal-empty{min-height:60px;}
-.budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px;min-height:70px;cursor:pointer;transition:border-color var(--transition);}
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;}
+.budget-cal-head{font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);text-align:center;padding:3px 0;}
+.budget-cal-empty{min-height:40px;}
+.budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 2px;min-height:44px;cursor:pointer;transition:border-color var(--transition);}
 .budget-cal-day:hover{border-color:var(--border2);}
 .budget-cal-day.today{border-color:var(--c3);}
+@media(min-width:600px){
+  .budget-cal-grid{gap:4px;}
+  .budget-cal-head{font-size:9px;letter-spacing:.1em;padding:4px 0;}
+  .budget-cal-empty{min-height:60px;}
+  .budget-cal-day{padding:6px;min-height:70px;border-radius:6px;}
+}
 .budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
 .budget-cal-day.today .budget-day-num{color:var(--c2);font-weight:500;}
 .budget-dep-tag{font-size:8px;padding:1px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
