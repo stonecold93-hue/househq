@@ -20,28 +20,25 @@ try{
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
 :root {
-  /* bleu — accent principal */
+  /* Shopping exact — dark */
   --c1:        #BAE0FF;
   --c2:        #2389D4;
-  --c3:        #1a6aaa;
-  --c4:        #0d3d66;
-  --c5:        #061f33;
+  --c3:        #2389D4;
+  --c4:        #2389D4;
+  --c5:        #2389D4;
 
-  /* app backgrounds — dark */
   --bg:        #000000;
   --bg2:       #081828;
-  --bg3:       #0d1f2d;
+  --bg3:       #081828;
 
-  /* text */
-  --text:      #ffffff;
-  --text2:     #a0a0a0;
-  --text3:     #555555;
+  --text:      #FFFFFF;
+  --text2:     #AAAAAA;
+  --text3:     #AAAAAA;
 
-  /* borders */
-  --border:    rgba(35,137,212,0.12);
-  --border2:   rgba(35,137,212,0.28);
+  --border:    #2389D4;
+  --border2:   #2389D4;
 
-  /* accents */
+  /* fonctionnel HouseHQ uniquement */
   --teal:      #34C472;
   --teal-dim:  #1a3d28;
   --coral:     #C2714F;
@@ -57,21 +54,21 @@ try{
 
 html[data-theme="light"] {
   --c1:        #2389D4;
-  --c2:        #1a6aaa;
-  --c3:        #0d3d66;
+  --c2:        #2389D4;
+  --c3:        #2389D4;
   --c4:        #E0F4FF;
-  --c5:        #f0f9ff;
+  --c5:        #E0F4FF;
 
-  --bg:        #ffffff;
+  --bg:        #FFFFFF;
   --bg2:       #E0F4FF;
-  --bg3:       #c8eaff;
+  --bg3:       #E0F4FF;
 
   --text:      #000000;
-  --text2:     #444444;
-  --text3:     #888888;
+  --text2:     #555555;
+  --text3:     #555555;
 
-  --border:    rgba(35,137,212,0.18);
-  --border2:   rgba(35,137,212,0.35);
+  --border:    #2389D4;
+  --border2:   #2389D4;
 }
 
 html,body{height:100%;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);overflow:hidden;}
@@ -273,7 +270,7 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .redirect-note{display:flex;align-items:center;gap:12px;padding:20px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;color:var(--text3);letter-spacing:.05em;}
 
 /* ─── MODAL ──────────────────────────────────────────── */
-.modal-overlay{position:fixed;inset:0;background:rgba(8,2,18,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:200;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:200;}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:420px;max-width:90vw;overflow:hidden;}
 .modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border);}
 .modal-header h3{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:18px;color:#ffffff;}
@@ -328,7 +325,7 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .budget-day-num{font-size:11px;color:var(--text2);margin-bottom:3px;}
 .budget-cal-day.today .budget-day-num{color:var(--c2);font-weight:500;}
 .budget-dep-tag{font-size:8px;padding:1px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.budget-dep-tag.fixe{background:rgba(24,95,165,.2);color:#5AB4F0;}
+.budget-dep-tag.fixe{background:rgba(24,95,165,.2);color:#2389D4;}
 .budget-dep-tag.carte{background:rgba(186,117,23,.2);color:var(--amber);}
 .budget-dep-tag.autre{background:rgba(255,255,255,.06);color:var(--text3);}
 .budget-day-total{font-size:9px;color:#F06060;font-weight:500;margin-top:2px;}
@@ -366,7 +363,7 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .cartes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;overflow-x:auto;}
 .carte-col{display:flex;flex-direction:column;gap:0;min-width:200px;}
 .carte-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;margin-bottom:0;}
-.amex-header{background:rgba(83,74,183,.2);border:1px solid rgba(83,74,183,.4);}
+.amex-header{background:rgba(35,137,212,.2);border:1px solid rgba(35,137,212,.4);}
 .capone-header{background:rgba(186,117,23,.2);border:1px solid rgba(186,117,23,.4);}
 .amazon-header{background:rgba(244,166,35,.2);border:1px solid rgba(244,166,35,.4);}
 .carte-name{font-size:11px;font-weight:500;color:var(--text);letter-spacing:.06em;}
@@ -407,7 +404,7 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .rappel-time-badge{font-size:9px;padding:2px 8px;border-radius:20px;letter-spacing:.08em;}
 .badge-today-r{background:rgba(240,96,96,.15);color:#F06060;}
 .badge-tomorrow-r{background:rgba(244,166,35,.15);color:var(--amber);}
-.badge-week-r{background:rgba(90,180,240,.15);color:var(--blue,#5AB4F0);}
+.badge-week-r{background:rgba(35,137,212,.15);color:var(--c2);}
 .badge-repeat-r{background:rgba(35,137,212,.15);color:var(--c2);}
 
 /* ─── TODO INTERFACE ────────────────────────────────── */
@@ -423,7 +420,7 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .todo-item-title{font-size:12px;color:var(--text);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .todo-item-title.done{text-decoration:line-through;opacity:.5;}
 .todo-item-sub{font-size:10px;margin-top:2px;}
-.todo-item-sub.due{color:#5AB4F0;}
+.todo-item-sub.due{color:#2389D4;}
 .todo-item-sub.rep{color:var(--c2);}
 .todo-item-sub.overdue{color:#F06060;}
 .todo-add-row{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text3);}
@@ -2806,12 +2803,12 @@ function selectTodoRappel(id) {
     const todayStr2 = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const tomorrowDate = new Date(today); tomorrowDate.setDate(today.getDate()+1);
     const tomorrowStr = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth()+1).padStart(2,'0')}-${String(tomorrowDate.getDate()).padStart(2,'0')}`;
-    if (r.dueDate === todayStr2) { dueVal.textContent = "Aujourd'hui"; dueVal.style.color = '#5AB4F0'; }
-    else if (r.dueDate === tomorrowStr) { dueVal.textContent = 'Demain'; dueVal.style.color = '#5AB4F0'; }
+    if (r.dueDate === todayStr2) { dueVal.textContent = "Aujourd'hui"; dueVal.style.color = '#2389D4'; }
+    else if (r.dueDate === tomorrowStr) { dueVal.textContent = 'Demain'; dueVal.style.color = '#2389D4'; }
     else {
       const diff = Math.round((d - today) / 86400000);
       dueVal.textContent = DAYS_FR_COURT[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS_FR_COURT[d.getMonth()];
-      dueVal.style.color = diff < 0 ? '#F06060' : '#5AB4F0';
+      dueVal.style.color = diff < 0 ? '#F06060' : '#2389D4';
     }
   } else {
     dueVal.textContent = 'Aucune';
