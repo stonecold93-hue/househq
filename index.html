@@ -222,7 +222,8 @@ html[data-theme="light"] .ico-moon{display:flex;}
 .badge-dynamic{font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;border-radius:20px;background:rgba(35,137,212,.1);color:var(--c2);border:1px solid rgba(35,137,212,.2);}
 
 /* ─── CALENDAR GRID ──────────────────────────────────── */
-.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;overflow:hidden;}
+.calendar-grid>*{min-width:0;overflow:hidden;}
 .cal-header{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);text-align:center;padding:3px 0;}
 .cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 2px;text-align:center;min-height:40px;cursor:pointer;transition:all var(--transition);}
 .cal-day:hover{border-color:var(--border2);}
@@ -324,7 +325,8 @@ html[data-theme="light"] .ico-moon{display:flex;}
 
 /* ─── BUDGET CALENDAR ────────────────────────────────── */
 .budget-salary-input{background:none;border:none;outline:none;color:var(--c2);font-family:'DM Mono',monospace;font-size:16px;font-weight:500;width:100px;text-align:right;}
-.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;}
+.budget-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px;overflow:hidden;}
+.budget-cal-grid>*{min-width:0;overflow:hidden;}
 .budget-cal-head{font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);text-align:center;padding:3px 0;}
 .budget-cal-empty{min-height:40px;}
 .budget-cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 2px;min-height:44px;cursor:pointer;transition:border-color var(--transition);}
