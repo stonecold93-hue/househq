@@ -4275,12 +4275,16 @@ function renderRappelCalendar() {
   for (let d=1; d<=daysInMonth; d++) {
     const ds = `${rappelYear}-${String(rappelMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dayR = rappels.filter(r => r.dueDate === ds);
+    const isToday = ds === todayStr;
     const cell = document.createElement('div');
-    cell.className = 'budget-cal-cell' + (ds === todayStr ? ' today' : '');
-    cell.innerHTML = `<div class="budget-cal-day">${d}</div>`;
+    cell.style.cssText = `background:#000000;border:1px solid ${isToday?'#ffffff':'#2389D4'};border-radius:6px;padding:6px 4px;min-height:54px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;gap:3px;`;
+    const num = document.createElement('div');
+    num.style.cssText = `font-size:11px;color:${isToday?'#ffffff':'#aaaaaa'};font-weight:${isToday?'600':'400'};margin-bottom:2px;`;
+    num.textContent = d;
+    cell.appendChild(num);
     dayR.forEach(r => {
       const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:9px;padding:2px 4px;border-radius:3px;margin-top:2px;background:rgba(35,137,212,.2);color:#ffffff;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (r.done ? 'opacity:.4;' : '');
+      tag.style.cssText = 'font-size:8px;padding:2px 4px;border-radius:3px;background:rgba(35,137,212,.25);color:#ffffff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;' + (r.done ? 'opacity:.4;text-decoration:line-through;' : '');
       tag.textContent = r.text;
       tag.onclick = e => { e.stopPropagation(); rappelEdit(r); };
       cell.appendChild(tag);
