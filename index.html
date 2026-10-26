@@ -3975,7 +3975,7 @@ async function loadHistorique() {
 let _topFilter = 'all';
 let _topSort = 'count';
 
-function setTopFilter(f) {
+window.setTopFilter = function setTopFilter(f) {
   _topFilter = f;
   ['all','clean','project'].forEach(k => {
     const btn = document.getElementById('top-filter-' + k);
@@ -3984,7 +3984,7 @@ function setTopFilter(f) {
   renderTopTasks();
 }
 
-function setTopSort(s) {
+window.setTopSort = function setTopSort(s) {
   _topSort = s;
   ['count','mins'].forEach(k => {
     const btn = document.getElementById('top-sort-' + k);
