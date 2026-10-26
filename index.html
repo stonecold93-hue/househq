@@ -308,8 +308,9 @@ html[data-theme="light"] .ico-moon{display:flex;}
 
 /* ─── BUDGET ─────────────────────────────────────────── */
 .budget-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-.budget-filter-btn{background:none;border:1px solid var(--border);border-radius:20px;color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;padding:4px 12px;cursor:pointer;transition:all var(--transition);}
-.budget-filter-btn:hover,.budget-filter-btn.active{border-color:var(--border2);color:var(--text);}
+.budget-filter-btn{background:none;border:1px solid rgba(35,137,212,.3);border-radius:20px;color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;padding:4px 12px;cursor:pointer;transition:all var(--transition);}
+.budget-filter-btn:hover{border-color:#2389D4;color:var(--text);}
+.budget-filter-btn.active{border-color:#2389D4;color:#ffffff;background:rgba(35,137,212,.2);}
 .budget-list{display:flex;flex-direction:column;gap:6px;}
 .budget-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);transition:all var(--transition);}
 .budget-item:hover{border-color:var(--border2);}
@@ -814,10 +815,12 @@ html[data-theme="light"] .ico-moon{display:flex;}
       <div class="section-card">
         <div class="section-top">
           <h2 class="section-title">Classement des taches</h2>
-          <div style="display:flex;gap:6px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
             <button class="budget-filter-btn active" id="top-filter-all" onclick="setTopFilter('all')">Toutes</button>
             <button class="budget-filter-btn" id="top-filter-clean" onclick="setTopFilter('clean')">Clean</button>
             <button class="budget-filter-btn" id="top-filter-project" onclick="setTopFilter('project')">Projet</button>
+            <button class="budget-filter-btn active" id="top-sort-count" onclick="setTopSort('count')" style="margin-left:8px;"># Fois</button>
+            <button class="budget-filter-btn" id="top-sort-mins" onclick="setTopSort('mins')">Minutes</button>
           </div>
         </div>
         <div id="top-tasks-list" style="margin-top:10px;display:flex;flex-direction:column;gap:4px;"></div>
@@ -3970,12 +3973,22 @@ async function loadHistorique() {
 }
 
 let _topFilter = 'all';
+let _topSort = 'count';
 
 function setTopFilter(f) {
   _topFilter = f;
   ['all','clean','project'].forEach(k => {
     const btn = document.getElementById('top-filter-' + k);
     if (btn) btn.classList.toggle('active', k === f);
+  });
+  renderTopTasks();
+}
+
+function setTopSort(s) {
+  _topSort = s;
+  ['count','mins'].forEach(k => {
+    const btn = document.getElementById('top-sort-' + k);
+    if (btn) btn.classList.toggle('active', k === s);
   });
   renderTopTasks();
 }
@@ -3997,12 +4010,12 @@ function renderTopTasks() {
     map[key].mins += m;
   });
 
-  const sorted = Object.values(map).sort((a,b) => b.count - a.count).slice(0, 20);
-  const max = sorted[0]?.count || 1;
+  const sorted = Object.values(map).sort((a,b) => _topSort === 'mins' ? b.mins - a.mins : b.count - a.count).slice(0, 20);
+  const max = sorted[0]? (_topSort === 'mins' ? sorted[0].mins : sorted[0].count) : 1;
 
   el.innerHTML = '';
   sorted.forEach((item, i) => {
-    const pct = Math.round((item.count / max) * 100);
+    const pct = Math.round((_topSort === 'mins' ? item.mins : item.count) / max * 100);
     const h = Math.floor(item.mins / 60);
     const m = item.mins % 60;
     const timeStr = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${m}m`;
